@@ -1,4 +1,4 @@
-// src/app/api/stock/admin/transfer/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
@@ -49,19 +49,20 @@ export async function POST(req: NextRequest) {
         message: 'Stock transferred successfully'
       });
 
-    } catch (error: any) {
-      console.error('Transfer error:', error);
-      
-      if (error.message === 'Stock not found') {
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Transfer error:', err);
+
+      if (err.message === 'Stock not found') {
         return NextResponse.json(
-          { error: error.message },
+          { error: err.message },
           { status: 404 }
         );
       }
 
-      if (error.message?.includes('Insufficient')) {
+      if (err.message?.includes('Insufficient')) {
         return NextResponse.json(
-          { error: error.message },
+          { error: err.message },
           { status: 400 }
         );
       }

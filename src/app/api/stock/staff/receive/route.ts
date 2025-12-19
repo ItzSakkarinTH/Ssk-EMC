@@ -1,4 +1,4 @@
-// src/app/api/stock/staff/receive/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withStaffAuth, canPerformStockAction } from '@/lib/auth/rbac';
@@ -56,10 +56,11 @@ export async function POST(req: NextRequest) {
         message: 'Stock received successfully'
       });
 
-    } catch (error: any) {
-      console.error('Receive stock error:', error);
-      
-      if (error.message === 'Stock not found') {
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Receive stock error:', err);
+
+      if (err.message === 'Stock not found') {
         return NextResponse.json(
           { error: 'Stock item not found' },
           { status: 404 }

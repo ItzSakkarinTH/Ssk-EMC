@@ -1,4 +1,4 @@
-// src/app/stock-dashboard/page.tsx
+
 import StockOverview from './components/StockOverview';
 import CategoryBreakdown from './components/CategoryBreakdown';
 import AlertSection from './components/AlertSection';

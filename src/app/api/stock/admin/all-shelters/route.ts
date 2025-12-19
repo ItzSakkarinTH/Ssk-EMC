@@ -1,4 +1,4 @@
-// src/app/api/stock/admin/all-shelters/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
@@ -17,15 +17,15 @@ export async function GET(req: NextRequest) {
       const allStocks = await Stock.find({});
 
       // คำนวณสรุปแต่ละศูนย์
-      const shelterSummary = shelters.map(shelter => {
+      const shelterSummary = shelters.map((shelter: { _id: { toString: () => string }; name: string; code: string; location: string; capacity: number; currentOccupancy: number }) => {
         let totalItems = 0;
         let totalQuantity = 0;
         let lowStockCount = 0;
         let criticalCount = 0;
 
-        allStocks.forEach(stock => {
+        allStocks.forEach((stock: { shelterStock: Array<{ shelterId: { toString: () => string }; quantity: number }>; criticalLevel: number; minStockLevel: number }) => {
           const shelterStock = stock.shelterStock.find(
-            s => s.shelterId.toString() === shelter._id.toString()
+            (s: { shelterId: { toString: () => string } }) => s.shelterId.toString() === shelter._id.toString()
           );
 
           if (shelterStock && shelterStock.quantity > 0) {
@@ -70,14 +70,15 @@ export async function GET(req: NextRequest) {
         shelters: shelterSummary,
         summary: {
           totalShelters: shelters.length,
-          normalShelters: shelterSummary.filter(s => s.status === 'normal').length,
-          tightShelters: shelterSummary.filter(s => s.status === 'tight').length,
-          criticalShelters: shelterSummary.filter(s => s.status === 'critical').length
+          normalShelters: shelterSummary.filter((s: { status: string }) => s.status === 'normal').length,
+          tightShelters: shelterSummary.filter((s: { status: string }) => s.status === 'tight').length,
+          criticalShelters: shelterSummary.filter((s: { status: string }) => s.status === 'critical').length
         }
       });
 
-    } catch (error: any) {
-      console.error('Get all shelters error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Get all shelters error:', err);
       return NextResponse.json(
         { error: 'Failed to fetch shelter data' },
         { status: 500 }

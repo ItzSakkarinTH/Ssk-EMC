@@ -1,4 +1,4 @@
-// src/app/(public)/stock-dashboard/components/StockOverview.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -28,24 +28,25 @@ export default function StockOverview() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const res = await fetch('/api/stock/public/overview');
+        if (!res.ok) throw new Error('Failed to fetch');
+        const json = await res.json();
+        setData(json);
+        setError(null);
+      } catch (err: unknown) {
+        const error = err as Error;
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchOverview();
     const interval = setInterval(fetchOverview, 30000); // รีเฟรชทุก 30 วินาที
     return () => clearInterval(interval);
   }, []);
-
-  const fetchOverview = async () => {
-    try {
-      const res = await fetch('/api/stock/public/overview');
-      if (!res.ok) throw new Error('Failed to fetch');
-      const json = await res.json();
-      setData(json);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return <div className={styles.loading}>กำลังโหลด...</div>;
   if (error) return <div className={styles.error}>เกิดข้อผิดพลาด: {error}</div>;

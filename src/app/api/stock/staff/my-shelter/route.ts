@@ -1,4 +1,4 @@
-// src/app/api/stock/staff/my-shelter/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import Stock from '@/lib/db/models/Stock';
 import Shelter from '@/lib/db/models/Shelter';
@@ -26,25 +26,25 @@ export async function GET(req: NextRequest) {
         'shelterStock.shelterId': shelterId
       });
 
-      const stockList = stocks.map(stock => {
+      const stockList = stocks.map((stock: { _id: { toString: () => string }; getShelterStock: (id: string) => { quantity: number; lastUpdated: Date } | null; itemName: string; category: string; unit: string; criticalLevel: number; minStockLevel: number }) => {
         const shelterStock = stock.getShelterStock(shelterId);
-        
+
         return {
           stockId: stock._id.toString(),
           itemName: stock.itemName,
           category: stock.category,
           quantity: shelterStock?.quantity || 0,
           unit: stock.unit,
-          status: shelterStock 
-            ? (shelterStock.quantity <= stock.criticalLevel ? 'critical' 
-              : shelterStock.quantity <= stock.minStockLevel ? 'low' 
-              : 'sufficient')
+          status: shelterStock
+            ? (shelterStock.quantity <= stock.criticalLevel ? 'critical'
+              : shelterStock.quantity <= stock.minStockLevel ? 'low'
+                : 'sufficient')
             : 'unavailable',
           lastUpdated: shelterStock?.lastUpdated || null,
           minStockLevel: stock.minStockLevel,
           criticalLevel: stock.criticalLevel
         };
-      }).filter(s => s.quantity > 0); // แสดงเฉพาะของที่มีอยู่
+      }).filter((s: { quantity: number }) => s.quantity > 0); // แสดงเฉพาะของที่มีอยู่
 
       return NextResponse.json({
         shelterId,
@@ -53,8 +53,9 @@ export async function GET(req: NextRequest) {
         stock: stockList
       });
 
-    } catch (error: any) {
-      console.error('Staff shelter stock error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Staff shelter stock error:', err);
       return NextResponse.json(
         { error: 'Failed to fetch shelter stock' },
         { status: 500 }

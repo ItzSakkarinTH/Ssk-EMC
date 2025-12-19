@@ -1,4 +1,4 @@
-// src/app/(staff)/staff/stock/components/QuickReceive.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -94,8 +94,9 @@ export default function QuickReceive({ onSuccess }: Props) {
       alert(`รับเข้าสำเร็จ\nสต๊อกใหม่: ${result.newQuantity}`);
       onSuccess();
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

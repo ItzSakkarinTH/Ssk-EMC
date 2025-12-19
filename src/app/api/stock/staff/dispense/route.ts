@@ -1,4 +1,4 @@
-// src/app/api/stock/staff/dispense/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withStaffAuth, canPerformStockAction } from '@/lib/auth/rbac';
@@ -54,18 +54,19 @@ export async function POST(req: NextRequest) {
         alert: result.alert ? 'Stock is running low' : null
       });
 
-    } catch (error: any) {
-      console.error('Dispense error:', error);
-      
-      if (error.message === 'Stock not found' || 
-          error.message === 'Shelter stock not found') {
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Dispense error:', err);
+
+      if (err.message === 'Stock not found' ||
+        err.message === 'Shelter stock not found') {
         return NextResponse.json(
-          { error: error.message },
+          { error: err.message },
           { status: 404 }
         );
       }
 
-      if (error.message === 'Insufficient stock') {
+      if (err.message === 'Insufficient stock') {
         return NextResponse.json(
           { error: 'Not enough stock to dispense' },
           { status: 400 }

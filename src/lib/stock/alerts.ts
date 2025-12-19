@@ -12,15 +12,15 @@ export interface StockAlert {
 }
 
 export class StockAlerts {
-  
+
   // ตรวจสอบสต๊อกทั้งหมด
   static async checkAllStock(): Promise<StockAlert[]> {
     const stocks = await Stock.find({});
     const alerts: StockAlert[] = [];
 
-    stocks.forEach(stock => {
+    stocks.forEach((stock: { _id: { toString: () => string }; getStatus: () => string; itemName: string; category: string; totalQuantity: number; minStockLevel: number; criticalLevel: number }) => {
       const status = stock.getStatus();
-      
+
       if (status !== 'sufficient') {
         alerts.push({
           stockId: stock._id.toString(),
@@ -29,7 +29,7 @@ export class StockAlerts {
           currentStock: stock.totalQuantity,
           minLevel: stock.minStockLevel,
           criticalLevel: stock.criticalLevel,
-          status: status as any
+          status: status as 'low' | 'critical' | 'outOfStock'
         });
       }
     });
@@ -51,12 +51,12 @@ export class StockAlerts {
 
     const alerts: StockAlert[] = [];
 
-    stocks.forEach(stock => {
+    stocks.forEach((stock: { _id: { toString: () => string }; getShelterStock: (id: string) => { quantity: number } | undefined; itemName: string; category: string; minStockLevel: number; criticalLevel: number }) => {
       const shelterStock = stock.getShelterStock(shelterId);
       if (!shelterStock) return;
 
       let status: 'low' | 'critical' | 'outOfStock' | null = null;
-      
+
       if (shelterStock.quantity === 0) {
         status = 'outOfStock';
       } else if (shelterStock.quantity <= stock.criticalLevel) {

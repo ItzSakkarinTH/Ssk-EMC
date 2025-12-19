@@ -1,4 +1,4 @@
-// src/app/api/stock/public/overview/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import Stock from '@/lib/db/models/Stock';
 import dbConnect from '@/lib/db/mongodb';
@@ -11,9 +11,9 @@ export async function GET(req: NextRequest) {
     const allStocks = await Stock.find({});
 
     const totalItems = allStocks.length;
-    const totalQuantity = allStocks.reduce((sum, s) => sum + s.totalQuantity, 0);
-    const totalReceived = allStocks.reduce((sum, s) => sum + s.totalReceived, 0);
-    const totalDispensed = allStocks.reduce((sum, s) => sum + s.totalDispensed, 0);
+    const totalQuantity = allStocks.reduce((sum: number, s: { totalQuantity: number }) => sum + s.totalQuantity, 0);
+    const totalReceived = allStocks.reduce((sum: number, s: { totalReceived: number }) => sum + s.totalReceived, 0);
+    const totalDispensed = allStocks.reduce((sum: number, s: { totalDispensed: number }) => sum + s.totalDispensed, 0);
 
     // แยกตามหมวด
     const byCategory = {
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
       other: { items: 0, quantity: 0 }
     };
 
-    allStocks.forEach(stock => {
+    allStocks.forEach((stock: { category: 'food' | 'medicine' | 'clothing' | 'other'; totalQuantity: number }) => {
       byCategory[stock.category].items++;
       byCategory[stock.category].quantity += stock.totalQuantity;
     });
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     let lowStock = 0;
     let outOfStock = 0;
 
-    allStocks.forEach(stock => {
+    allStocks.forEach((stock: { getStatus: () => string }) => {
       const status = stock.getStatus();
       if (status === 'low' || status === 'critical') lowStock++;
       if (status === 'outOfStock') outOfStock++;
@@ -51,8 +51,9 @@ export async function GET(req: NextRequest) {
       lastUpdated: new Date()
     });
 
-  } catch (error: any) {
-    console.error('Public overview error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Public overview error:', err);
     return NextResponse.json(
       { error: 'Failed to fetch stock overview' },
       { status: 500 }

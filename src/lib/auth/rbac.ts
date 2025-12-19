@@ -1,4 +1,4 @@
-// src/lib/auth/rbac.ts
+
 import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 import User from '@/lib/db/models/User';
@@ -41,7 +41,7 @@ export async function verifyToken(req: NextRequest): Promise<JWTPayload | null> 
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
 
     // ตรวจสอบ IP และ User-Agent
-    const currentIP = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
+    const currentIP = req.headers.get('x-forwarded-for') || 'unknown';
     const currentUA = req.headers.get('user-agent') || 'unknown';
 
     if (decoded.ip !== currentIP || decoded.userAgent !== currentUA) {

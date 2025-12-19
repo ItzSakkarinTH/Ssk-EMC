@@ -1,4 +1,4 @@
-// src/app/api/stock/admin/province-stock/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
@@ -26,12 +26,19 @@ export async function GET(req: NextRequest) {
         other: { provincial: 0, shelter: 0, items: 0 }
       };
 
-      const provincialStockList: any[] = [];
+      const provincialStockList: Array<{
+        stockId: string;
+        itemName: string;
+        category: string;
+        quantity: number;
+        unit: string;
+        status: string;
+      }> = [];
 
-      allStocks.forEach(stock => {
+      allStocks.forEach((stock: { provincialStock: number; shelterStock: Array<{ quantity: number }>; category: 'food' | 'medicine' | 'clothing' | 'other'; getStatus: () => string; _id: { toString: () => string }; itemName: string; unit: string; criticalLevel: number; minStockLevel: number }) => {
         totalProvincialStock += stock.provincialStock;
-        
-        const shelterTotal = stock.shelterStock.reduce((sum, s) => sum + s.quantity, 0);
+
+        const shelterTotal = stock.shelterStock.reduce((sum: number, s: { quantity: number }) => sum + s.quantity, 0);
         totalShelterStock += shelterTotal;
 
         // แยกตามหมวด
@@ -47,14 +54,14 @@ export async function GET(req: NextRequest) {
         // รายการที่ค้างอยู่ที่จังหวัด
         if (stock.provincialStock > 0) {
           provincialStockList.push({
-            stockId: stock._id,
+            stockId: stock._id.toString(),
             itemName: stock.itemName,
             category: stock.category,
             quantity: stock.provincialStock,
             unit: stock.unit,
             status: stock.provincialStock <= stock.criticalLevel ? 'critical'
-                  : stock.provincialStock <= stock.minStockLevel ? 'low'
-                  : 'sufficient'
+              : stock.provincialStock <= stock.minStockLevel ? 'low'
+                : 'sufficient'
           });
         }
       });
@@ -84,7 +91,7 @@ export async function GET(req: NextRequest) {
         dispense: { count: 0, quantity: 0 }
       };
 
-      recentMovements.forEach(m => {
+      recentMovements.forEach((m: { _id: string; count: number; totalQuantity: number }) => {
         movementStats[m._id as keyof typeof movementStats] = {
           count: m.count,
           quantity: m.totalQuantity
@@ -108,8 +115,9 @@ export async function GET(req: NextRequest) {
         lastUpdated: new Date()
       });
 
-    } catch (error: any) {
-      console.error('Get province stock error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Get province stock error:', err);
       return NextResponse.json(
         { error: 'Failed to fetch province stock data' },
         { status: 500 }

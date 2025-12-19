@@ -1,4 +1,4 @@
-// src/app/(staff)/staff/stock/components/RequestForm.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -31,7 +31,7 @@ export default function RequestForm({ onSuccess }: Props) {
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const updateItem = (index: number, field: keyof RequestItem, value: any) => {
+  const updateItem = (index: number, field: keyof RequestItem, value: string | number) => {
     const updated = [...items];
     updated[index] = { ...updated[index], [field]: value };
     setItems(updated);
@@ -74,7 +74,7 @@ export default function RequestForm({ onSuccess }: Props) {
       const result = await res.json();
 
       let message = `ยื่นคำร้องสำเร็จ\nเลขที่: ${result.requestNumber}\nสถานะ: รอพิจารณา`;
-      
+
       if (result.warnings && result.warnings.length > 0) {
         message += '\n\n⚠️ คำเตือน:\n' + result.warnings.join('\n');
       }
@@ -85,8 +85,9 @@ export default function RequestForm({ onSuccess }: Props) {
       setItems([{ stockId: '', itemName: '', quantity: 0, reason: '' }]);
       onSuccess();
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

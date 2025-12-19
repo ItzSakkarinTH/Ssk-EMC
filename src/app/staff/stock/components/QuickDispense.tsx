@@ -1,4 +1,4 @@
-// src/app/(staff)/staff/stock/components/QuickDispense.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -87,8 +87,9 @@ export default function QuickDispense({ shelterStock, onSuccess }: Props) {
 
       onSuccess();
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

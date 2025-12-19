@@ -1,4 +1,4 @@
-// src/app/api/stock/staff/request/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withStaffAuth } from '@/lib/auth/rbac';
@@ -75,8 +75,8 @@ export async function POST(req: NextRequest) {
 
       // ตรวจสอบว่ามี warning หรือไม่
       const warnings = enrichedItems
-        .filter((item: { warning?: string }) => item.warning)
-        .map((item: { itemName: string; warning: string }) => `${item.itemName}: ${item.warning}`);
+        .filter((item): item is { stockId: string; itemName: string; quantity: number; unit: string; reason: string; warning: string } => 'warning' in item && typeof item.warning === 'string')
+        .map((item) => `${item.itemName}: ${item.warning}`);
 
       return NextResponse.json({
         success: true,
@@ -89,10 +89,11 @@ export async function POST(req: NextRequest) {
           : 'Request created successfully'
       });
 
-    } catch (error: any) {
-      console.error('Create request error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Create request error:', err);
 
-      if (error.message?.includes('not found')) {
+      if (err.message?.includes('not found')) {
         return NextResponse.json(
           { error: err.message },
           { status: 404 }
@@ -129,7 +130,7 @@ export async function GET(req: NextRequest) {
         .populate('reviewedBy', 'name');
 
       return NextResponse.json({
-        requests: requests.map(r => ({
+        requests: requests.map((r: { _id: unknown; requestNumber: string; status: string; items: unknown[]; requestedAt: Date; requestedBy: unknown; reviewedBy: unknown; reviewedAt: Date; deliveryStatus: string }) => ({
           id: r._id,
           requestNumber: r.requestNumber,
           status: r.status,
@@ -142,8 +143,9 @@ export async function GET(req: NextRequest) {
         }))
       });
 
-    } catch (error: any) {
-      console.error('Get requests error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Get requests error:', err);
       return NextResponse.json(
         { error: 'Failed to fetch requests' },
         { status: 500 }

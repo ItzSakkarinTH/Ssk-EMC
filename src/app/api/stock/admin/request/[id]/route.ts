@@ -1,4 +1,4 @@
-// src/app/api/stock/admin/requests/[id]/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
@@ -47,7 +47,7 @@ export async function PATCH(
       request.adminNotes = adminNotes || '';
 
       if (status === 'approved' || status === 'partial') {
-        request.approvedItems = approvedItems || request.items.map(item => ({
+        request.approvedItems = approvedItems || request.items.map((item: { stockId: unknown; requestedQuantity: number }) => ({
           stockId: item.stockId,
           approvedQuantity: status === 'approved' ? item.requestedQuantity : 0
         }));
@@ -78,10 +78,11 @@ export async function PATCH(
         approvalRate: request.getApprovalRate()
       });
 
-    } catch (error: any) {
-      console.error('Request approval error:', error);
-      
-      if (error.message?.includes('Insufficient')) {
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Request approval error:', err);
+
+      if (err.message?.includes('Insufficient')) {
         return NextResponse.json(
           { error: 'Insufficient provincial stock to fulfill request' },
           { status: 400 }
@@ -119,8 +120,9 @@ export async function GET(
 
       return NextResponse.json(request);
 
-    } catch (error: any) {
-      console.error('Get request error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Get request error:', err);
       return NextResponse.json(
         { error: 'Failed to fetch request' },
         { status: 500 }

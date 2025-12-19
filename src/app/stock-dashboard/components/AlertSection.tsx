@@ -1,4 +1,4 @@
-// src/app/stock-dashboard/components/AlertSection.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,24 +17,24 @@ export default function AlertSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchAlerts = async () => {
+      try {
+        const res = await fetch('/api/stock/public/alerts');
+        if (res.ok) {
+          const data = await res.json();
+          setAlerts(data.alerts);
+        }
+      } catch (err) {
+        console.error('Failed to fetch alerts');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAlerts();
     const interval = setInterval(fetchAlerts, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  const fetchAlerts = async () => {
-    try {
-      const res = await fetch('/api/stock/public/alerts');
-      if (res.ok) {
-        const data = await res.json();
-        setAlerts(data.alerts);
-      }
-    } catch (err) {
-      console.error('Failed to fetch alerts');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return null;
   if (alerts.length === 0) return null;
@@ -66,8 +66,8 @@ export default function AlertSection() {
                   </span>
                 </div>
                 <div className={styles.alertStock}>
-                  {alert.status === 'outOfStock' 
-                    ? 'หมดแล้ว' 
+                  {alert.status === 'outOfStock'
+                    ? 'หมดแล้ว'
                     : `เหลือ ${alert.currentStock} (ต่ำกว่า ${alert.minLevel})`
                   }
                 </div>

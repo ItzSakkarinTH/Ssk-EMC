@@ -1,3 +1,5 @@
+'use client';
+
 import StockAnalytics from '../components/StockAnalytics';
 import styles from './page.module.css';
 

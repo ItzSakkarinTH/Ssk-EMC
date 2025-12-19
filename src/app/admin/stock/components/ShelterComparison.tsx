@@ -67,7 +67,7 @@ export default function ShelterComparison() {
     <div className={styles.container}>
       <div className={styles.controls}>
         <label>เรียงตาม:</label>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}>
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value as 'name' | 'status' | 'quantity')}>
           <option value="status">สถานะ</option>
           <option value="name">ชื่อ</option>
           <option value="quantity">จำนวนสต๊อก</option>

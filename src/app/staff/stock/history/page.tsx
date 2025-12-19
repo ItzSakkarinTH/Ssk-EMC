@@ -4,15 +4,29 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
+interface StockInfo {
+  itemName?: string;
+}
+
+interface UserInfo {
+  name?: string;
+}
+
+interface LocationInfo {
+  id?: string;
+  type?: string;
+  name?: string;
+}
+
 interface Movement {
   id: string;
-  stockId: any;
+  stockId: StockInfo | null;
   movementType: string;
   quantity: number;
   unit: string;
-  from: any;
-  to: any;
-  performedBy: any;
+  from: LocationInfo | null;
+  to: LocationInfo | null;
+  performedBy: UserInfo | null;
   performedAt: string;
   notes: string;
 }
@@ -24,30 +38,30 @@ export default function HistoryPage() {
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const url = filter === 'all'
+          ? '/api/stock/staff/history'
+          : `/api/stock/staff/history?type=${filter}`;
+
+        const res = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setHistory(data.history);
+        }
+      } catch (err) {
+        console.error('Failed to fetch history');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchHistory();
   }, [filter]);
-
-  const fetchHistory = async () => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      const url = filter === 'all' 
-        ? '/api/stock/staff/history'
-        : `/api/stock/staff/history?type=${filter}`;
-      
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setHistory(data.history);
-      }
-    } catch (err) {
-      console.error('Failed to fetch history');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const typeLabels: Record<string, string> = {
     receive: 'รับเข้า',

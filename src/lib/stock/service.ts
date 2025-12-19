@@ -4,7 +4,7 @@ import StockMovement from '@/lib/db/models/StockMovement';
 import mongoose from 'mongoose';
 
 export class StockService {
-  
+
   // ฟังก์ชันรับเข้าสต๊อก (Provincial หรือ Shelter)
   static async receiveStock(data: {
     stockId: string;
@@ -23,8 +23,8 @@ export class StockService {
       const stock = await Stock.findById(data.stockId).session(session);
       if (!stock) throw new Error('Stock not found');
 
-      const beforeQty = data.destination === 'provincial' 
-        ? stock.provincialStock 
+      const beforeQty = data.destination === 'provincial'
+        ? stock.provincialStock
         : stock.getShelterStock(data.shelterId!)?.quantity || 0;
 
       // เพิ่มสต๊อก
@@ -32,9 +32,9 @@ export class StockService {
         stock.provincialStock += data.quantity;
       } else if (data.shelterId) {
         const shelterStock = stock.shelterStock.find(
-          s => s.shelterId.toString() === data.shelterId
+          (s: { shelterId: { toString: () => string } }) => s.shelterId.toString() === data.shelterId
         );
-        
+
         if (shelterStock) {
           shelterStock.quantity += data.quantity;
           shelterStock.lastUpdated = new Date();
@@ -55,9 +55,9 @@ export class StockService {
       const afterQty = beforeQty + data.quantity;
 
       // บันทึก Movement
-      await StockMovement.logMovement({
+      await StockMovement.create([{
         stockId: data.stockId,
-        type: 'receive',
+        movementType: 'receive',
         quantity: data.quantity,
         unit: stock.unit,
         from: {
@@ -70,11 +70,11 @@ export class StockService {
           id: data.shelterId ? new mongoose.Types.ObjectId(data.shelterId) : null,
           name: data.destination === 'provincial' ? 'Provincial Stock' : 'Shelter'
         },
-        userId: data.userId,
+        performedBy: new mongoose.Types.ObjectId(data.userId),
         referenceId: data.referenceId,
         notes: data.notes,
         snapshot: { before: beforeQty, after: afterQty }
-      });
+      }], { session });
 
       await session.commitTransaction();
       return { success: true, newQuantity: afterQty };
@@ -122,9 +122,9 @@ export class StockService {
       const afterQty = shelterStock.quantity;
 
       // บันทึก Movement
-      await StockMovement.logMovement({
+      await StockMovement.create([{
         stockId: data.stockId,
-        type: 'dispense',
+        movementType: 'dispense',
         quantity: data.quantity,
         unit: stock.unit,
         from: {
@@ -137,15 +137,15 @@ export class StockService {
           id: null,
           name: data.recipient
         },
-        userId: data.userId,
+        performedBy: new mongoose.Types.ObjectId(data.userId),
         notes: data.notes,
         snapshot: { before: beforeQty, after: afterQty }
-      });
+      }], { session });
 
       await session.commitTransaction();
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         remainingStock: afterQty,
         alert: afterQty <= stock.minStockLevel
       };
@@ -213,15 +213,15 @@ export class StockService {
       await stock.save({ session });
 
       // บันทึก Movement
-      await StockMovement.logMovement({
+      await StockMovement.create([{
         stockId: data.stockId,
-        type: 'transfer',
+        movementType: 'transfer',
         quantity: data.quantity,
         unit: stock.unit,
         from: {
           type: data.fromShelterId === 'provincial' ? 'provincial' : 'shelter',
-          id: data.fromShelterId === 'provincial' 
-            ? null 
+          id: data.fromShelterId === 'provincial'
+            ? null
             : new mongoose.Types.ObjectId(data.fromShelterId),
           name: data.fromShelterId === 'provincial' ? 'Provincial' : 'Shelter'
         },
@@ -230,10 +230,10 @@ export class StockService {
           id: new mongoose.Types.ObjectId(data.toShelterId),
           name: 'Shelter'
         },
-        userId: data.userId,
+        performedBy: new mongoose.Types.ObjectId(data.userId),
         notes: data.notes,
         snapshot: { before: beforeFrom, after: beforeFrom - data.quantity }
-      });
+      }], { session });
 
       await session.commitTransaction();
       return { success: true };

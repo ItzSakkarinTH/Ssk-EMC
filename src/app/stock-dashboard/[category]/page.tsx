@@ -1,4 +1,4 @@
-// src/app/stock-dashboard/[category]/page.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,7 +23,7 @@ export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
   const category = params.category as string;
-  
+
   const [data, setData] = useState<{ items: StockItem[] } | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -32,23 +32,23 @@ export default function CategoryPage() {
       router.push('/stock-dashboard');
       return;
     }
-    
-    fetchData();
-  }, [category]);
 
-  const fetchData = async () => {
-    try {
-      const res = await fetch(`/api/stock/public/by-category?category=${category}`);
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/stock/public/by-category?category=${category}`);
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (err) {
+        console.error('Failed to fetch');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to fetch');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchData();
+  }, [category, router]);
 
   if (loading) return <div className={styles.loading}>กำลังโหลด...</div>;
   if (!data) return <div className={styles.error}>ไม่พบข้อมูล</div>;

@@ -43,9 +43,9 @@ const ApprovedItemSchema = new Schema({
 });
 
 const StockRequestSchema = new Schema<IStockRequest>({
-  requestNumber: { 
-    type: String, 
-    required: true, 
+  requestNumber: {
+    type: String,
+    required: true,
     unique: true,
     default: () => `REQ-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
   },
@@ -76,17 +76,17 @@ StockRequestSchema.index({ status: 1, requestedAt: -1 });
 StockRequestSchema.index({ requestNumber: 1 });
 
 // Method: คำนวณ Approval Rate
-StockRequestSchema.methods.getApprovalRate = function() {
+StockRequestSchema.methods.getApprovalRate = function () {
   if (this.status !== 'approved' && this.status !== 'partial') return 0;
-  
-  const totalRequested = this.items.reduce((sum, i) => sum + i.requestedQuantity, 0);
-  const totalApproved = this.approvedItems.reduce((sum, i) => sum + i.approvedQuantity, 0);
-  
+
+  const totalRequested = this.items.reduce((sum: number, i: IRequestItem) => sum + i.requestedQuantity, 0);
+  const totalApproved = this.approvedItems.reduce((sum: number, i: IApprovedItem) => sum + i.approvedQuantity, 0);
+
   return (totalApproved / totalRequested) * 100;
 };
 
 // Static method: สร้างคำร้องใหม่
-StockRequestSchema.statics.createRequest = async function(data: {
+StockRequestSchema.statics.createRequest = async function (data: {
   shelterId: string;
   requestedBy: string;
   items: IRequestItem[];
@@ -99,5 +99,5 @@ StockRequestSchema.statics.createRequest = async function(data: {
   });
 };
 
-export default mongoose.models.StockRequest || 
+export default mongoose.models.StockRequest ||
   mongoose.model<IStockRequest>('StockRequest', StockRequestSchema);

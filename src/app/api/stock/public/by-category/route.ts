@@ -1,4 +1,4 @@
-// src/app/api/stock/public/by-category/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import Stock from '@/lib/db/models/Stock';
 import dbConnect from '@/lib/db/mongodb';
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       .select('itemName totalQuantity unit minStockLevel criticalLevel')
       .sort({ totalQuantity: -1 });
 
-    const items = stocks.map(stock => ({
+    const items = stocks.map((stock: { itemName: string; totalQuantity: number; unit: string; getStatus: () => string }) => ({
       itemName: stock.itemName,
       totalQuantity: stock.totalQuantity,
       unit: stock.unit,
@@ -34,8 +34,9 @@ export async function GET(req: NextRequest) {
       items
     });
 
-  } catch (error: any) {
-    console.error('Public category error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Public category error:', err);
     return NextResponse.json(
       { error: 'Failed to fetch category data' },
       { status: 500 }

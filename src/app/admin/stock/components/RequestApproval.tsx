@@ -23,6 +23,14 @@ interface Request {
   urgency: string;
 }
 
+interface RequestDetail {
+  _id: string;
+  requestNumber: string;
+  shelterId: { name: string };
+  requestedBy: { name: string };
+  items: RequestItem[];
+}
+
 export default function RequestApproval() {
   const [requests, setRequests] = useState<Request[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<RequestDetail | null>(null);
@@ -97,8 +105,9 @@ export default function RequestApproval() {
       setSelectedRequest(null);
       fetchRequests();
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -137,8 +146,9 @@ export default function RequestApproval() {
       setSelectedRequest(null);
       fetchRequests();
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

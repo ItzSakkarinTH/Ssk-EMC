@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     );
 
     const alerts = allStocks
-      .map(stock => {
+      .map((stock: { getStatus: () => string; itemName: string; category: string; totalQuantity: number; minStockLevel: number; unit: string }) => {
         const status = stock.getStatus();
         if (status === 'sufficient') return null;
 
@@ -29,8 +29,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ alerts });
 
-  } catch (error: any) {
-    console.error('Public alerts error:', error);
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error('Public alerts error:', err);
     return NextResponse.json(
       { error: 'Failed to fetch alerts' },
       { status: 500 }

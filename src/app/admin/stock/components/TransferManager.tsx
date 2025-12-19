@@ -1,4 +1,4 @@
-// src/app/(admin)/admin/stock/components/TransferManager.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -37,7 +37,7 @@ export default function TransferManager({ onSuccess }: Props) {
 
       if (res.ok) {
         const data = await res.json();
-        setShelters(data.shelters.map((s: any) => ({
+        setShelters(data.shelters.map((s: { shelterId: string; shelterName: string; shelterCode: string }) => ({
           shelterId: s.shelterId,
           shelterName: s.shelterName,
           shelterCode: s.shelterCode
@@ -102,8 +102,9 @@ export default function TransferManager({ onSuccess }: Props) {
       alert('โอนสต๊อกสำเร็จ');
       onSuccess();
 
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

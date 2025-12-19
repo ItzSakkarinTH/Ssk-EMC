@@ -1,4 +1,4 @@
-// src/lib/db/models/Stock.ts
+
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IShelterStock {
@@ -60,14 +60,14 @@ StockSchema.index({ totalQuantity: 1 });
 StockSchema.index({ itemName: 'text' });
 
 // Method: คำนวณ totalQuantity
-StockSchema.methods.calculateTotal = function() {
-  this.totalQuantity = this.provincialStock + 
-    this.shelterStock.reduce((sum, s) => sum + s.quantity, 0);
+StockSchema.methods.calculateTotal = function () {
+  this.totalQuantity = this.provincialStock +
+    this.shelterStock.reduce((sum: number, s: IShelterStock) => sum + s.quantity, 0);
   return this.totalQuantity;
 };
 
 // Method: ตรวจสอบสถานะ
-StockSchema.methods.getStatus = function() {
+StockSchema.methods.getStatus = function () {
   if (this.totalQuantity === 0) return 'outOfStock';
   if (this.totalQuantity <= this.criticalLevel) return 'critical';
   if (this.totalQuantity <= this.minStockLevel) return 'low';
@@ -75,8 +75,8 @@ StockSchema.methods.getStatus = function() {
 };
 
 // Method: ดึงสต๊อกของศูนย์เฉพาะ
-StockSchema.methods.getShelterStock = function(shelterId: string) {
-  return this.shelterStock.find(s => s.shelterId.toString() === shelterId);
+StockSchema.methods.getShelterStock = function (shelterId: string) {
+  return this.shelterStock.find((s: IShelterStock) => s.shelterId.toString() === shelterId);
 };
 
 export default mongoose.models.Stock || mongoose.model<IStock>('Stock', StockSchema);

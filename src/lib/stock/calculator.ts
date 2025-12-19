@@ -8,10 +8,10 @@ export class StockCalculator {
 
     return {
       totalItems: stocks.length,
-      totalQuantity: stocks.reduce((sum, s) => sum + s.totalQuantity, 0),
-      provincialStock: stocks.reduce((sum, s) => sum + s.provincialStock, 0),
-      shelterStock: stocks.reduce((sum, s) =>
-        sum + s.shelterStock.reduce((ss, sh) => ss + sh.quantity, 0), 0
+      totalQuantity: stocks.reduce((sum: number, s: { totalQuantity: number }) => sum + s.totalQuantity, 0),
+      provincialStock: stocks.reduce((sum: number, s: { provincialStock: number }) => sum + s.provincialStock, 0),
+      shelterStock: stocks.reduce((sum: number, s: { shelterStock: Array<{ quantity: number }> }) =>
+        sum + s.shelterStock.reduce((ss: number, sh: { quantity: number }) => ss + sh.quantity, 0), 0
       )
     };
   }
@@ -27,7 +27,7 @@ export class StockCalculator {
       other: { items: 0, quantity: 0 }
     };
 
-    stocks.forEach(stock => {
+    stocks.forEach((stock: { category: string; totalQuantity: number }) => {
       result[stock.category].items++;
       result[stock.category].quantity += stock.totalQuantity;
     });

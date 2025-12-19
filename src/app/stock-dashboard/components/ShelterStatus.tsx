@@ -1,4 +1,4 @@
-// src/app/stock-dashboard/components/ShelterStatus.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -15,24 +15,24 @@ export default function ShelterStatus() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // ใช้ public API ที่ไม่เปิดเผยรายละเอียด แค่แสดงสถานะทั่วไป
+        const res = await fetch('/api/stock/public/overview');
+        if (res.ok) {
+          // ในระบบจริงควรมี API แยกสำหรับ public shelter status
+          // ที่ไม่เปิดเผยข้อมูลละเอียด
+          setShelters([]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      // ใช้ public API ที่ไม่เปิดเผยรายละเอียด แค่แสดงสถานะทั่วไป
-      const res = await fetch('/api/stock/public/overview');
-      if (res.ok) {
-        // ในระบบจริงควรมี API แยกสำหรับ public shelter status
-        // ที่ไม่เปิดเผยข้อมูลละเอียด
-        setShelters([]);
-      }
-    } catch (err) {
-      console.error('Failed to fetch');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) return null;
   if (shelters.length === 0) {

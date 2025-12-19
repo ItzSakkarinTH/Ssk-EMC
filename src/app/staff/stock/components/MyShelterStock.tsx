@@ -1,4 +1,4 @@
-// src/app/(staff)/staff/stock/components/MyShelterStock.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -45,8 +45,9 @@ export default function MyShelterStock() {
       const json = await res.json();
       setData(json);
       setError(null);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     } finally {
       setLoading(false);
     }

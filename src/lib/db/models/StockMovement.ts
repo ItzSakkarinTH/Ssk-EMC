@@ -1,4 +1,4 @@
-// src/lib/db/models/StockMovement.ts
+
 import mongoose, { Schema, Document } from 'mongoose';
 
 interface ILocation {

@@ -21,7 +21,7 @@ export async function authenticate(req: NextRequest): Promise<AuthContext | null
     }
 
     // ตรวจสอบ IP และ User-Agent
-    const currentIP = req.headers.get('x-forwarded-for') || req.ip || 'unknown';
+    const currentIP = req.headers.get('x-forwarded-for') || 'unknown';
     const currentUA = req.headers.get('user-agent') || 'unknown';
 
     if (user.ip !== currentIP || user.userAgent !== currentUA) {
@@ -30,7 +30,7 @@ export async function authenticate(req: NextRequest): Promise<AuthContext | null
         expectedIP: user.ip,
         actualIP: currentIP
       });
-      
+
       // Revoke session
       JWTService.revokeSession(user.sessionId);
       return null;

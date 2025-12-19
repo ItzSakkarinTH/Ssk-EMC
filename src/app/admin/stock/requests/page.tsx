@@ -1,3 +1,5 @@
+'use client';
+
 import RequestApproval from '../components/RequestApproval';
 import styles from './page.module.css';
 

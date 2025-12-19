@@ -1,4 +1,4 @@
-// src/app/api/stock/staff/history/route.ts
+
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withStaffAuth } from '@/lib/auth/rbac';
@@ -11,13 +11,16 @@ export async function GET(req: NextRequest) {
 
       const shelterId = user.assignedShelterId!;
       const searchParams = req.nextUrl.searchParams;
-      
+
       const movementType = searchParams.get('type'); // receive, dispense, transfer
       const limit = parseInt(searchParams.get('limit') || '50');
       const skip = parseInt(searchParams.get('skip') || '0');
 
       // สร้าง query
-      const query: any = {
+      const query: {
+        $or: Array<{ 'from.id'?: string; 'to.id'?: string }>;
+        movementType?: string;
+      } = {
         $or: [
           { 'from.id': shelterId },
           { 'to.id': shelterId }
@@ -39,7 +42,7 @@ export async function GET(req: NextRequest) {
       const total = await StockMovement.countDocuments(query);
 
       // จัดรูปแบบข้อมูล
-      const history = movements.map(m => ({
+      const history = movements.map((m: { _id: unknown; stockId: unknown; movementType: string; quantity: number; unit: string; from: unknown; to: unknown; performedBy: unknown; performedAt: Date; notes: string; referenceId: string; snapshot: unknown }) => ({
         id: m._id,
         stockId: m.stockId,
         movementType: m.movementType,
@@ -64,8 +67,9 @@ export async function GET(req: NextRequest) {
         }
       });
 
-    } catch (error: any) {
-      console.error('Get history error:', error);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Get history error:', err);
       return NextResponse.json(
         { error: 'Failed to fetch history' },
         { status: 500 }

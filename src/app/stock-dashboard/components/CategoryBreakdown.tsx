@@ -1,4 +1,4 @@
-// src/app/stock-dashboard/components/CategoryBreakdown.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,20 +23,20 @@ export default function CategoryBreakdown() {
   const [data, setData] = useState<OverviewData | null>(null);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch('/api/stock/public/overview');
+        if (res.ok) {
+          const json = await res.json();
+          setData(json);
+        }
+      } catch (err) {
+        console.error('Failed to fetch');
+      }
+    };
+
     fetchData();
   }, []);
-
-  const fetchData = async () => {
-    try {
-      const res = await fetch('/api/stock/public/overview');
-      if (res.ok) {
-        const json = await res.json();
-        setData(json);
-      }
-    } catch (err) {
-      console.error('Failed to fetch');
-    }
-  };
 
   if (!data) return null;
 
@@ -54,10 +54,10 @@ export default function CategoryBreakdown() {
       <div className={styles.grid}>
         {categories.map(cat => {
           const categoryData = data.byCategory[cat.key as keyof typeof data.byCategory];
-          
+
           return (
-            <Link 
-              key={cat.key} 
+            <Link
+              key={cat.key}
               href={`/stock-dashboard/${cat.key}`}
               className={`${styles.card} ${cat.color}`}
             >
