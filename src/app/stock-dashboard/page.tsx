@@ -3,7 +3,7 @@ import StockOverview from './components/StockOverview';
 import CategoryBreakdown from './components/CategoryBreakdown';
 import AlertSection from './components/AlertSection';
 import ShelterStatus from './components/ShelterStatus';
-import styles from './page.module.css';
+import styles from '../page.module.css';
 
 export const metadata = {
   title: 'Stock Dashboard - Sisaket EMS',
