@@ -1,0 +1,132 @@
+
+.container {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.container h2 {
+  font-size: 20px;
+  color: #1a202c;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.error {
+  background-color: #fff5f5;
+  border-left: 4px solid #e53e3e;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.field input,
+.field select,
+.field textarea {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: border-color 0.2s;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.field input:disabled,
+.field select:disabled,
+.field textarea:disabled {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.stockInfo {
+  background-color: #edf2f7;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.stockInfo > div {
+  margin-bottom: 6px;
+}
+
+.stockInfo > div:last-child {
+  margin-bottom: 0;
+}
+
+.warning {
+  color: #c05621;
+  font-weight: 600;
+}
+
+.submitBtn {
+  background-color: #3182ce;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #2c5282;
+  transform: translateY(-1px);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitBtn:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .container h2 {
+    font-size: 18px;
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    font-size: 16px; /* ป้องกัน zoom บนมือถือ */
+  }
+}
