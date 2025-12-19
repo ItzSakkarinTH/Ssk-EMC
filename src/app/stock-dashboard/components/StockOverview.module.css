@@ -1,0 +1,162 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 28px;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.lastUpdate {
+  font-size: 14px;
+  color: #718096;
+}
+
+.loading, .error {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+}
+
+.error {
+  color: #e53e3e;
+}
+
+/* Summary Cards */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cardLabel {
+  font-size: 14px;
+  color: #718096;
+  margin-bottom: 8px;
+}
+
+.cardValue {
+  font-size: 32px;
+  font-weight: bold;
+  color: #2d3748;
+}
+
+/* Alerts */
+.alerts {
+  margin-bottom: 30px;
+}
+
+.alertCritical, .alertWarning {
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.alertCritical {
+  background-color: #fff5f5;
+  border-left: 4px solid #e53e3e;
+  color: #c53030;
+}
+
+.alertWarning {
+  background-color: #fffaf0;
+  border-left: 4px solid #ed8936;
+  color: #c05621;
+}
+
+/* Category Section */
+.categorySection {
+  margin-top: 40px;
+}
+
+.categorySection h2 {
+  font-size: 22px;
+  color: #1a202c;
+  margin-bottom: 20px;
+}
+
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.categoryCard {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.categoryName {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 12px;
+}
+
+.categoryStats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.categoryStats > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #718096;
+}
+
+.statValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .cardValue {
+    font-size: 28px;
+  }
+}
