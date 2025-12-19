@@ -1,4 +1,4 @@
-// src/app/(admin)/admin/stock/components/RequestApproval.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -25,7 +25,7 @@ interface Request {
 
 export default function RequestApproval() {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [selectedRequest, setSelectedRequest] = useState<RequestDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
@@ -185,7 +185,7 @@ export default function RequestApproval() {
           ) : (
             <>
               <h3>รายละเอียดคำร้อง</h3>
-              
+
               {error && <div className={styles.error}>{error}</div>}
 
               <div className={styles.detailSection}>

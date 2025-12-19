@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
 
       // ดึงข้อมูลสต๊อกเพื่อเติม itemName และ unit
       const enrichedItems = await Promise.all(
-        items.map(async (item: any) => {
+        items.map(async (item: { stockId: string; quantity: number; reason: string }) => {
           const stock = await Stock.findById(item.stockId);
           if (!stock) {
             throw new Error(`Stock ${item.stockId} not found`);
@@ -75,8 +75,8 @@ export async function POST(req: NextRequest) {
 
       // ตรวจสอบว่ามี warning หรือไม่
       const warnings = enrichedItems
-        .filter((item: any) => item.warning)
-        .map((item: any) => `${item.itemName}: ${item.warning}`);
+        .filter((item: { warning?: string }) => item.warning)
+        .map((item: { itemName: string; warning: string }) => `${item.itemName}: ${item.warning}`);
 
       return NextResponse.json({
         success: true,
@@ -84,17 +84,17 @@ export async function POST(req: NextRequest) {
         requestNumber: request.requestNumber,
         status: 'pending',
         warnings: warnings.length > 0 ? warnings : null,
-        message: warnings.length > 0 
+        message: warnings.length > 0
           ? 'Request created but some items may not be fully available'
           : 'Request created successfully'
       });
 
     } catch (error: any) {
       console.error('Create request error:', error);
-      
+
       if (error.message?.includes('not found')) {
         return NextResponse.json(
-          { error: error.message },
+          { error: err.message },
           { status: 404 }
         );
       }
@@ -117,7 +117,7 @@ export async function GET(req: NextRequest) {
       const searchParams = req.nextUrl.searchParams;
       const status = searchParams.get('status');
 
-      const query: any = { shelterId };
+      const query: { shelterId: string; status?: string } = { shelterId };
       if (status && ['pending', 'approved', 'rejected', 'partial'].includes(status)) {
         query.status = status;
       }

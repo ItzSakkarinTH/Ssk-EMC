@@ -1,11 +1,11 @@
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
   message?: string;
 }
 
-export interface PaginatedResponse<T = any> {
+export interface PaginatedResponse<T = unknown> {
   data: T[];
   pagination: {
     total: number;
@@ -140,7 +140,12 @@ export interface ShelterSummary {
   shelterId: string;
   shelterName: string;
   shelterCode: string;
-  location: any;
+  location: {
+    province?: string;
+    district?: string;
+    subdistrict?: string;
+    address?: string;
+  };
   totalItems: number;
   totalQuantity: number;
   alerts: {
@@ -165,7 +170,14 @@ export interface ProvinceStockResponse {
     };
   };
   byCategory: Record<string, CategoryData>;
-  provincialStock: any[];
+  provincialStock: Array<{
+    stockId: string;
+    itemName: string;
+    category: string;
+    quantity: number;
+    unit: string;
+    status: string;
+  }>;
   recentActivity: {
     receive: { count: number; quantity: number };
     transfer: { count: number; quantity: number };

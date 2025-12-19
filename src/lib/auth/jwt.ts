@@ -32,7 +32,7 @@ const refreshTokenStore = new Map<string, RefreshTokenData>();
 const revokedTokens = new Set<string>();
 
 export class JWTService {
-  
+
   // สร้าง Access Token
   static generateAccessToken(payload: TokenPayload): string {
     return jwt.sign(payload, JWT_SECRET, {
@@ -47,7 +47,7 @@ export class JWTService {
     ip: string,
     userAgent: string
   ): { token: string; tokenId: string } {
-    
+
     const tokenId = uuidv4();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
@@ -97,9 +97,9 @@ export class JWTService {
     refreshToken: string;
     tokenId: string;
   } | null> {
-    
+
     try {
-      const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
+      const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as { tokenId: string; userId: string; sessionId: string };
       const { tokenId, userId, sessionId } = decoded;
 
       // ตรวจสอบ token data
@@ -131,10 +131,10 @@ export class JWTService {
       tokenData.isUsed = true;
 
       // สร้าง token ใหม่
-      const user = { 
-        userId, 
+      const user = {
+        userId,
         role: 'staff' as const, // จริงควรดึงจาก DB
-        sessionId 
+        sessionId
       };
 
       const newAccessToken = this.generateAccessToken({
@@ -143,7 +143,7 @@ export class JWTService {
         userAgent: currentUA
       });
 
-      const { token: newRefreshToken, tokenId: newTokenId } = 
+      const { token: newRefreshToken, tokenId: newTokenId } =
         this.generateRefreshToken(userId, sessionId, currentIp, currentUA);
 
       return {
@@ -152,8 +152,9 @@ export class JWTService {
         tokenId: newTokenId
       };
 
-    } catch (error: any) {
-      console.error('Rotate token error:', error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Rotate token error:', err.message);
       return null;
     }
   }
@@ -180,7 +181,7 @@ export class JWTService {
   // Revoke Access Token
   static revokeAccessToken(token: string) {
     revokedTokens.add(token);
-    
+
     // Clean up หลัง 1 ชั่วโมง (มากกว่า expiry)
     setTimeout(() => {
       revokedTokens.delete(token);

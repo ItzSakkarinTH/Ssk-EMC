@@ -1,16 +1,16 @@
 import Stock from '@/lib/db/models/Stock';
 
 export class StockCalculator {
-  
+
   // คำนวณสต๊อกรวมทั้งหมด
   static async calculateTotalStock() {
     const stocks = await Stock.find({});
-    
+
     return {
       totalItems: stocks.length,
       totalQuantity: stocks.reduce((sum, s) => sum + s.totalQuantity, 0),
       provincialStock: stocks.reduce((sum, s) => sum + s.provincialStock, 0),
-      shelterStock: stocks.reduce((sum, s) => 
+      shelterStock: stocks.reduce((sum, s) =>
         sum + s.shelterStock.reduce((ss, sh) => ss + sh.quantity, 0), 0
       )
     };
@@ -19,8 +19,8 @@ export class StockCalculator {
   // คำนวณสต๊อกตามหมวด
   static async calculateByCategory() {
     const stocks = await Stock.find({});
-    
-    const result: Record<string, any> = {
+
+    const result: Record<string, { items: number; quantity: number }> = {
       food: { items: 0, quantity: 0 },
       medicine: { items: 0, quantity: 0 },
       clothing: { items: 0, quantity: 0 },

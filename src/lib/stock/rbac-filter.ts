@@ -1,9 +1,29 @@
 import { JWTPayload } from '@/lib/auth/rbac';
 
+interface StockWithShelters {
+  itemName: string;
+  category: string;
+  totalQuantity: number;
+  unit: string;
+  minStockLevel: number;
+  criticalLevel: number;
+  getStatus: () => string;
+  shelterStock: Array<{
+    shelterId: { toString: () => string };
+    quantity: number;
+    lastUpdated?: Date;
+  }>;
+}
+
+interface Movement {
+  from: { id?: { toString: () => string } };
+  to: { id?: { toString: () => string } };
+}
+
 export class RBACFilter {
-  
+
   // กรองข้อมูล Stock ตาม Role
-  static filterStock(stock: any, user: JWTPayload | null) {
+  static filterStock(stock: StockWithShelters, user: JWTPayload | null) {
     if (!user) {
       // Public: เห็นแค่ข้อมูลพื้นฐาน
       return {
@@ -23,7 +43,7 @@ export class RBACFilter {
     if (user.role === 'staff' && user.assignedShelterId) {
       // Staff: เห็นเฉพาะศูนย์ตัวเอง
       const shelterStock = stock.shelterStock.find(
-        (s: any) => s.shelterId.toString() === user.assignedShelterId
+        (s) => s.shelterId.toString() === user.assignedShelterId
       );
 
       return {
@@ -34,10 +54,10 @@ export class RBACFilter {
         lastUpdated: shelterStock?.lastUpdated,
         minStockLevel: stock.minStockLevel,
         criticalLevel: stock.criticalLevel,
-        status: shelterStock 
-          ? (shelterStock.quantity <= stock.criticalLevel ? 'critical' 
-            : shelterStock.quantity <= stock.minStockLevel ? 'low' 
-            : 'sufficient')
+        status: shelterStock
+          ? (shelterStock.quantity <= stock.criticalLevel ? 'critical'
+            : shelterStock.quantity <= stock.minStockLevel ? 'low'
+              : 'sufficient')
           : 'unavailable'
       };
     }
@@ -46,14 +66,14 @@ export class RBACFilter {
   }
 
   // กรองรายการ Movement
-  static filterMovements(movements: any[], user: JWTPayload) {
+  static filterMovements(movements: Movement[], user: JWTPayload) {
     if (user.role === 'admin') {
       return movements;
     }
 
     if (user.role === 'staff' && user.assignedShelterId) {
       // Staff เห็นเฉพาะที่เกี่ยวข้องกับศูนย์ตัวเอง
-      return movements.filter(m => 
+      return movements.filter(m =>
         m.from.id?.toString() === user.assignedShelterId ||
         m.to.id?.toString() === user.assignedShelterId
       );

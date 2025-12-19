@@ -14,6 +14,21 @@ export interface JWTPayload {
   userAgent: string;
 }
 
+interface StockWithShelters {
+  itemName: string;
+  category: string;
+  totalQuantity: number;
+  unit: string;
+  minStockLevel: number;
+  criticalLevel: number;
+  getStatus: () => string;
+  shelterStock: Array<{
+    shelterId: { toString: () => string };
+    quantity: number;
+    lastUpdated?: Date;
+  }>;
+}
+
 // ตรวจสอบ JWT Token
 export async function verifyToken(req: NextRequest): Promise<JWTPayload | null> {
   try {
@@ -30,10 +45,10 @@ export async function verifyToken(req: NextRequest): Promise<JWTPayload | null> 
     const currentUA = req.headers.get('user-agent') || 'unknown';
 
     if (decoded.ip !== currentIP || decoded.userAgent !== currentUA) {
-      console.warn('Session mismatch detected', { 
+      console.warn('Session mismatch detected', {
         user: decoded.userId,
         expectedIP: decoded.ip,
-        actualIP: currentIP 
+        actualIP: currentIP
       });
       return null;
     }
@@ -59,7 +74,7 @@ export function canAccessShelter(user: JWTPayload | null, shelterId: string): bo
 }
 
 // กรองข้อมูล Stock ตาม Role
-export function filterStockByRole(stock: any, user: JWTPayload | null) {
+export function filterStockByRole(stock: StockWithShelters, user: JWTPayload | null) {
   if (!user) {
     // Public: ไม่แสดงรายละเอียดศูนย์
     return {
@@ -79,7 +94,7 @@ export function filterStockByRole(stock: any, user: JWTPayload | null) {
   if (user.role === 'staff' && user.assignedShelterId) {
     // Staff: เห็นเฉพาะศูนย์ตัวเอง
     const shelterStock = stock.shelterStock.find(
-      (s: any) => s.shelterId.toString() === user.assignedShelterId
+      (s) => s.shelterId.toString() === user.assignedShelterId
     );
 
     return {
@@ -88,10 +103,10 @@ export function filterStockByRole(stock: any, user: JWTPayload | null) {
       unit: stock.unit,
       myShelterStock: shelterStock?.quantity || 0,
       lastUpdated: shelterStock?.lastUpdated,
-      status: shelterStock 
-        ? (shelterStock.quantity <= stock.criticalLevel ? 'critical' 
-          : shelterStock.quantity <= stock.minStockLevel ? 'low' 
-          : 'sufficient')
+      status: shelterStock
+        ? (shelterStock.quantity <= stock.criticalLevel ? 'critical'
+          : shelterStock.quantity <= stock.minStockLevel ? 'low'
+            : 'sufficient')
         : 'unavailable'
     };
   }
@@ -105,7 +120,7 @@ export async function withAuth(
   handler: (req: NextRequest, user: JWTPayload) => Promise<Response>
 ): Promise<Response> {
   const user = await verifyToken(req);
-  
+
   if (!user) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
@@ -122,7 +137,7 @@ export async function withAdminAuth(
   handler: (req: NextRequest, user: JWTPayload) => Promise<Response>
 ): Promise<Response> {
   const user = await verifyToken(req);
-  
+
   if (!user || user.role !== 'admin') {
     return new Response(
       JSON.stringify({ error: 'Forbidden: Admin access required' }),
@@ -139,7 +154,7 @@ export async function withStaffAuth(
   handler: (req: NextRequest, user: JWTPayload) => Promise<Response>
 ): Promise<Response> {
   const user = await verifyToken(req);
-  
+
   if (!user || (user.role !== 'staff' && user.role !== 'admin')) {
     return new Response(
       JSON.stringify({ error: 'Forbidden: Staff access required' }),
@@ -163,7 +178,7 @@ export function canPerformStockAction(
   action: 'receive' | 'dispense' | 'transfer',
   shelterId?: string
 ): { allowed: boolean; reason?: string } {
-  
+
   if (user.role === 'admin') {
     return { allowed: true };
   }
