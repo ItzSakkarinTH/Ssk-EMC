@@ -8,12 +8,13 @@ import { ZodError } from 'zod';
 import bcrypt from 'bcryptjs';
 
 interface RouteParams {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const user = await User.findById(params.id)
+        const user = await User.findById(id)
             .select('-password')
             .populate('assignedShelterId', 'name code')
             .lean();
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             user
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/users/${params.id}`, method: 'GET' });
+        errorTracker.logError(error, { endpoint: `/api/admin/users/${id}`, method: 'GET' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'),
             { status: 500 }
@@ -50,7 +51,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -74,7 +76,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         if (validatedData.username) {
             const existingUsername = await User.findOne({
                 username: validatedData.username,
-                _id: { $ne: params.id }
+                _id: { $ne: id }
             });
             if (existingUsername) {
                 return NextResponse.json(
@@ -88,7 +90,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         if (validatedData.email) {
             const existingEmail = await User.findOne({
                 email: validatedData.email,
-                _id: { $ne: params.id }
+                _id: { $ne: id }
             });
             if (existingEmail) {
                 return NextResponse.json(
@@ -105,7 +107,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         const user = await User.findByIdAndUpdate(
-            params.id,
+            id,
             { $set: updateData },
             { new: true, runValidators: true }
         ).select('-password');
@@ -132,7 +134,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        errorTracker.logError(error, { endpoint: `/api/admin/users/${params.id}`, method: 'PATCH' });
+        errorTracker.logError(error, { endpoint: `/api/admin/users/${id}`, method: 'PATCH' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถอัพเดทผู้ใช้ได้'),
             { status: 500 }
@@ -140,7 +142,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -154,7 +157,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         }
 
         // Prevent deleting yourself
-        if (decoded.userId === params.id) {
+        if (decoded.userId === id) {
             return NextResponse.json(
                 { error: 'ไม่สามารถลบบัญชีของตัวเองได้' },
                 { status: 400 }
@@ -163,14 +166,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const user = await User.findByIdAndDelete(params.id);
+        const user = await User.findByIdAndDelete(id);
 
         if (!user) {
             return NextResponse.json({ error: 'ไม่พบผู้ใช้' }, { status: 404 });
         }
 
         errorTracker.logInfo('User deleted successfully', {
-            userId: params.id,
+            userId: id,
             username: user.username,
             deletedBy: decoded.userId
         });
@@ -180,7 +183,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             message: 'ลบผู้ใช้สำเร็จ'
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/users/${params.id}`, method: 'DELETE' });
+        errorTracker.logError(error, { endpoint: `/api/admin/users/${id}`, method: 'DELETE' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถลบผู้ใช้ได้'),
             { status: 500 }

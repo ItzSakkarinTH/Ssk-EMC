@@ -7,12 +7,13 @@ import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib
 import { ZodError } from 'zod';
 
 interface RouteParams {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const announcement = await Announcement.findById(params.id)
+        const announcement = await Announcement.findById(id)
             .populate('createdBy', 'username')
             .lean();
 
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             announcement
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${params.id}`, method: 'GET' });
+        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${id}`, method: 'GET' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลประกาศได้'),
             { status: 500 }
@@ -48,7 +49,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -69,7 +71,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         await connectDB();
 
         const announcement = await Announcement.findByIdAndUpdate(
-            params.id,
+            id,
             { $set: validatedData },
             { new: true, runValidators: true }
         ).populate('createdBy', 'username');
@@ -96,7 +98,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${params.id}`, method: 'PATCH' });
+        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${id}`, method: 'PATCH' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถอัพเดทประกาศได้'),
             { status: 500 }
@@ -104,7 +106,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -119,14 +122,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const announcement = await Announcement.findByIdAndDelete(params.id);
+        const announcement = await Announcement.findByIdAndDelete(id);
 
         if (!announcement) {
             return NextResponse.json({ error: 'ไม่พบประกาศ' }, { status: 404 });
         }
 
         errorTracker.logInfo('Announcement deleted successfully', {
-            announcementId: params.id,
+            announcementId: id,
             title: announcement.title,
             userId: decoded.userId
         });
@@ -136,7 +139,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             message: 'ลบประกาศสำเร็จ'
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${params.id}`, method: 'DELETE' });
+        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${id}`, method: 'DELETE' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถลบประกาศได้'),
             { status: 500 }

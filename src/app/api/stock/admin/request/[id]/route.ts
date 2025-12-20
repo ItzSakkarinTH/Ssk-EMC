@@ -7,8 +7,9 @@ import { StockService } from '@/lib/stock/service';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   return withAdminAuth(req, async (req, user) => {
     try {
       await dbConnect();
@@ -25,7 +26,7 @@ export async function PATCH(
       }
 
       // ดึงคำร้อง
-      const request = await StockRequest.findById(params.id);
+      const request = await StockRequest.findById(id);
       if (!request) {
         return NextResponse.json(
           { error: 'Request not found' },
@@ -100,13 +101,15 @@ export async function PATCH(
 // GET: ดึงรายละเอียดคำร้อง
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  return withAdminAuth(req, async (req, user) => {
+  const { id } = await context.params;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return withAdminAuth(req, async (_req, _user) => {
     try {
       await dbConnect();
 
-      const request = await StockRequest.findById(params.id)
+      const request = await StockRequest.findById(id)
         .populate('shelterId', 'name location')
         .populate('requestedBy', 'name email')
         .populate('reviewedBy', 'name');

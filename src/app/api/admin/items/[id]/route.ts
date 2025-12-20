@@ -7,12 +7,13 @@ import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib
 import { ZodError } from 'zod';
 
 interface RouteParams {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const item = await StockItem.findById(params.id).lean();
+        const item = await StockItem.findById(id).lean();
 
         if (!item) {
             return NextResponse.json({ error: 'ไม่พบรายการสินค้า' }, { status: 404 });
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             item
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/items/${params.id}`, method: 'GET' });
+        errorTracker.logError(error, { endpoint: `/api/admin/items/${id}`, method: 'GET' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลสินค้าได้'),
             { status: 500 }
@@ -46,7 +47,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -67,7 +69,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         await connectDB();
 
         const item = await StockItem.findByIdAndUpdate(
-            params.id,
+            id,
             { $set: validatedData },
             { new: true, runValidators: true }
         );
@@ -94,7 +96,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        errorTracker.logError(error, { endpoint: `/api/admin/items/${params.id}`, method: 'PATCH' });
+        errorTracker.logError(error, { endpoint: `/api/admin/items/${id}`, method: 'PATCH' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถอัพเดทรายการสินค้าได้'),
             { status: 500 }
@@ -102,7 +104,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -126,14 +129,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         //   );
         // }
 
-        const item = await StockItem.findByIdAndDelete(params.id);
+        const item = await StockItem.findByIdAndDelete(id);
 
         if (!item) {
             return NextResponse.json({ error: 'ไม่พบรายการสินค้า' }, { status: 404 });
         }
 
         errorTracker.logInfo('Item deleted successfully', {
-            itemId: params.id,
+            itemId: id,
             name: item.name,
             userId: decoded.userId
         });
@@ -143,7 +146,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             message: 'ลบรายการสินค้าสำเร็จ'
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/items/${params.id}`, method: 'DELETE' });
+        errorTracker.logError(error, { endpoint: `/api/admin/items/${id}`, method: 'DELETE' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถลบรายการสินค้าได้'),
             { status: 500 }
