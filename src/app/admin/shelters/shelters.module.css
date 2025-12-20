@@ -4,15 +4,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--admin-spacing-xl, 2rem);
-    gap: var(--admin-spacing-lg, 1.5rem);
+    margin-bottom: var(--dash-spacing-xl, 2rem);
+    gap: var(--dash-spacing-lg, 1.5rem);
     flex-wrap: wrap;
 }
 
 .stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--admin-spacing-lg, 1.5rem);
+    gap: var(--dash-spacing-lg, 1.5rem);
     flex: 1;
 }
 

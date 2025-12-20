@@ -1,6 +1,6 @@
 import ProvinceStockOverview from './components/ProvinceStockOverview';
 import Link from 'next/link';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import styles from './adminStock.module.css';
 
 export default function AdminStockPage() {
@@ -12,7 +12,7 @@ export default function AdminStockPage() {
   ];
 
   return (
-    <AdminLayout
+    <DashboardLayout
       title="จัดการสต๊อกระดับจังหวัด"
       subtitle="ภาพรวมและการจัดการสต๊อกทั้งหมดในระบบ"
     >
@@ -26,6 +26,6 @@ export default function AdminStockPage() {
       </div>
 
       <ProvinceStockOverview />
-    </AdminLayout>
+    </DashboardLayout>
   );
 }

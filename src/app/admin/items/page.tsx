@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import { Package, Edit, Trash2, Plus, Search } from 'lucide-react';
 
 interface StockItem {
@@ -23,6 +23,7 @@ export default function ItemsPage() {
 
     useEffect(() => {
         fetchItems();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchItems = async () => {
@@ -36,9 +37,11 @@ export default function ItemsPage() {
                 const data = await res.json();
                 setItems(data.items || []);
             } else {
+                console.error(res);
                 toast.error('ไม่สามารถโหลดข้อมูลสินค้าได้');
             }
         } catch (error) {
+            console.error(error);
             toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } finally {
             setLoading(false);
@@ -64,7 +67,8 @@ export default function ItemsPage() {
                 toast.error('ไม่สามารถลบสินค้าได้');
             }
         } catch (error) {
-            toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
+            console.error(error);
+            toast.error('เกิดข้อผิดพลาดในการลบสินค้า');
         }
     };
 
@@ -77,17 +81,17 @@ export default function ItemsPage() {
 
     if (loading) {
         return (
-            <AdminLayout title="จัดการรายการสินค้า" subtitle="จัดการรายการสินค้าในระบบ">
-                <div className="admin-loading">
-                    <div className="admin-spinner"></div>
+            <DashboardLayout title="จัดการรายการสินค้า" subtitle="จัดการรายการสินค้าในระบบ">
+                <div className="dash-loading">
+                    <div className="dash-spinner"></div>
                     <p>กำลังโหลดข้อมูล...</p>
                 </div>
-            </AdminLayout>
+            </DashboardLayout>
         );
     }
 
     return (
-        <AdminLayout
+        <DashboardLayout
             title="จัดการรายการสินค้า"
             subtitle="จัดการรายการสินค้าในระบบ"
         >
@@ -100,27 +104,27 @@ export default function ItemsPage() {
                 flexWrap: 'wrap'
             }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', flex: 1 }}>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-primary">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-primary">
                             <Package size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{items.length}</div>
-                            <div className="admin-stat-label">สินค้าทั้งหมด</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{items.length}</div>
+                            <div className="dash-stat-label">สินค้าทั้งหมด</div>
                         </div>
                     </div>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-info">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-info">
                             <Package size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{categories.length}</div>
-                            <div className="admin-stat-label">หมวดหมู่</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{categories.length}</div>
+                            <div className="dash-stat-label">หมวดหมู่</div>
                         </div>
                     </div>
                 </div>
 
-                <button className="admin-btn admin-btn-primary">
+                <button className="dash-btn dash-btn-primary">
                     <Plus size={20} />
                     เพิ่มสินค้า
                 </button>
@@ -140,7 +144,7 @@ export default function ItemsPage() {
                     />
                     <input
                         type="text"
-                        className="admin-input"
+                        className="dash-input"
                         placeholder="ค้นหาสินค้า..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -149,8 +153,8 @@ export default function ItemsPage() {
                 </div>
             </div>
 
-            <div className="admin-table-container">
-                <table className="admin-table">
+            <div className="dash-table-container">
+                <table className="dash-table">
                     <thead>
                         <tr>
                             <th>ชื่อสินค้า</th>
@@ -173,7 +177,7 @@ export default function ItemsPage() {
                                     )}
                                 </td>
                                 <td>
-                                    <span className="admin-badge admin-badge-info">
+                                    <span className="dash-badge dash-badge-info">
                                         {item.category}
                                     </span>
                                 </td>
@@ -182,11 +186,11 @@ export default function ItemsPage() {
                                 <td>{item.maxStock.toLocaleString()}</td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                        <button className="admin-btn admin-btn-secondary" style={{ padding: '0.5rem' }}>
+                                        <button className="dash-btn dash-btn-secondary" style={{ padding: '0.5rem' }}>
                                             <Edit size={16} />
                                         </button>
                                         <button
-                                            className="admin-btn admin-btn-danger"
+                                            className="dash-btn dash-btn-danger"
                                             style={{ padding: '0.5rem' }}
                                             onClick={() => handleDelete(item._id, item.name)}
                                         >
@@ -206,6 +210,6 @@ export default function ItemsPage() {
                     <p>{searchTerm ? 'ไม่พบสินค้าที่ค้นหา' : 'ยังไม่มีสินค้าในระบบ'}</p>
                 </div>
             )}
-        </AdminLayout>
+        </DashboardLayout>
     );
 }

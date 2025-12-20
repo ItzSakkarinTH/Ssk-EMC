@@ -1,15 +1,15 @@
 'use client';
 
 import StockAnalytics from '../components/StockAnalytics';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 export default function AnalyticsPage() {
   return (
-    <AdminLayout
+    <DashboardLayout
       title="วิเคราะห์ข้อมูลสต๊อก"
       subtitle="สถิติและการวิเคราะห์การเคลื่อนไหวของสต๊อกในระบบ"
     >
       <StockAnalytics />
-    </AdminLayout>
+    </DashboardLayout>
   );
 }

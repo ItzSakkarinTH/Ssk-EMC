@@ -1,0 +1,155 @@
+/* Staff Stock Dashboard Styles */
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.header p {
+    font-size: 1.125rem;
+    color: #94a3b8;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Quick Actions Grid */
+.quickActions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.actionCard {
+    text-decoration: none;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 16px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+.actionCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-gradient, linear-gradient(90deg, #3b82f6, #2563eb));
+    opacity: 0.5;
+    transition: opacity 0.3s, height 0.3s;
+}
+
+.actionCard:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, rgba(51, 65, 85, 0.9) 0%, rgba(15, 23, 42, 1) 100%);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.actionCard:hover::before {
+    opacity: 1;
+    height: 6px;
+}
+
+.actionIcon {
+    font-size: 3rem;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s ease;
+}
+
+.actionCard:hover .actionIcon {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.actionLabel {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: 0.02em;
+}
+
+/* Action Specific Colors */
+.receive {
+    --accent-gradient: linear-gradient(90deg, #10b981, #059669);
+}
+
+.dispense {
+    --accent-gradient: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.request {
+    --accent-gradient: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.history {
+    --accent-gradient: linear-gradient(90deg, #8b5cf6, #7c3aed);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 2rem;
+    }
+
+    .quickActions {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .actionCard {
+        padding: 1.5rem;
+    }
+
+    .actionIcon {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .quickActions {
+        grid-template-columns: 1fr;
+    }
+}

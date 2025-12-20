@@ -1,15 +1,15 @@
 'use client';
 
 import ShelterComparison from '../components/ShelterComparison';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 export default function AllSheltersPage() {
   return (
-    <AdminLayout
+    <DashboardLayout
       title="สต๊อกทุกศูนย์พักพิง"
       subtitle="ภาพรวมและเปรียบเทียบสต๊อกของทุกศูนย์พักพิงในระบบ"
     >
       <ShelterComparison />
-    </AdminLayout>
+    </DashboardLayout>
   );
 }

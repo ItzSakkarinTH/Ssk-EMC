@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import { Building2, MapPin, Users, Edit, Trash2, Plus } from 'lucide-react';
 import styles from './shelters.module.css';
 
@@ -31,8 +31,10 @@ export default function SheltersPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
 
+
     useEffect(() => {
         fetchShelters();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchShelters = async () => {
@@ -46,9 +48,14 @@ export default function SheltersPage() {
                 const data = await res.json();
                 setShelters(data.shelters || []);
             } else {
+                // Handle non-OK responses from the API
+                const errorData = await res.json();
+                console.error('Failed to fetch shelters:', errorData);
                 toast.error('ไม่สามารถโหลดข้อมูลศูนย์พักพิงได้');
             }
         } catch (error) {
+            // Handle network errors or issues before res.ok check
+            console.error('Error fetching shelters:', error);
             toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } finally {
             setLoading(false);
@@ -71,55 +78,58 @@ export default function SheltersPage() {
                 toast.success('ลบศูนย์พักพิงสำเร็จ');
                 fetchShelters();
             } else {
+                const errorData = await res.json();
+                console.error('Failed to delete shelter:', errorData);
                 toast.error('ไม่สามารถลบศูนย์พักพิงได้');
             }
         } catch (error) {
+            console.error('Error deleting shelter:', error);
             toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
         }
     };
 
     if (loading) {
         return (
-            <AdminLayout title="จัดการศูนย์พักพิง" subtitle="จัดการข้อมูลศูนย์พักพิงในระบบ">
-                <div className="admin-loading">
-                    <div className="admin-spinner"></div>
+            <DashboardLayout title="จัดการศูนย์พักพิง" subtitle="จัดการข้อมูลศูนย์พักพิงในระบบ">
+                <div className="dash-loading">
+                    <div className="dash-spinner"></div>
                     <p>กำลังโหลดข้อมูล...</p>
                 </div>
-            </AdminLayout>
+            </DashboardLayout>
         );
     }
 
     return (
-        <AdminLayout
+        <DashboardLayout
             title="จัดการศูนย์พักพิง"
             subtitle="จัดการข้อมูลศูนย์พักพิงในระบบ"
         >
             <div className={styles.header}>
                 <div className={styles.stats}>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-primary">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-primary">
                             <Building2 size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{shelters.length}</div>
-                            <div className="admin-stat-label">ศูนย์ทั้งหมด</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{shelters.length}</div>
+                            <div className="dash-stat-label">ศูนย์ทั้งหมด</div>
                         </div>
                     </div>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-success">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-success">
                             <Building2 size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">
                                 {shelters.filter(s => s.status === 'active').length}
                             </div>
-                            <div className="admin-stat-label">เปิดใช้งาน</div>
+                            <div className="dash-stat-label">เปิดใช้งาน</div>
                         </div>
                     </div>
                 </div>
 
                 <button
-                    className="admin-btn admin-btn-primary"
+                    className="dash-btn dash-btn-primary"
                     onClick={() => setShowModal(true)}
                 >
                     <Plus size={20} />
@@ -127,24 +137,24 @@ export default function SheltersPage() {
                 </button>
             </div>
 
-            <div className="admin-grid admin-grid-auto">
+            <div className="dash-grid dash-grid-auto">
                 {shelters.map((shelter) => (
-                    <div key={shelter._id} className="admin-card">
-                        <div className="admin-card-header">
+                    <div key={shelter._id} className="dash-card">
+                        <div className="dash-card-header">
                             <div>
-                                <h3 className="admin-card-title">{shelter.name}</h3>
-                                <p className="admin-text-muted">รหัส: {shelter.code}</p>
+                                <h3 className="dash-card-title">{shelter.name}</h3>
+                                <p className="dash-text-muted">รหัส: {shelter.code}</p>
                             </div>
-                            <span className={`admin-badge ${shelter.status === 'active' ? 'admin-badge-success' :
-                                    shelter.status === 'full' ? 'admin-badge-warning' :
-                                        'admin-badge-danger'
+                            <span className={`dash-badge ${shelter.status === 'active' ? 'dash-badge-success' :
+                                shelter.status === 'full' ? 'dash-badge-warning' :
+                                    'dash-badge-danger'
                                 }`}>
                                 {shelter.status === 'active' ? 'เปิดใช้งาน' :
                                     shelter.status === 'full' ? 'เต็ม' : 'ปิดใช้งาน'}
                             </span>
                         </div>
 
-                        <div className="admin-card-body">
+                        <div className="dash-card-body">
                             <div style={{ marginBottom: '1rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                     <MapPin size={16} style={{ color: '#94a3b8' }} />
@@ -166,12 +176,12 @@ export default function SheltersPage() {
                                 paddingTop: '1rem',
                                 borderTop: '1px solid rgba(148, 163, 184, 0.15)'
                             }}>
-                                <button className="admin-btn admin-btn-secondary" style={{ flex: 1 }}>
+                                <button className="dash-btn dash-btn-secondary" style={{ flex: 1 }}>
                                     <Edit size={16} />
                                     แก้ไข
                                 </button>
                                 <button
-                                    className="admin-btn admin-btn-danger"
+                                    className="dash-btn dash-btn-danger"
                                     onClick={() => handleDelete(shelter._id, shelter.name)}
                                 >
                                     <Trash2 size={16} />
@@ -191,7 +201,7 @@ export default function SheltersPage() {
                     <Building2 size={64} style={{ opacity: 0.5, marginBottom: '1rem' }} />
                     <p>ยังไม่มีศูนย์พักพิงในระบบ</p>
                     <button
-                        className="admin-btn admin-btn-primary"
+                        className="dash-btn dash-btn-primary"
                         onClick={() => setShowModal(true)}
                         style={{ marginTop: '1rem' }}
                     >
@@ -200,6 +210,6 @@ export default function SheltersPage() {
                     </button>
                 </div>
             )}
-        </AdminLayout>
+        </DashboardLayout>
     );
 }

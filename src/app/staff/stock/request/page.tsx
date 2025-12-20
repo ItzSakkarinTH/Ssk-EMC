@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import RequestForm from '../components/RequestForm';
-import styles from './page.module.css';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 export default function RequestPage() {
   const router = useRouter();
@@ -12,11 +12,11 @@ export default function RequestPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <button onClick={() => router.back()} className={styles.backBtn}>
-        ← กลับ
-      </button>
+    <DashboardLayout
+      title="ยื่นคำร้องขอสินค้า"
+      subtitle="ขอรับการสนับสนุนสินค้าเพิ่มเติมจากกองกลางจังหวัด"
+    >
       <RequestForm onSuccess={handleSuccess} />
-    </div>
+    </DashboardLayout>
   );
 }

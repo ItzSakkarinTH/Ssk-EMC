@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 interface StockInfo {
   itemName?: string;
@@ -32,7 +32,6 @@ interface Movement {
 }
 
 export default function HistoryPage() {
-  const router = useRouter();
   const [history, setHistory] = useState<Movement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -54,7 +53,7 @@ export default function HistoryPage() {
           setHistory(data.history);
         }
       } catch (err) {
-        console.error('Failed to fetch history');
+        console.error('Failed to fetch history', err);
       } finally {
         setLoading(false);
       }
@@ -70,16 +69,12 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <button onClick={() => router.back()} className={styles.backBtn}>
-          ← กลับ
-        </button>
-        <h1>ประวัติการเคลื่อนไหว</h1>
-      </div>
-
+    <DashboardLayout
+      title="ประวัติการเคลื่อนไหว"
+      subtitle="ตรวจสอบรายการรับเข้า เบิกจ่าย และโอนสินค้าของศูนย์"
+    >
       <div className={styles.filters}>
-        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} className="dash-select">
           <option value="all">ทั้งหมด</option>
           <option value="receive">รับเข้า</option>
           <option value="dispense">เบิกจ่าย</option>
@@ -88,7 +83,10 @@ export default function HistoryPage() {
       </div>
 
       {loading ? (
-        <div>กำลังโหลด...</div>
+        <div className="dash-loading">
+          <div className="dash-spinner"></div>
+          <p>กำลังโหลดข้อมูล...</p>
+        </div>
       ) : history.length === 0 ? (
         <div className={styles.empty}>ไม่มีประวัติ</div>
       ) : (
@@ -116,6 +114,6 @@ export default function HistoryPage() {
           ))}
         </div>
       )}
-    </div>
+    </DashboardLayout>
   );
 }

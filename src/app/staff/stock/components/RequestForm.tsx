@@ -95,8 +95,6 @@ export default function RequestForm({ onSuccess }: Props) {
 
   return (
     <div className={styles.container}>
-      <h2>ยื่นคำร้องขอสินค้า</h2>
-
       <form onSubmit={handleSubmit} className={styles.form}>
         {error && <div className={styles.error}>{error}</div>}
 
