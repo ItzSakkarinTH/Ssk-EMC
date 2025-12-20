@@ -2,8 +2,16 @@
 
 import { useState } from 'react';
 
+interface APIResult {
+    status?: number;
+    statusText?: string;
+    ok?: boolean;
+    data?: unknown;
+    error?: string;
+}
+
 export default function TestAPIPage() {
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<APIResult | null>(null);
     const [loading, setLoading] = useState(false);
 
     const testAPI = async () => {
