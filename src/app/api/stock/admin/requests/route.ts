@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { connectDB } from '@/lib/db/mongodb';
@@ -5,6 +6,7 @@ import StockRequest from '@/lib/db/models/StockRequest';
 import { stockRequestSchema } from '@/lib/validations';
 import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib/error-tracker';
 import { ZodError } from 'zod';
+import { Types } from 'mongoose';
 
 export async function GET(request: NextRequest) {
     try {
@@ -87,20 +89,29 @@ export async function POST(request: NextRequest) {
             shelterId = user.shelter;
         }
 
+
         // Create stock request
-        const stockRequest = await StockRequest.create({
+        // Convert items to have proper ObjectId
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const itemsWithObjectId = validatedData.items.map((item: any) => ({
+            stockId: new Types.ObjectId(item.stockId),
+            itemName: item.itemName || '',
+            requestedQuantity: item.requestedQuantity,
+            unit: item.unit || '',
+            reason: item.reason || ''
+        }));
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const stockRequest: any = await StockRequest.createRequest({
             shelterId,
             requestedBy: decoded.userId,
-            items: validatedData.items,
-            urgency: validatedData.urgency || 'normal',
-            status: 'pending'
+            items: itemsWithObjectId
         });
 
         // Populate for response
         await stockRequest.populate([
             { path: 'shelterId', select: 'name code' },
-            { path: 'requestedBy', select: 'username' },
-            { path: 'items.stockItemId', select: 'name unit' }
+            { path: 'requestedBy', select: 'username' }
         ]);
 
         errorTracker.logInfo('Stock request created successfully', {

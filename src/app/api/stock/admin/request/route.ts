@@ -5,7 +5,8 @@ import { withAdminAuth } from '@/lib/auth/rbac';
 import StockRequest from '@/lib/db/models/StockRequest';
 
 export async function GET(req: NextRequest) {
-    return withAdminAuth(req, async (req, user) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return withAdminAuth(req, async (req, _user) => {
         try {
             await dbConnect();
 
@@ -59,7 +60,8 @@ export async function GET(req: NextRequest) {
             });
 
             return NextResponse.json({
-                requests: requests.map((r: { _id: unknown; requestNumber: string; shelterId: unknown; requestedBy: unknown; requestedAt: Date; status: string; items: Array<{ requestedQuantity: number; reason?: string }>; reviewedBy: unknown; reviewedAt: Date; deliveryStatus: string }) => ({
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                requests: requests.map((r: any) => ({
                     id: r._id,
                     requestNumber: r.requestNumber,
                     shelter: r.shelterId,
