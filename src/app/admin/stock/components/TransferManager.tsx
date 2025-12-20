@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 import styles from './TransferManager.module.css';
 
 interface Shelter {
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function TransferManager({ onSuccess }: Props) {
+  const toast = useToast();
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [stockId, setStockId] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -22,7 +24,6 @@ export default function TransferManager({ onSuccess }: Props) {
   const [toShelterId, setToShelterId] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchShelters();
@@ -50,21 +51,20 @@ export default function TransferManager({ onSuccess }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!stockId || !quantity || !toShelterId) {
-      setError('กรุณากรอกข้อมูลให้ครบถ้วน');
+      toast.warning('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
     if (fromShelterId === toShelterId) {
-      setError('ไม่สามารถโอนไปยังศูนย์เดียวกันได้');
+      toast.warning('ไม่สามารถโอนไปยังศูนย์เดียวกันได้');
       return;
     }
 
     const qty = parseFloat(quantity);
     if (qty <= 0) {
-      setError('จำนวนต้องมากกว่า 0');
+      toast.warning('จำนวนต้องมากกว่า 0');
       return;
     }
 
@@ -99,12 +99,12 @@ export default function TransferManager({ onSuccess }: Props) {
       setToShelterId('');
       setNotes('');
 
-      alert('โอนสต๊อกสำเร็จ');
+      toast.success('โอนสต๊อกสำเร็จ! ✅');
       onSuccess();
 
     } catch (err: unknown) {
       const error = err as Error;
-      setError(error.message);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการโอนสต๊อก');
     } finally {
       setLoading(false);
     }
@@ -116,8 +116,6 @@ export default function TransferManager({ onSuccess }: Props) {
         <h2 className={styles.formTitle}>โอนสต๊อกระหว่างศูนย์</h2>
 
         <form onSubmit={handleSubmit}>
-          {error && <div className={styles.errorMessage}>{error}</div>}
-
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
               <label className={`${styles.label} ${styles.required}`}>รหัสสินค้า</label>

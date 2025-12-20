@@ -2,26 +2,29 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import styles from './page.module.css';
 
 export default function LoginPage() {
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const { login } = useAuth();
+    const toast = useToast();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
         setIsLoading(true);
 
         try {
             await login(identifier, password);
-            // Redirect is handled in AuthContext or user will be redirected by router.refresh
-            window.location.href = '/';
-        } catch (err: any) {
-            setError(err.message || 'Login failed');
+            toast.success('เข้าสู่ระบบสำเร็จ! 🎉');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 500);
+        } catch (err: unknown) {
+            const error = err as Error;
+            toast.error(error.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
         } finally {
             setIsLoading(false);
         }
@@ -32,8 +35,6 @@ export default function LoginPage() {
             <div className={styles.card}>
                 <h1 className={styles.title}>เข้าสู่ระบบ</h1>
                 <p className={styles.subtitle}>ระบบบริหารจัดการสภาวะวิกฤติ</p>
-
-                {error && <div className={styles.error}>{error}</div>}
 
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.inputGroup}>

@@ -1,76 +1,130 @@
-
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db/mongodb';
-import { withAdminAuth } from '@/lib/auth/rbac';
-import { StockService } from '@/lib/stock/service';
+import { verifyToken } from '@/lib/auth';
+import { connectDB } from '@/lib/db/mongodb';
+import Stock from '@/lib/db/models/Stock';
+import StockMovement from '@/lib/db/models/StockMovement';
+import { stockTransferSchema } from '@/lib/validations';
+import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib/error-tracker';
+import { ZodError } from 'zod';
 
-export async function POST(req: NextRequest) {
-  return withAdminAuth(req, async (req, user) => {
-    try {
-      await dbConnect();
+export async function POST(request: NextRequest) {
+  try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
-      const body = await req.json();
-      const { stockId, quantity, fromShelterId, toShelterId, notes } = body;
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-      // Validation
-      if (!stockId || !quantity || !fromShelterId || !toShelterId) {
-        return NextResponse.json(
-          { error: 'Missing required fields' },
-          { status: 400 }
-        );
-      }
+    const decoded = verifyToken(token);
+    if (!decoded || decoded.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
 
-      if (quantity <= 0) {
-        return NextResponse.json(
-          { error: 'Quantity must be positive' },
-          { status: 400 }
-        );
-      }
+    const body = await request.json();
 
-      if (fromShelterId === toShelterId) {
-        return NextResponse.json(
-          { error: 'Cannot transfer to the same shelter' },
-          { status: 400 }
-        );
-      }
+    // Validate input
+    const validatedData = stockTransferSchema.parse(body);
 
-      // โอนสต๊อก
-      await StockService.transferStock({
-        stockId,
-        fromShelterId,
-        toShelterId,
-        quantity,
-        userId: user.userId,
-        notes
-      });
+    await connectDB();
 
-      return NextResponse.json({
-        success: true,
-        message: 'Stock transferred successfully'
-      });
+    // Find source stock
+    const sourceStock = await Stock.findOne({
+      _id: validatedData.stockId,
+      shelterId: validatedData.fromShelterId === 'provincial' ? null : validatedData.fromShelterId
+    });
 
-    } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Transfer error:', err);
-
-      if (err.message === 'Stock not found') {
-        return NextResponse.json(
-          { error: err.message },
-          { status: 404 }
-        );
-      }
-
-      if (err.message?.includes('Insufficient')) {
-        return NextResponse.json(
-          { error: err.message },
-          { status: 400 }
-        );
-      }
-
+    if (!sourceStock) {
       return NextResponse.json(
-        { error: 'Failed to transfer stock' },
-        { status: 500 }
+        { error: 'ไม่พบสต๊อกต้นทาง' },
+        { status: 404 }
       );
     }
-  });
+
+    // Check if enough quantity available
+    if (sourceStock.currentQuantity < validatedData.quantity) {
+      return NextResponse.json(
+        { error: `สต๊อกไม่เพียงพอ (มีอยู่ ${sourceStock.currentQuantity} ${sourceStock.unit})` },
+        { status: 400 }
+      );
+    }
+
+    // Find or create destination stock
+    let destStock = await Stock.findOne({
+      itemId: sourceStock.itemId,
+      shelterId: validatedData.toShelterId === 'provincial' ? null : validatedData.toShelterId
+    });
+
+    const beforeSource = sourceStock.currentQuantity;
+
+    // Update source stock
+    sourceStock.currentQuantity -= validatedData.quantity;
+    await sourceStock.save();
+
+    // Update or create destination stock
+    if (destStock) {
+      destStock.currentQuantity += validatedData.quantity;
+      await destStock.save();
+    } else {
+      destStock = await Stock.create({
+        itemId: sourceStock.itemId,
+        shelterId: validatedData.toShelterId === 'provincial' ? null : validatedData.toShelterId,
+        currentQuantity: validatedData.quantity,
+        unit: sourceStock.unit,
+        minThreshold: sourceStock.minThreshold,
+        maxCapacity: sourceStock.maxCapacity
+      });
+    }
+
+    // Create movement log
+    const movement = await StockMovement.create({
+      stockId: sourceStock._id,
+      movementType: 'transfer',
+      quantity: validatedData.quantity,
+      unit: sourceStock.unit,
+      from: {
+        type: validatedData.fromShelterId === 'provincial' ? 'provincial' : 'shelter',
+        id: validatedData.fromShelterId === 'provincial' ? null : validatedData.fromShelterId,
+        name: validatedData.fromShelterId === 'provincial' ? 'กองกลางจังหวัด' : 'ศูนย์พักพิง'
+      },
+      to: {
+        type: validatedData.toShelterId === 'provincial' ? 'provincial' : 'shelter',
+        id: validatedData.toShelterId === 'provincial' ? null : validatedData.toShelterId,
+        name: validatedData.toShelterId === 'provincial' ? 'กองกลางจังหวัด' : 'ศูนย์พักพิง'
+      },
+      performedBy: decoded.userId,
+      notes: validatedData.notes || '',
+      snapshot: {
+        before: beforeSource,
+        after: sourceStock.currentQuantity
+      }
+    });
+
+    errorTracker.logInfo('Stock transferred successfully', {
+      movementId: movement._id,
+      stockId: sourceStock._id,
+      quantity: validatedData.quantity,
+      from: validatedData.fromShelterId,
+      to: validatedData.toShelterId,
+      userId: decoded.userId
+    });
+
+    return NextResponse.json({
+      success: true,
+      movement,
+      message: 'โอนสต๊อกสำเร็จ'
+    }, { status: 201 });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'ข้อมูลไม่ถูกต้อง', details: formatValidationErrors(error.issues) },
+        { status: 400 }
+      );
+    }
+
+    errorTracker.logError(error, { endpoint: '/api/stock/admin/transfer', method: 'POST' });
+    return NextResponse.json(
+      createErrorResponse(error, 'ไม่สามารถโอนสต๊อกได้'),
+      { status: 500 }
+    );
+  }
 }

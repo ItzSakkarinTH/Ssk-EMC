@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from 'react';
 
+interface User {
+    id: string;
+    username: string;
+    email: string;
+    role: string;
+}
+
 export default function CheckAuthPage() {
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
