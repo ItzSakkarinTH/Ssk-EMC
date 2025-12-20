@@ -14,7 +14,8 @@ export const shelterSchema = z.object({
     contactPerson: z.object({
         name: z.string().min(3),
         phone: z.string().regex(/^[0-9-]+$/, 'เบอร์โทรศัพท์ไม่ถูกต้อง').min(9).max(12)
-    })
+    }),
+    status: z.enum(['active', 'inactive', 'full']).optional()
 });
 
 export const shelterUpdateSchema = shelterSchema.partial();
