@@ -51,6 +51,11 @@ export default function Sidebar() {
                     path: '/'
                 },
                 {
+                    title: 'Dashboard สต๊อก',
+                    icon: Package,
+                    path: '/stock-dashboard'
+                },
+                {
                     title: 'จัดการสต๊อกจังหวัด',
                     icon: LayoutDashboard,
                     category: true,
@@ -82,6 +87,11 @@ export default function Sidebar() {
                     title: 'หน้าหลัก',
                     icon: Home,
                     path: '/'
+                },
+                {
+                    title: 'Dashboard สต๊อก',
+                    icon: Package,
+                    path: '/stock-dashboard'
                 },
                 {
                     title: 'จัดการสต๊อกศูนย์',
