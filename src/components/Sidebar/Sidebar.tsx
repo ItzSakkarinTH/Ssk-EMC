@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -5,82 +6,148 @@ import { usePathname } from 'next/navigation';
 import {
     Home,
     Building2,
-    User,
+    Package,
+    TrendingUp,
+    FileText,
+    ClipboardList,
+    Users,
     LogOut,
-    LayoutDashboard
+    LayoutDashboard,
+    ArrowLeftRight,
+    AlertCircle,
+    BarChart3
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Sidebar.module.css';
-
-const navItems = [
-    {
-        title: 'หน้าหลัก',
-        icon: Home,
-        path: '/'
-    },
-    {
-        title: 'ศูนย์อำนวยการ',
-        icon: LayoutDashboard,
-        category: true,
-        subItems: [
-            { title: 'รายชื่อศูนย์', path: '/admin/centers' },
-            { title: 'รายการสิ่งของ', path: '/admin/items' },
-            { title: 'คำร้องขอสิ่งของ', path: '/admin/requests' }
-        ]
-    },
-    {
-        title: 'ศูนย์พักพิง',
-        icon: Building2,
-        category: true,
-        subItems: [
-            { title: 'รายชื่อศูนย์', path: '/shelter/centers' },
-            { title: 'รายการสิ่งของ', path: '/shelter/items' },
-            { title: 'รายการเบิกจ่าย', path: '/shelter/payouts' }
-        ]
-    }
-];
 
 export default function Sidebar() {
     const pathname = usePathname();
     const { user, isAuthenticated, logout } = useAuth();
 
+    // กำหนด nav items ตาม role
+    const getNavItems = () => {
+        if (!isAuthenticated || !user) {
+            return [
+                {
+                    title: 'หน้าหลัก',
+                    icon: Home,
+                    path: '/'
+                },
+                {
+                    title: 'Dashboard สต๊อก',
+                    icon: Package,
+                    path: '/stock-dashboard'
+                }
+            ];
+        }
+
+        if (user.role === 'admin') {
+            return [
+                {
+                    title: 'หน้าหลัก',
+                    icon: Home,
+                    path: '/'
+                },
+                {
+                    title: 'จัดการสต๊อกจังหวัด',
+                    icon: LayoutDashboard,
+                    category: true,
+                    subItems: [
+                        { title: 'ภาพรวมสต๊อก', path: '/admin/stock', icon: Package },
+                        { title: 'ทุกศูนย์พักพิง', path: '/admin/stock/all-shelters', icon: Building2 },
+                        { title: 'โอนสต๊อก', path: '/admin/stock/transfers', icon: ArrowLeftRight },
+                        { title: 'คำร้องขอสินค้า', path: '/admin/stock/requests', icon: ClipboardList },
+                        { title: 'วิเคราะห์ข้อมูล', path: '/admin/stock/analytics', icon: BarChart3 }
+                    ]
+                },
+                {
+                    title: 'จัดการระบบ',
+                    icon: Users,
+                    category: true,
+                    subItems: [
+                        { title: 'ศูนย์พักพิง', path: '/admin/centers', icon: Building2 },
+                        { title: 'รายการสินค้า', path: '/admin/items', icon: Package },
+                        { title: 'ผู้ใช้งาน', path: '/admin/users', icon: Users }
+                    ]
+                }
+            ];
+        }
+
+        if (user.role === 'staff') {
+            return [
+                {
+                    title: 'หน้าหลัก',
+                    icon: Home,
+                    path: '/'
+                },
+                {
+                    title: 'จัดการสต๊อกศูนย์',
+                    icon: Package,
+                    category: true,
+                    subItems: [
+                        { title: 'สต๊อกของฉัน', path: '/staff/stock', icon: Package },
+                        { title: 'รับเข้า', path: '/staff/stock/receive', icon: TrendingUp },
+                        { title: 'เบิกจ่าย', path: '/staff/stock/dispense', icon: FileText },
+                        { title: 'ยื่นคำร้อง', path: '/staff/stock/request', icon: ClipboardList },
+                        { title: 'ประวัติ', path: '/staff/stock/history', icon: AlertCircle }
+                    ]
+                }
+            ];
+        }
+
+        return [];
+    };
+
+    const navItems = getNavItems();
+
     return (
         <aside className={styles.sidebar}>
+            {/* Header */}
             <div className={styles.header}>
                 <div className={styles.logoContainer}>
-                    {/* Placeholder logo as per image */}
-                    <div style={{ background: '#4f46e5', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ color: 'white', fontWeight: 'bold' }}>S</span>
+                    <div className={styles.logoCircle}>
+                        <span className={styles.logoLetter}>S</span>
                     </div>
                 </div>
-                <div className={styles.logoText}>Sisaket EMS</div>
+                <div className={styles.logoText}>
+                    <div className={styles.logoTitle}>Sisaket EMS</div>
+                    <div className={styles.logoSubtitle}>Stock Management</div>
+                </div>
             </div>
 
+            {/* Navigation */}
             <nav className={styles.nav}>
                 {navItems.map((item, idx) => (
                     <div key={idx} className={item.category ? styles.category : ''}>
                         {item.category ? (
                             <>
                                 <div className={styles.categoryTitle}>
-                                    <item.icon size={16} />
+                                    <item.icon size={16} strokeWidth={2.5} />
                                     <span>{item.title}</span>
                                 </div>
-                                {item.subItems?.map((sub, sIdx) => (
-                                    <Link
-                                        key={sIdx}
-                                        href={sub.path}
-                                        className={`${styles.navLink} ${styles.subLink} ${pathname === sub.path ? styles.active : ''}`}
-                                    >
-                                        <span>= {sub.title}</span>
-                                    </Link>
-                                ))}
+                                {item.subItems?.map((sub, sIdx) => {
+                                    const SubIcon = sub.icon;
+                                    const isActive = pathname === sub.path || 
+                                                   pathname.startsWith(sub.path + '/');
+                                    
+                                    return (
+                                        <Link
+                                            key={sIdx}
+                                            href={sub.path}
+                                            className={`${styles.navLink} ${styles.subLink} ${isActive ? styles.active : ''}`}
+                                        >
+                                            {SubIcon && <SubIcon size={18} strokeWidth={2} />}
+                                            <span>{sub.title}</span>
+                                        </Link>
+                                    );
+                                })}
                             </>
                         ) : (
                             <Link
                                 href={item.path || '#'}
                                 className={`${styles.navLink} ${pathname === item.path ? styles.active : ''}`}
                             >
-                                <item.icon size={20} />
+                                <item.icon size={20} strokeWidth={2} />
                                 <span>{item.title}</span>
                             </Link>
                         )}
@@ -88,24 +155,38 @@ export default function Sidebar() {
                 ))}
             </nav>
 
+            {/* Footer */}
             <div className={styles.footer}>
-                <div className={styles.userInfo}>
-                    <div className={styles.userAvatar}>
-                        <User size={20} />
+                {isAuthenticated && user ? (
+                    <>
+                        <div className={styles.userInfo}>
+                            <div className={styles.userAvatar}>
+                                <span className={styles.userInitial}>
+                                    {user.username?.charAt(0).toUpperCase() || 'U'}
+                                </span>
+                            </div>
+                            <div className={styles.userDetails}>
+                                <span className={styles.userName}>{user.username}</span>
+                                <span className={styles.userRole}>
+                                    {user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่ศูนย์'}
+                                </span>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={() => logout()} 
+                            className={styles.logoutBtn} 
+                            title="ออกจากระบบ"
+                        >
+                            <LogOut size={20} strokeWidth={2} />
+                        </button>
+                    </>
+                ) : (
+                    <div className={styles.guestInfo}>
+                        <span className={styles.guestText}>โหมดเยี่ยมชม</span>
+                        <Link href="/login" className={styles.loginLink}>
+                            เข้าสู่ระบบ
+                        </Link>
                     </div>
-                    <div className={styles.userDetails}>
-                        <span className={styles.userName}>
-                            {isAuthenticated ? user?.username : 'ไม่ระบุผู้ใช้'}
-                        </span>
-                        <span className={styles.userRole}>
-                            {isAuthenticated ? user?.role.toUpperCase() : 'Guest'}
-                        </span>
-                    </div>
-                </div>
-                {isAuthenticated && (
-                    <button onClick={() => logout()} className={styles.logoutBtn} title="ออกจากระบบ">
-                        <LogOut size={20} />
-                    </button>
                 )}
             </div>
         </aside>
