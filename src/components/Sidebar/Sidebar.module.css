@@ -17,16 +17,23 @@
 
 /* ===== Header ===== */
 .header {
-    padding: 1.75rem 1.5rem;
+    padding: 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     border-bottom: 1px solid rgba(148, 163, 184, 0.15);
     background: rgba(59, 130, 246, 0.08);
+    min-height: 88px;
+    max-height: 88px;
 }
 
 .logoContainer {
     flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .logoCircle {
@@ -52,9 +59,16 @@
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.logoImage {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+}
+
 .logoText {
     display: flex;
     flex-direction: column;
+
 }
 
 .logoTitle {
@@ -161,10 +175,9 @@
 }
 
 .navLink.active {
-    background: linear-gradient(90deg, 
-        rgba(59, 130, 246, 0.15) 0%, 
-        rgba(59, 130, 246, 0.05) 100%
-    );
+    background: linear-gradient(90deg,
+            rgba(59, 130, 246, 0.15) 0%,
+            rgba(59, 130, 246, 0.05) 100%);
     color: #ffffff;
     font-weight: 600;
     border-left-color: transparent;
@@ -338,6 +351,7 @@
         opacity: 0;
         transform: translateX(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -349,11 +363,30 @@
     animation: slideIn 0.3s ease forwards;
 }
 
-.category:nth-child(1) .categoryTitle { animation-delay: 0.05s; }
-.category:nth-child(1) .navLink:nth-child(2) { animation-delay: 0.1s; }
-.category:nth-child(1) .navLink:nth-child(3) { animation-delay: 0.15s; }
-.category:nth-child(1) .navLink:nth-child(4) { animation-delay: 0.2s; }
+.category:nth-child(1) .categoryTitle {
+    animation-delay: 0.05s;
+}
 
-.category:nth-child(2) .categoryTitle { animation-delay: 0.25s; }
-.category:nth-child(2) .navLink:nth-child(2) { animation-delay: 0.3s; }
-.category:nth-child(2) .navLink:nth-child(3) { animation-delay: 0.35s; }
+.category:nth-child(1) .navLink:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.category:nth-child(1) .navLink:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.category:nth-child(1) .navLink:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.category:nth-child(2) .categoryTitle {
+    animation-delay: 0.25s;
+}
+
+.category:nth-child(2) .navLink:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.category:nth-child(2) .navLink:nth-child(3) {
+    animation-delay: 0.35s;
+}

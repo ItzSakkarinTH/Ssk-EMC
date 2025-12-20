@@ -111,6 +111,16 @@ export async function GET(req: NextRequest) {
         },
         byCategory: categoryBreakdown,
         provincialStock: provincialStockList.sort((a, b) => b.quantity - a.quantity),
+        // เพิ่ม stocks สำหรับ compatibility
+        stocks: allStocks.map(stock => ({
+          _id: stock._id.toString(),
+          itemName: stock.itemName,
+          category: stock.category,
+          unit: stock.unit,
+          provincialStock: stock.provincialStock,
+          totalQuantity: stock.totalQuantity,
+          minStockLevel: stock.minStockLevel
+        })),
         recentActivity: movementStats,
         lastUpdated: new Date()
       });

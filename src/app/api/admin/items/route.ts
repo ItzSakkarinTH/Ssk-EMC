@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { connectDB } from '@/lib/db/mongodb';
-import StockItem from '@/lib/db/models/Stock';
+import StockItem from '@/lib/db/models/StockItem';
 import { itemSchema } from '@/lib/validations';
 import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib/error-tracker';
 import { ZodError } from 'zod';

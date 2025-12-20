@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Package, Edit, Trash2, Plus, Search } from 'lucide-react';
+import { Package, Edit, Trash2, Plus, Search, X } from 'lucide-react';
 
 interface StockItem {
     _id: string;
@@ -15,11 +15,31 @@ interface StockItem {
     maxStock: number;
 }
 
+interface ItemFormData {
+    name: string;
+    category: string;
+    unit: string;
+    description: string;
+    minStock: number;
+    maxStock: number;
+}
+
 export default function ItemsPage() {
     const toast = useToast();
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editingItem, setEditingItem] = useState<StockItem | null>(null);
+    const [formData, setFormData] = useState<ItemFormData>({
+        name: '',
+        category: '',
+        unit: '',
+        description: '',
+        minStock: 0,
+        maxStock: 100
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         fetchItems();
@@ -45,6 +65,72 @@ export default function ItemsPage() {
             toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleOpenModal = (item?: StockItem) => {
+        if (item) {
+            setEditingItem(item);
+            setFormData({
+                name: item.name,
+                category: item.category,
+                unit: item.unit,
+                description: item.description || '',
+                minStock: item.minStock,
+                maxStock: item.maxStock
+            });
+        } else {
+            setEditingItem(null);
+            setFormData({
+                name: '',
+                category: '',
+                unit: '',
+                description: '',
+                minStock: 0,
+                maxStock: 100
+            });
+        }
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingItem(null);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            const url = editingItem
+                ? `/api/admin/items/${editingItem._id}`
+                : '/api/admin/items';
+            const method = editingItem ? 'PATCH' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                toast.success(editingItem ? 'แก้ไขสินค้าสำเร็จ' : 'เพิ่มสินค้าสำเร็จ');
+                handleCloseModal();
+                fetchItems();
+            } else {
+                const errorData = await res.json();
+                toast.error(errorData.error || 'เกิดข้อผิดพลาด');
+            }
+        } catch (error) {
+            console.error('Error submitting item:', error);
+            toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -124,7 +210,10 @@ export default function ItemsPage() {
                     </div>
                 </div>
 
-                <button className="dash-btn dash-btn-primary">
+                <button
+                    className="dash-btn dash-btn-primary"
+                    onClick={() => handleOpenModal()}
+                >
                     <Plus size={20} />
                     เพิ่มสินค้า
                 </button>
@@ -186,7 +275,11 @@ export default function ItemsPage() {
                                 <td>{item.maxStock.toLocaleString()}</td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                        <button className="dash-btn dash-btn-secondary" style={{ padding: '0.5rem' }}>
+                                        <button
+                                            className="dash-btn dash-btn-secondary"
+                                            style={{ padding: '0.5rem' }}
+                                            onClick={() => handleOpenModal(item)}
+                                        >
                                             <Edit size={16} />
                                         </button>
                                         <button
@@ -208,6 +301,137 @@ export default function ItemsPage() {
                 <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                     <Package size={64} style={{ opacity: 0.5, marginBottom: '1rem' }} />
                     <p>{searchTerm ? 'ไม่พบสินค้าที่ค้นหา' : 'ยังไม่มีสินค้าในระบบ'}</p>
+                </div>
+            )}
+
+            {/* Modal */}
+            {showModal && (
+                <div className="dash-modal-overlay" onClick={handleCloseModal}>
+                    <div className="dash-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="dash-modal-header">
+                            <h2>{editingItem ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h2>
+                            <button className="dash-modal-close" onClick={handleCloseModal}>
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="dash-modal-body">
+                                <div className="dash-form-grid">
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">ชื่อสินค้า *</label>
+                                        <input
+                                            type="text"
+                                            className="dash-input"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">หมวดหมู่ *</label>
+                                        <select
+                                            className="dash-input"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">-- เลือกหมวดหมู่ --</option>
+                                            <option value="อาหาร">อาหาร</option>
+                                            <option value="เครื่องดื่ม">เครื่องดื่ม</option>
+                                            <option value="ยา">ยา</option>
+                                            <option value="เวชภัณฑ์">เวชภัณฑ์</option>
+                                            <option value="เสื้อผ้า">เสื้อผ้า</option>
+                                            <option value="ผ้าห่ม">ผ้าห่ม</option>
+                                            <option value="อุปกรณ์อาบน้ำ">อุปกรณ์อาบน้ำ</option>
+                                            <option value="อุปกรณ์ทำความสะอาด">อุปกรณ์ทำความสะอาด</option>
+                                            <option value="อื่นๆ">อื่นๆ</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">หน่วย *</label>
+                                        <select
+                                            className="dash-input"
+                                            value={formData.unit}
+                                            onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">-- เลือกหน่วย --</option>
+                                            <option value="ชิ้น">ชิ้น</option>
+                                            <option value="กล่อง">กล่อง</option>
+                                            <option value="แผ่น">แผ่น</option>
+                                            <option value="ขวด">ขวด</option>
+                                            <option value="ถุง">ถุง</option>
+                                            <option value="ห่อ">ห่อ</option>
+                                            <option value="แพ็ค">แพ็ค</option>
+                                            <option value="ลัง">ลัง</option>
+                                            <option value="ตัว">ตัว</option>
+                                            <option value="คู่">คู่</option>
+                                            <option value="ม้วน">ม้วน</option>
+                                            <option value="เม็ด">เม็ด</option>
+                                            <option value="หลอด">หลอด</option>
+                                            <option value="ซอง">ซอง</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="dash-form-group" style={{ gridColumn: '1 / -1' }}>
+                                        <label className="dash-label">คำอธิบาย</label>
+                                        <textarea
+                                            className="dash-input"
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            rows={2}
+                                            placeholder="คำอธิบายเพิ่มเติม (ถ้ามี)"
+                                        />
+                                    </div>
+
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">สต๊อกต่ำสุด *</label>
+                                        <input
+                                            type="number"
+                                            className="dash-input"
+                                            value={formData.minStock}
+                                            onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) })}
+                                            required
+                                            min="0"
+                                        />
+                                    </div>
+
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">สต๊อกสูงสุด *</label>
+                                        <input
+                                            type="number"
+                                            className="dash-input"
+                                            value={formData.maxStock}
+                                            onChange={(e) => setFormData({ ...formData, maxStock: parseInt(e.target.value) })}
+                                            required
+                                            min="1"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="dash-modal-footer">
+                                <button
+                                    type="button"
+                                    className="dash-btn dash-btn-secondary"
+                                    onClick={handleCloseModal}
+                                    disabled={submitting}
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="dash-btn dash-btn-primary"
+                                    disabled={submitting}
+                                >
+                                    {submitting ? 'กำลังบันทึก...' : (editingItem ? 'บันทึกการแก้ไข' : 'เพิ่มสินค้า')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </DashboardLayout>

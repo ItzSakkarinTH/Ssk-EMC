@@ -1,0 +1,97 @@
+.stockGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.stockCard {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stockCard:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.stockHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.stockName {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dash-text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.stockCategory {
+    margin-top: 0.5rem;
+}
+
+.stockInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.infoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 8px;
+}
+
+.infoLabel {
+    font-size: 0.875rem;
+    color: var(--dash-text-muted);
+}
+
+.infoValue {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--dash-text-primary);
+}
+
+.summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+    color: var(--dash-text-secondary);
+    font-size: 0.9375rem;
+}
+
+.summary svg {
+    color: var(--dash-success);
+    flex-shrink: 0;
+}
+
+.summary strong {
+    color: var(--dash-success);
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stockGrid {
+        grid-template-columns: 1fr;
+    }
+}

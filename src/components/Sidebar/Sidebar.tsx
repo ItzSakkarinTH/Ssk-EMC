@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     Home,
@@ -60,7 +61,9 @@ export default function Sidebar() {
                     icon: LayoutDashboard,
                     category: true,
                     subItems: [
-                        { title: 'ภาพรวมสต๊อก', path: '/admin/stock', icon: Package },
+                        { title: 'ภาพรวมสต๊อก', path: '/admin/stock', icon: LayoutDashboard },
+                        { title: 'จัดการสต็อก', path: '/admin/stock/simple', icon: Package },
+                        { title: 'ประวัติการรับสินค้า', path: '/admin/stock/receive-history', icon: FileText },
                         { title: 'ทุกศูนย์พักพิง', path: '/admin/stock/all-shelters', icon: Building2 },
                         { title: 'โอนสต๊อก', path: '/admin/stock/transfers', icon: ArrowLeftRight },
                         { title: 'คำร้องขอสินค้า', path: '/admin/stock/requests', icon: ClipboardList },
@@ -118,9 +121,14 @@ export default function Sidebar() {
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.logoContainer}>
-                    <div className={styles.logoCircle}>
-                        <span className={styles.logoLetter}>S</span>
-                    </div>
+                    <Image
+                        src="/images/sskems2.png"
+                        alt="Sisaket EMS Logo"
+                        width={100}
+                        height={100}
+                        className={styles.logoImage}
+                        priority
+                    />
                 </div>
                 <div className={styles.logoText}>
                     <div className={styles.logoTitle}>Sisaket EMS</div>
