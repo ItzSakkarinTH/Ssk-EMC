@@ -1,0 +1,145 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { verifyToken } from '@/lib/auth';
+import { connectDB } from '@/lib/db/mongodb';
+import Announcement from '@/lib/db/models/Announcement';
+import { announcementUpdateSchema } from '@/lib/validations';
+import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib/error-tracker';
+import { ZodError } from 'zod';
+
+interface RouteParams {
+    params: {
+        id: string;
+    };
+}
+
+export async function GET(request: NextRequest, { params }: RouteParams) {
+    try {
+        const token = request.headers.get('authorization')?.replace('Bearer ', '');
+
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const decoded = await verifyToken(token);
+        if (!decoded) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        await connectDB();
+
+        const announcement = await Announcement.findById(params.id)
+            .populate('createdBy', 'username')
+            .lean();
+
+        if (!announcement) {
+            return NextResponse.json({ error: 'ไม่พบประกาศ' }, { status: 404 });
+        }
+
+        return NextResponse.json({
+            success: true,
+            announcement
+        });
+    } catch (error) {
+        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${params.id}`, method: 'GET' });
+        return NextResponse.json(
+            createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลประกาศได้'),
+            { status: 500 }
+        );
+    }
+}
+
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
+    try {
+        const token = request.headers.get('authorization')?.replace('Bearer ', '');
+
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const decoded = await verifyToken(token);
+        if (!decoded || decoded.role !== 'admin') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        const body = await request.json();
+
+        // Validate input
+        const validatedData = announcementUpdateSchema.parse(body);
+
+        await connectDB();
+
+        const announcement = await Announcement.findByIdAndUpdate(
+            params.id,
+            { $set: validatedData },
+            { new: true, runValidators: true }
+        ).populate('createdBy', 'username');
+
+        if (!announcement) {
+            return NextResponse.json({ error: 'ไม่พบประกาศ' }, { status: 404 });
+        }
+
+        errorTracker.logInfo('Announcement updated successfully', {
+            announcementId: announcement._id,
+            userId: decoded.userId
+        });
+
+        return NextResponse.json({
+            success: true,
+            announcement,
+            message: 'อัพเดทประกาศสำเร็จ'
+        });
+    } catch (error) {
+        if (error instanceof ZodError) {
+            return NextResponse.json(
+                { error: 'ข้อมูลไม่ถูกต้อง', details: formatValidationErrors(error.issues) },
+                { status: 400 }
+            );
+        }
+
+        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${params.id}`, method: 'PATCH' });
+        return NextResponse.json(
+            createErrorResponse(error, 'ไม่สามารถอัพเดทประกาศได้'),
+            { status: 500 }
+        );
+    }
+}
+
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+    try {
+        const token = request.headers.get('authorization')?.replace('Bearer ', '');
+
+        if (!token) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const decoded = await verifyToken(token);
+        if (!decoded || decoded.role !== 'admin') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        await connectDB();
+
+        const announcement = await Announcement.findByIdAndDelete(params.id);
+
+        if (!announcement) {
+            return NextResponse.json({ error: 'ไม่พบประกาศ' }, { status: 404 });
+        }
+
+        errorTracker.logInfo('Announcement deleted successfully', {
+            announcementId: params.id,
+            title: announcement.title,
+            userId: decoded.userId
+        });
+
+        return NextResponse.json({
+            success: true,
+            message: 'ลบประกาศสำเร็จ'
+        });
+    } catch (error) {
+        errorTracker.logError(error, { endpoint: `/api/admin/announcements/${params.id}`, method: 'DELETE' });
+        return NextResponse.json(
+            createErrorResponse(error, 'ไม่สามารถลบประกาศได้'),
+            { status: 500 }
+        );
+    }
+}

@@ -79,6 +79,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             success: true,
+            accessToken, // ส่ง token กลับไปให้ client เก็บใน localStorage
             user: {
                 id: user._id,
                 username: user.username,

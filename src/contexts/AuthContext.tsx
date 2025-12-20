@@ -60,6 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const data = await response.json();
+
+        // เก็บ token ลง localStorage สำหรับ API calls
+        if (data.accessToken) {
+            localStorage.setItem('accessToken', data.accessToken);
+        }
+
         setUser(data.user);
         router.refresh();
     };
@@ -67,6 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const logout = async () => {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
+
+            // ลบ token ออกจาก localStorage
+            localStorage.removeItem('accessToken');
+
             setUser(null);
             router.push('/');
             router.refresh();

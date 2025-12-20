@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 import styles from './TransferManager.module.css';
 
 interface Shelter {
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function TransferManager({ onSuccess }: Props) {
+  const toast = useToast();
   const [shelters, setShelters] = useState<Shelter[]>([]);
   const [stockId, setStockId] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -22,7 +24,6 @@ export default function TransferManager({ onSuccess }: Props) {
   const [toShelterId, setToShelterId] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchShelters();
@@ -50,21 +51,20 @@ export default function TransferManager({ onSuccess }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!stockId || !quantity || !toShelterId) {
-      setError('กรุณากรอกข้อมูลให้ครบถ้วน');
+      toast.warning('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
 
     if (fromShelterId === toShelterId) {
-      setError('ไม่สามารถโอนไปยังศูนย์เดียวกันได้');
+      toast.warning('ไม่สามารถโอนไปยังศูนย์เดียวกันได้');
       return;
     }
 
     const qty = parseFloat(quantity);
     if (qty <= 0) {
-      setError('จำนวนต้องมากกว่า 0');
+      toast.warning('จำนวนต้องมากกว่า 0');
       return;
     }
 
@@ -99,12 +99,12 @@ export default function TransferManager({ onSuccess }: Props) {
       setToShelterId('');
       setNotes('');
 
-      alert('โอนสต๊อกสำเร็จ');
+      toast.success('โอนสต๊อกสำเร็จ! ✅');
       onSuccess();
 
     } catch (err: unknown) {
       const error = err as Error;
-      setError(error.message);
+      toast.error(error.message || 'เกิดข้อผิดพลาดในการโอนสต๊อก');
     } finally {
       setLoading(false);
     }
@@ -112,93 +112,100 @@ export default function TransferManager({ onSuccess }: Props) {
 
   return (
     <div className={styles.container}>
-      <h2>โอนสต๊อกระหว่างศูนย์</h2>
+      <div className={styles.transferForm}>
+        <h2 className={styles.formTitle}>โอนสต๊อกระหว่างศูนย์</h2>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {error && <div className={styles.error}>{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>รหัสสินค้า</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={stockId}
+                onChange={(e) => setStockId(e.target.value)}
+                placeholder="กรอกรหัสสินค้า"
+                disabled={loading}
+                required
+              />
+            </div>
 
-        <div className={styles.field}>
-          <label>รหัสสินค้า *</label>
-          <input
-            type="text"
-            value={stockId}
-            onChange={(e) => setStockId(e.target.value)}
-            placeholder="กรอกรหัสสินค้า"
-            disabled={loading}
-            required
-          />
-        </div>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>จำนวน</label>
+              <input
+                type="number"
+                className={styles.input}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                min="1"
+                step="1"
+                disabled={loading}
+                required
+              />
+            </div>
 
-        <div className={styles.field}>
-          <label>จำนวน *</label>
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            min="1"
-            step="1"
-            disabled={loading}
-            required
-          />
-        </div>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>จาก</label>
+              <select
+                className={styles.select}
+                value={fromShelterId}
+                onChange={(e) => setFromShelterId(e.target.value)}
+                disabled={loading}
+                required
+              >
+                <option value="provincial">กองกลางจังหวัด</option>
+                {shelters.map(s => (
+                  <option key={s.shelterId} value={s.shelterId}>
+                    {s.shelterName} ({s.shelterCode})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className={styles.field}>
-          <label>จาก *</label>
-          <select
-            value={fromShelterId}
-            onChange={(e) => setFromShelterId(e.target.value)}
-            disabled={loading}
-            required
-          >
-            <option value="provincial">กองกลางจังหวัด</option>
-            {shelters.map(s => (
-              <option key={s.shelterId} value={s.shelterId}>
-                {s.shelterName} ({s.shelterCode})
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>ไปยัง</label>
+              <select
+                className={styles.select}
+                value={toShelterId}
+                onChange={(e) => setToShelterId(e.target.value)}
+                disabled={loading}
+                required
+              >
+                <option value="">-- เลือกศูนย์ปลายทาง --</option>
+                {shelters
+                  .filter(s => s.shelterId !== fromShelterId)
+                  .map(s => (
+                    <option key={s.shelterId} value={s.shelterId}>
+                      {s.shelterName} ({s.shelterCode})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
 
-        <div className={styles.transferArrow}>↓</div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>หมายเหตุ</label>
+            <textarea
+              className={styles.textarea}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="เพิ่มเติม (ถ้ามี)"
+              rows={3}
+              disabled={loading}
+            />
+          </div>
 
-        <div className={styles.field}>
-          <label>ไปยัง *</label>
-          <select
-            value={toShelterId}
-            onChange={(e) => setToShelterId(e.target.value)}
-            disabled={loading}
-            required
-          >
-            <option value="">-- เลือกศูนย์ปลายทาง --</option>
-            {shelters
-              .filter(s => s.shelterId !== fromShelterId)
-              .map(s => (
-                <option key={s.shelterId} value={s.shelterId}>
-                  {s.shelterName} ({s.shelterCode})
-                </option>
-              ))}
-          </select>
-        </div>
-
-        <div className={styles.field}>
-          <label>หมายเหตุ</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="เพิ่มเติม (ถ้ามี)"
-            rows={3}
-            disabled={loading}
-          />
-        </div>
-
-        <button
-          type="submit"
-          className={styles.submitBtn}
-          disabled={loading || !stockId || !quantity || !toShelterId}
-        >
-          {loading ? 'กำลังโอน...' : 'ยืนยันโอน'}
-        </button>
-      </form>
+          <div className={styles.formActions}>
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={loading || !stockId || !quantity || !toShelterId}
+            >
+              {loading ? 'กำลังโอน...' : 'ยืนยันโอน'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

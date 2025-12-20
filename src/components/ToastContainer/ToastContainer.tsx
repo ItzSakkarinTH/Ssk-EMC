@@ -1,0 +1,49 @@
+'use client';
+
+import { useToast } from '@/contexts/ToastContext';
+import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
+import styles from './ToastContainer.module.css';
+
+export default function ToastContainer() {
+    const { toasts, removeToast } = useToast();
+
+    const getIcon = (type: string) => {
+        switch (type) {
+            case 'success':
+                return <CheckCircle size={20} />;
+            case 'error':
+                return <XCircle size={20} />;
+            case 'warning':
+                return <AlertTriangle size={20} />;
+            case 'info':
+                return <Info size={20} />;
+            default:
+                return <Info size={20} />;
+        }
+    };
+
+    return (
+        <div className={styles.toastContainer}>
+            {toasts.map((toast) => (
+                <div
+                    key={toast.id}
+                    className={`${styles.toast} ${styles[toast.type]}`}
+                >
+                    <div className={styles.toastIcon}>
+                        {getIcon(toast.type)}
+                    </div>
+                    <div className={styles.toastMessage}>
+                        {toast.message}
+                    </div>
+                    <button
+                        className={styles.toastClose}
+                        onClick={() => removeToast(toast.id)}
+                        aria-label="Close"
+                    >
+                        <X size={16} />
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
+}

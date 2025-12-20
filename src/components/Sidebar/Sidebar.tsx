@@ -15,7 +15,9 @@ import {
     LayoutDashboard,
     ArrowLeftRight,
     AlertCircle,
-    BarChart3
+    BarChart3,
+    Megaphone,
+    Wrench
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Sidebar.module.css';
@@ -62,12 +64,13 @@ export default function Sidebar() {
                 },
                 {
                     title: 'จัดการระบบ',
-                    icon: Users,
+                    icon: Wrench,
                     category: true,
                     subItems: [
-                        { title: 'ศูนย์พักพิง', path: '/admin/centers', icon: Building2 },
+                        { title: 'ศูนย์พักพิง', path: '/admin/shelters', icon: Building2 },
                         { title: 'รายการสินค้า', path: '/admin/items', icon: Package },
-                        { title: 'ผู้ใช้งาน', path: '/admin/users', icon: Users }
+                        { title: 'ผู้ใช้งาน', path: '/admin/users', icon: Users },
+                        { title: 'ประกาศ', path: '/admin/announcements', icon: Megaphone }
                     ]
                 }
             ];
@@ -127,9 +130,9 @@ export default function Sidebar() {
                                 </div>
                                 {item.subItems?.map((sub, sIdx) => {
                                     const SubIcon = sub.icon;
-                                    const isActive = pathname === sub.path || 
-                                                   pathname.startsWith(sub.path + '/');
-                                    
+                                    const isActive = pathname === sub.path ||
+                                        pathname.startsWith(sub.path + '/');
+
                                     return (
                                         <Link
                                             key={sIdx}
@@ -172,9 +175,9 @@ export default function Sidebar() {
                                 </span>
                             </div>
                         </div>
-                        <button 
-                            onClick={() => logout()} 
-                            className={styles.logoutBtn} 
+                        <button
+                            onClick={() => logout()}
+                            className={styles.logoutBtn}
                             title="ออกจากระบบ"
                         >
                             <LogOut size={20} strokeWidth={2} />

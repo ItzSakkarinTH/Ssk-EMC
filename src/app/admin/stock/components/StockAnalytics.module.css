@@ -1,0 +1,346 @@
+
+
+.container {
+    margin-top: var(--admin-spacing-lg, 1.5rem);
+}
+
+/* Metrics Grid */
+.metricsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--admin-spacing-lg, 1.5rem);
+    margin-bottom: var(--admin-spacing-xl, 2rem);
+}
+
+.metricCard {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+    border-radius: var(--admin-radius-lg, 16px);
+    padding: var(--admin-spacing-lg, 1.5rem);
+    display: flex;
+    align-items: center;
+    gap: var(--admin-spacing-md, 1rem);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3));
+    transition: all var(--admin-transition-slow, 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+    position: relative;
+    overflow: hidden;
+}
+
+.metricCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.metricCard:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--admin-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.4));
+}
+
+.metricCard:hover::before {
+    opacity: 1;
+}
+
+.metricCardPrimary::before {
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.metricCardSuccess::before {
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+}
+
+.metricCardWarning::before {
+    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+}
+
+.metricCardDanger::before {
+    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+}
+
+.metricIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--admin-radius-md, 12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.metricIconPrimary {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.metricIconSuccess {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.metricIconWarning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.metricIconDanger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.metricContent {
+    flex: 1;
+}
+
+.metricValue {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--admin-text-primary, #f1f5f9);
+    line-height: 1;
+    margin-bottom: 0.375rem;
+}
+
+.metricLabel {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--admin-text-muted, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.metricChange {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    margin-top: 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.metricChangePositive {
+    color: #6ee7b7;
+}
+
+.metricChangeNegative {
+    color: #fca5a5;
+}
+
+/* Charts Section */
+.chartsSection {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: var(--admin-spacing-lg, 1.5rem);
+    margin-bottom: var(--admin-spacing-xl, 2rem);
+}
+
+.chartCard {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+    border-radius: var(--admin-radius-lg, 16px);
+    padding: var(--admin-spacing-lg, 1.5rem);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3));
+    transition: all var(--admin-transition-slow, 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.chartCard:hover {
+    transform: translateY(-4px);
+    border-color: var(--admin-border-hover, rgba(59, 130, 246, 0.4));
+    box-shadow: var(--admin-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.4)),
+        0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--admin-spacing-lg, 1.5rem);
+    padding-bottom: var(--admin-spacing-md, 1rem);
+    border-bottom: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+}
+
+.chartTitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--admin-text-primary, #f1f5f9);
+}
+
+.chartActions {
+    display: flex;
+    gap: var(--admin-spacing-sm, 0.75rem);
+}
+
+.chartButton {
+    padding: 0.5rem 1rem;
+    background: var(--admin-surface, rgba(30, 41, 59, 0.6));
+    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+    border-radius: var(--admin-radius-sm, 8px);
+    color: var(--admin-text-secondary, #cbd5e1);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--admin-transition-base, 0.2s ease);
+}
+
+.chartButton:hover {
+    border-color: var(--admin-border-hover, rgba(59, 130, 246, 0.4));
+    background: var(--admin-surface-hover, rgba(30, 41, 59, 0.8));
+}
+
+.chartButton.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    border-color: transparent;
+}
+
+.chartContent {
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--admin-text-secondary, #cbd5e1);
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: var(--admin-radius-md, 12px);
+    padding: var(--admin-spacing-lg, 1.5rem);
+}
+
+/* Trends Section */
+.trendsSection {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+    border-radius: var(--admin-radius-lg, 16px);
+    padding: var(--admin-spacing-xl, 2rem);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.trendsTitle {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--admin-text-primary, #f1f5f9);
+    margin-bottom: var(--admin-spacing-lg, 1.5rem);
+}
+
+.trendsList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--admin-spacing-md, 1rem);
+}
+
+.trendItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--admin-spacing-md, 1rem);
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: var(--admin-radius-md, 12px);
+    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.1));
+    transition: all var(--admin-transition-base, 0.2s ease);
+}
+
+.trendItem:hover {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: var(--admin-border-hover, rgba(59, 130, 246, 0.4));
+}
+
+.trendInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--admin-spacing-md, 1rem);
+}
+
+.trendIcon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--admin-radius-sm, 8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.trendDetails {
+    flex: 1;
+}
+
+.trendName {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--admin-text-primary, #f1f5f9);
+    margin-bottom: 0.25rem;
+}
+
+.trendDescription {
+    font-size: 0.875rem;
+    color: var(--admin-text-muted, #94a3b8);
+}
+
+.trendValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--admin-text-primary, #f1f5f9);
+}
+
+/* Loading */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--admin-spacing-xl, 2rem);
+    color: var(--admin-text-muted, #94a3b8);
+    gap: var(--admin-spacing-md, 1rem);
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+    border-top-color: var(--admin-primary, #3b82f6);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .chartsSection {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .metricsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .chartHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--admin-spacing-md, 1rem);
+    }
+
+    .chartActions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .chartButton {
+        flex: 1;
+    }
+
+    .trendItem {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--admin-spacing-sm, 0.75rem);
+    }
+}
