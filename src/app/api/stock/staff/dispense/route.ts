@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const shelterId = user.assignedShelterId!;
+      const shelterId = user.assignedShelterId as string;
 
       // ตรวจสอบสิทธิ์
       const permission = canPerformStockAction(user, 'dispense', shelterId);

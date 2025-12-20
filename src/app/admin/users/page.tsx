@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import { Users, UserPlus, Edit, Trash2, Shield, User, Search } from 'lucide-react';
 
 interface SystemUser {
@@ -26,6 +26,7 @@ export default function UsersPage() {
 
     useEffect(() => {
         fetchUsers();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchUsers = async () => {
@@ -42,6 +43,7 @@ export default function UsersPage() {
                 toast.error('ไม่สามารถโหลดข้อมูลผู้ใช้ได้');
             }
         } catch (error) {
+            console.error(error);
             toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } finally {
             setLoading(false);
@@ -67,6 +69,7 @@ export default function UsersPage() {
                 toast.error('ไม่สามารถลบผู้ใช้ได้');
             }
         } catch (error) {
+            console.error(error);
             toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
         }
     };
@@ -81,17 +84,17 @@ export default function UsersPage() {
 
     if (loading) {
         return (
-            <AdminLayout title="จัดการผู้ใช้งาน" subtitle="จัดการบัญชีผู้ใช้ในระบบ">
-                <div className="admin-loading">
-                    <div className="admin-spinner"></div>
+            <DashboardLayout title="จัดการผู้ใช้งาน" subtitle="จัดการบัญชีผู้ใช้ในระบบ">
+                <div className="dash-loading">
+                    <div className="dash-spinner"></div>
                     <p>กำลังโหลดข้อมูล...</p>
                 </div>
-            </AdminLayout>
+            </DashboardLayout>
         );
     }
 
     return (
-        <AdminLayout
+        <DashboardLayout
             title="จัดการผู้ใช้งาน"
             subtitle="จัดการบัญชีผู้ใช้ในระบบ"
         >
@@ -104,36 +107,36 @@ export default function UsersPage() {
                 flexWrap: 'wrap'
             }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', flex: 1 }}>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-primary">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-primary">
                             <Users size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{users.length}</div>
-                            <div className="admin-stat-label">ผู้ใช้ทั้งหมด</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{users.length}</div>
+                            <div className="dash-stat-label">ผู้ใช้ทั้งหมด</div>
                         </div>
                     </div>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-warning">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-warning">
                             <Shield size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{adminCount}</div>
-                            <div className="admin-stat-label">Admin</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{adminCount}</div>
+                            <div className="dash-stat-label">Admin</div>
                         </div>
                     </div>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-info">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-info">
                             <User size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{staffCount}</div>
-                            <div className="admin-stat-label">Staff</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{staffCount}</div>
+                            <div className="dash-stat-label">Staff</div>
                         </div>
                     </div>
                 </div>
 
-                <button className="admin-btn admin-btn-primary">
+                <button className="dash-btn dash-btn-primary">
                     <UserPlus size={20} />
                     เพิ่มผู้ใช้
                 </button>
@@ -153,7 +156,7 @@ export default function UsersPage() {
                     />
                     <input
                         type="text"
-                        className="admin-input"
+                        className="dash-input"
                         placeholder="ค้นหาผู้ใช้..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -162,8 +165,8 @@ export default function UsersPage() {
                 </div>
             </div>
 
-            <div className="admin-table-container">
-                <table className="admin-table">
+            <div className="dash-table-container">
+                <table className="dash-table">
                     <thead>
                         <tr>
                             <th>ชื่อผู้ใช้</th>
@@ -182,7 +185,7 @@ export default function UsersPage() {
                                 </td>
                                 <td style={{ color: '#cbd5e1' }}>{user.email}</td>
                                 <td>
-                                    <span className={`admin-badge ${user.role === 'admin' ? 'admin-badge-warning' : 'admin-badge-info'
+                                    <span className={`dash-badge ${user.role === 'admin' ? 'dash-badge-warning' : 'dash-badge-info'
                                         }`}>
                                         {user.role === 'admin' ? '👑 Admin' : '👤 Staff'}
                                     </span>
@@ -197,11 +200,11 @@ export default function UsersPage() {
                                 </td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                        <button className="admin-btn admin-btn-secondary" style={{ padding: '0.5rem' }}>
+                                        <button className="dash-btn dash-btn-secondary" style={{ padding: '0.5rem' }}>
                                             <Edit size={16} />
                                         </button>
                                         <button
-                                            className="admin-btn admin-btn-danger"
+                                            className="dash-btn dash-btn-danger"
                                             style={{ padding: '0.5rem' }}
                                             onClick={() => handleDelete(user._id, user.username)}
                                         >
@@ -221,6 +224,6 @@ export default function UsersPage() {
                     <p>{searchTerm ? 'ไม่พบผู้ใช้ที่ค้นหา' : 'ยังไม่มีผู้ใช้ในระบบ'}</p>
                 </div>
             )}
-        </AdminLayout>
+        </DashboardLayout>
     );
 }

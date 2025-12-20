@@ -2,8 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withStaffAuth } from '@/lib/auth/rbac';
-import StockRequest from '@/lib/db/models/StockRequest';
+import StockRequest, { IStockRequest, IRequestItem } from '@/lib/db/models/StockRequest';
 import Stock from '@/lib/db/models/Stock';
+import { Types } from 'mongoose';
 
 export async function POST(req: NextRequest) {
   return withStaffAuth(req, async (req, user) => {
@@ -39,43 +40,49 @@ export async function POST(req: NextRequest) {
       }
 
       // ดึงข้อมูลสต๊อกเพื่อเติม itemName และ unit
-      const enrichedItems = await Promise.all(
+      type EnrichedItem = IRequestItem & { warning?: string };
+      const enrichedItems: EnrichedItem[] = await Promise.all(
         items.map(async (item: { stockId: string; quantity: number; reason: string }) => {
           const stock = await Stock.findById(item.stockId);
           if (!stock) {
             throw new Error(`Stock ${item.stockId} not found`);
           }
 
-          // ตรวจสอบว่ามีสต๊อกเพียงพอใน provincial หรือไม่
-          if (stock.provincialStock < item.quantity) {
-            return {
-              ...item,
-              itemName: stock.itemName,
-              unit: stock.unit,
-              warning: `Provincial stock insufficient (available: ${stock.provincialStock})`
-            };
-          }
-
-          return {
-            stockId: item.stockId,
+          const baseItem = {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            stockId: new Types.ObjectId(item.stockId) as any,
             itemName: stock.itemName,
             requestedQuantity: item.quantity,
             unit: stock.unit,
             reason: item.reason
           };
+
+          if (stock.provincialStock < item.quantity) {
+            return {
+              ...baseItem,
+              warning: `Provincial stock insufficient (available: ${stock.provincialStock})`
+            };
+          }
+
+          return baseItem;
         })
       );
 
       // สร้างคำร้อง
+      const requestItems = enrichedItems.map((item) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { warning: _, ...cleanItem } = item;
+        return cleanItem as IRequestItem;
+      });
       const request = await StockRequest.createRequest({
-        shelterId: user.assignedShelterId!,
+        shelterId: user.assignedShelterId as string,
         requestedBy: user.userId,
-        items: enrichedItems
+        items: requestItems
       });
 
       // ตรวจสอบว่ามี warning หรือไม่
       const warnings = enrichedItems
-        .filter((item): item is { stockId: string; itemName: string; quantity: number; unit: string; reason: string; warning: string } => 'warning' in item && typeof item.warning === 'string')
+        .filter((item) => item.warning)
         .map((item) => `${item.itemName}: ${item.warning}`);
 
       return NextResponse.json({
@@ -114,7 +121,7 @@ export async function GET(req: NextRequest) {
     try {
       await dbConnect();
 
-      const shelterId = user.assignedShelterId!;
+      const shelterId = user.assignedShelterId as string;
       const searchParams = req.nextUrl.searchParams;
       const status = searchParams.get('status');
 
@@ -130,7 +137,7 @@ export async function GET(req: NextRequest) {
         .populate('reviewedBy', 'name');
 
       return NextResponse.json({
-        requests: requests.map((r: { _id: unknown; requestNumber: string; status: string; items: unknown[]; requestedAt: Date; requestedBy: unknown; reviewedBy: unknown; reviewedAt: Date; deliveryStatus: string }) => ({
+        requests: requests.map((r: IStockRequest) => ({
           id: r._id,
           requestNumber: r.requestNumber,
           status: r.status,

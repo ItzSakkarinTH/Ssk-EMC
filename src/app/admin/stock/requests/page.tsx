@@ -1,15 +1,15 @@
 'use client';
 
 import RequestApproval from '../components/RequestApproval';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 export default function RequestsPage() {
   return (
-    <AdminLayout
+    <DashboardLayout
       title="คำร้องขอสินค้า"
       subtitle="พิจารณาและอนุมัติคำร้องขอสินค้าจากศูนย์พักพิงต่างๆ"
     >
       <RequestApproval />
-    </AdminLayout>
+    </DashboardLayout>
   );
 }

@@ -1,107 +1,121 @@
+/* Quick Dispense Premium Dark Theme */
 
 .container {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .container h2 {
-  font-size: 20px;
-  color: #1a202c;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(59, 130, 246, 0.2);
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
 .error {
-  background-color: #fff5f5;
-  border-left: 4px solid #e53e3e;
-  color: #c53030;
-  padding: 12px;
-  border-radius: 4px;
-  font-size: 14px;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 4px solid #ef4444;
+  color: #fca5a5;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.75rem;
 }
 
 .field label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #2d3748;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .field input,
 .field select,
 .field textarea {
-  padding: 10px 12px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 15px;
-  transition: border-color 0.2s;
+  padding: 0.875rem 1rem;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: #f1f5f9;
+  transition: all 0.2s ease;
+  outline: none;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  outline: none;
-  border-color: #4299e1;
-  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+  border-color: #3b82f6;
+  background: rgba(15, 23, 42, 0.8);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
 }
 
 .field input:disabled,
 .field select:disabled,
 .field textarea:disabled {
-  background-color: #f7fafc;
+  background: rgba(15, 23, 42, 0.3);
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .stockInfo {
-  background-color: #edf2f7;
-  border-radius: 6px;
-  padding: 12px;
-  font-size: 14px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 0.95rem;
+  color: #cbd5e1;
 }
 
-.stockInfo > div {
-  margin-bottom: 6px;
+.stockInfo>div {
+  margin-bottom: 0.5rem;
 }
 
-.stockInfo > div:last-child {
+.stockInfo>div:last-child {
   margin-bottom: 0;
 }
 
 .warning {
-  color: #c05621;
-  font-weight: 600;
+  color: #f59e0b;
+  font-weight: 700;
 }
 
 .submitBtn {
-  background-color: #3182ce;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
-  padding: 12px 24px;
+  padding: 1rem 2rem;
   border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-size: 1.125rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  margin-top: 0.5rem;
 }
 
 .submitBtn:hover:not(:disabled) {
-  background-color: #2c5282;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
 }
 
 .submitBtn:active:not(:disabled) {
@@ -109,24 +123,19 @@
 }
 
 .submitBtn:disabled {
-  background-color: #cbd5e0;
+  background: #334155;
+  color: #64748b;
   cursor: not-allowed;
-  transform: none;
+  box-shadow: none;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
   .container {
-    padding: 16px;
+    padding: 1.25rem;
   }
 
   .container h2 {
-    font-size: 18px;
-  }
-
-  .field input,
-  .field select,
-  .field textarea {
-    font-size: 16px; /* ป้องกัน zoom บนมือถือ */
+    font-size: 1.25rem;
   }
 }

@@ -1,24 +1,22 @@
-
-
 .container {
-    margin-top: var(--admin-spacing-lg, 1.5rem);
+    margin-top: var(--dash-spacing-lg, 1.5rem);
 }
 
 /* Request List */
 .requestList {
     display: flex;
     flex-direction: column;
-    gap: var(--admin-spacing-lg, 1.5rem);
+    gap: var(--dash-spacing-lg, 1.5rem);
 }
 
 .requestCard {
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
-    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
-    border-radius: var(--admin-radius-lg, 16px);
-    padding: var(--admin-spacing-lg, 1.5rem);
+    border: 1px solid var(--dash-border, rgba(148, 163, 184, 0.15));
+    border-radius: var(--dash-radius-lg, 16px);
+    padding: var(--dash-spacing-lg, 1.5rem);
     backdrop-filter: blur(10px);
-    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3));
-    transition: all var(--admin-transition-slow, 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+    box-shadow: var(--dash-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3));
+    transition: all var(--dash-transition-slow, 0.3s cubic-bezier(0.4, 0, 0.2, 1));
     position: relative;
     overflow: hidden;
 }
@@ -37,8 +35,8 @@
 
 .requestCard:hover {
     transform: translateY(-4px);
-    border-color: var(--admin-border-hover, rgba(59, 130, 246, 0.4));
-    box-shadow: var(--admin-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.4)),
+    border-color: var(--dash-border-hover, rgba(59, 130, 246, 0.4));
+    box-shadow: var(--dash-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.4)),
         0 0 20px rgba(59, 130, 246, 0.3);
 }
 
@@ -51,10 +49,10 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--admin-spacing-md, 1rem);
-    padding-bottom: var(--admin-spacing-md, 1rem);
-    border-bottom: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
-    gap: var(--admin-spacing-md, 1rem);
+    margin-bottom: var(--dash-spacing-md, 1rem);
+    padding-bottom: var(--dash-spacing-md, 1rem);
+    border-bottom: 1px solid var(--dash-border, rgba(148, 163, 184, 0.15));
+    gap: var(--dash-spacing-md, 1rem);
 }
 
 .requestInfo {
@@ -64,16 +62,16 @@
 .requestTitle {
     font-size: 1.125rem;
     font-weight: 700;
-    color: var(--admin-text-primary, #f1f5f9);
+    color: var(--dash-text-primary, #f1f5f9);
     margin-bottom: 0.5rem;
 }
 
 .requestMeta {
     display: flex;
-    gap: var(--admin-spacing-md, 1rem);
+    gap: var(--dash-spacing-md, 1rem);
     flex-wrap: wrap;
     font-size: 0.875rem;
-    color: var(--admin-text-muted, #94a3b8);
+    color: var(--dash-text-muted, #94a3b8);
 }
 
 .requestMeta span {
@@ -94,7 +92,7 @@
     padding: 0.625rem 1rem;
     font-size: 0.8125rem;
     font-weight: 700;
-    border-radius: var(--admin-radius-md, 12px);
+    border-radius: var(--dash-radius-md, 12px);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     border: 1px solid;
@@ -121,17 +119,17 @@
 
 /* Request Body */
 .requestBody {
-    margin-bottom: var(--admin-spacing-md, 1rem);
+    margin-bottom: var(--dash-spacing-md, 1rem);
 }
 
 .requestDetails {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--admin-spacing-md, 1rem);
-    padding: var(--admin-spacing-md, 1rem);
+    gap: var(--dash-spacing-md, 1rem);
+    padding: var(--dash-spacing-md, 1rem);
     background: rgba(15, 23, 42, 0.6);
-    border-radius: var(--admin-radius-md, 12px);
-    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.1));
+    border-radius: var(--dash-radius-md, 12px);
+    border: 1px solid var(--dash-border, rgba(148, 163, 184, 0.1));
 }
 
 .detailItem {
@@ -143,7 +141,7 @@
 .detailLabel {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--admin-text-muted, #94a3b8);
+    color: var(--dash-text-muted, #94a3b8);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -151,13 +149,13 @@
 .detailValue {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--admin-text-primary, #f1f5f9);
+    color: var(--dash-text-primary, #f1f5f9);
 }
 
 /* Request Actions */
 .requestActions {
     display: flex;
-    gap: var(--admin-spacing-sm, 0.75rem);
+    gap: var(--dash-spacing-sm, 0.75rem);
     flex-wrap: wrap;
 }
 
@@ -169,46 +167,46 @@
     padding: 0.75rem 1.5rem;
     font-size: 0.9375rem;
     font-weight: 600;
-    border-radius: var(--admin-radius-md, 12px);
+    border-radius: var(--dash-radius-md, 12px);
     border: none;
     cursor: pointer;
-    transition: all var(--admin-transition-base, 0.2s ease);
+    transition: all var(--dash-transition-base, 0.2s ease);
     white-space: nowrap;
 }
 
 .approveButton {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
-    box-shadow: var(--admin-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
+    box-shadow: var(--dash-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
 .approveButton:hover {
     transform: translateY(-2px);
-    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3)),
+    box-shadow: var(--dash-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3)),
         0 0 20px rgba(16, 185, 129, 0.3);
 }
 
 .rejectButton {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
-    box-shadow: var(--admin-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
+    box-shadow: var(--dash-shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
 .rejectButton:hover {
     transform: translateY(-2px);
-    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3)),
+    box-shadow: var(--dash-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3)),
         0 0 20px rgba(239, 68, 68, 0.3);
 }
 
 .viewButton {
-    background: var(--admin-surface, rgba(30, 41, 59, 0.6));
-    color: var(--admin-text-primary, #f1f5f9);
-    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+    background: var(--dash-surface, rgba(30, 41, 59, 0.6));
+    color: var(--dash-text-primary, #f1f5f9);
+    border: 1px solid var(--dash-border, rgba(148, 163, 184, 0.15));
 }
 
 .viewButton:hover {
-    background: var(--admin-surface-hover, rgba(30, 41, 59, 0.8));
-    border-color: var(--admin-border-hover, rgba(59, 130, 246, 0.4));
+    background: var(--dash-surface-hover, rgba(30, 41, 59, 0.8));
+    border-color: var(--dash-border-hover, rgba(59, 130, 246, 0.4));
 }
 
 .actionButton:active {
@@ -224,12 +222,12 @@
 /* Empty State */
 .emptyState {
     text-align: center;
-    padding: var(--admin-spacing-xl, 2rem);
-    color: var(--admin-text-muted, #94a3b8);
+    padding: var(--dash-spacing-xl, 2rem);
+    color: var(--dash-text-muted, #94a3b8);
 }
 
 .emptyState svg {
-    margin-bottom: var(--admin-spacing-md, 1rem);
+    margin-bottom: var(--dash-spacing-md, 1rem);
     opacity: 0.5;
 }
 
@@ -239,16 +237,16 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--admin-spacing-xl, 2rem);
-    color: var(--admin-text-muted, #94a3b8);
-    gap: var(--admin-spacing-md, 1rem);
+    padding: var(--dash-spacing-xl, 2rem);
+    color: var(--dash-text-muted, #94a3b8);
+    gap: var(--dash-spacing-md, 1rem);
 }
 
 .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid var(--admin-border, rgba(148, 163, 184, 0.15));
-    border-top-color: var(--admin-primary, #3b82f6);
+    border: 4px solid var(--dash-border, rgba(148, 163, 184, 0.15));
+    border-top-color: var(--dash-primary, #3b82f6);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -262,26 +260,26 @@
 /* Filters */
 .filters {
     display: flex;
-    gap: var(--admin-spacing-md, 1rem);
-    margin-bottom: var(--admin-spacing-lg, 1.5rem);
+    gap: var(--dash-spacing-md, 1rem);
+    margin-bottom: var(--dash-spacing-lg, 1.5rem);
     flex-wrap: wrap;
 }
 
 .filterButton {
     padding: 0.75rem 1.25rem;
-    background: var(--admin-surface, rgba(30, 41, 59, 0.6));
-    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
-    border-radius: var(--admin-radius-md, 12px);
-    color: var(--admin-text-secondary, #cbd5e1);
+    background: var(--dash-surface, rgba(30, 41, 59, 0.6));
+    border: 1px solid var(--dash-border, rgba(148, 163, 184, 0.15));
+    border-radius: var(--dash-radius-md, 12px);
+    color: var(--dash-text-secondary, #cbd5e1);
     font-size: 0.9375rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--admin-transition-base, 0.2s ease);
+    transition: all var(--dash-transition-base, 0.2s ease);
 }
 
 .filterButton:hover {
-    border-color: var(--admin-border-hover, rgba(59, 130, 246, 0.4));
-    background: var(--admin-surface-hover, rgba(30, 41, 59, 0.8));
+    border-color: var(--dash-border-hover, rgba(59, 130, 246, 0.4));
+    background: var(--dash-surface-hover, rgba(30, 41, 59, 0.8));
 }
 
 .filterButton.active {

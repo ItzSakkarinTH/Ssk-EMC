@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import { Megaphone, Plus, Edit, Trash2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 interface Announcement {
@@ -24,6 +24,7 @@ export default function AnnouncementsPage() {
 
     useEffect(() => {
         fetchAnnouncements();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const fetchAnnouncements = async () => {
@@ -37,9 +38,11 @@ export default function AnnouncementsPage() {
                 const data = await res.json();
                 setAnnouncements(data.announcements || []);
             } else {
+                console.error('Failed to load announcements:', res.status, res.statusText);
                 toast.error('ไม่สามารถโหลดข้อมูลประกาศได้');
             }
         } catch (error) {
+            console.error(error);
             toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } finally {
             setLoading(false);
@@ -62,10 +65,12 @@ export default function AnnouncementsPage() {
                 toast.success('ลบประกาศสำเร็จ');
                 fetchAnnouncements();
             } else {
+                console.error('Failed to delete announcement:', res.status, res.statusText);
                 toast.error('ไม่สามารถลบประกาศได้');
             }
         } catch (error) {
-            toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
+            console.error(error);
+            toast.error('เกิดข้อผิดพลาดในการลบประกาศ');
         }
     };
 
@@ -83,11 +88,11 @@ export default function AnnouncementsPage() {
     const getTypeBadge = (type: string) => {
         switch (type) {
             case 'urgent':
-                return 'admin-badge-danger';
+                return 'dash-badge-danger';
             case 'warning':
-                return 'admin-badge-warning';
+                return 'dash-badge-warning';
             default:
-                return 'admin-badge-info';
+                return 'dash-badge-info';
         }
     };
 
@@ -107,17 +112,17 @@ export default function AnnouncementsPage() {
 
     if (loading) {
         return (
-            <AdminLayout title="จัดการประกาศ" subtitle="จัดการประกาศและข้อมูลข่าวสาร">
-                <div className="admin-loading">
-                    <div className="admin-spinner"></div>
+            <DashboardLayout title="จัดการประกาศ" subtitle="จัดการประกาศและข้อมูลข่าวสาร">
+                <div className="dash-loading">
+                    <div className="dash-spinner"></div>
                     <p>กำลังโหลดข้อมูล...</p>
                 </div>
-            </AdminLayout>
+            </DashboardLayout>
         );
     }
 
     return (
-        <AdminLayout
+        <DashboardLayout
             title="จัดการประกาศ"
             subtitle="จัดการประกาศและข้อมูลข่าวสาร"
         >
@@ -130,45 +135,45 @@ export default function AnnouncementsPage() {
                 flexWrap: 'wrap'
             }}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', flex: 1 }}>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-primary">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-primary">
                             <Megaphone size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{announcements.length}</div>
-                            <div className="admin-stat-label">ประกาศทั้งหมด</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{announcements.length}</div>
+                            <div className="dash-stat-label">ประกาศทั้งหมด</div>
                         </div>
                     </div>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-success">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-success">
                             <Megaphone size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{activeCount}</div>
-                            <div className="admin-stat-label">กำลังแสดง</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{activeCount}</div>
+                            <div className="dash-stat-label">กำลังแสดง</div>
                         </div>
                     </div>
-                    <div className="admin-stat-card">
-                        <div className="admin-stat-icon admin-stat-icon-danger">
+                    <div className="dash-stat-card">
+                        <div className="dash-stat-icon dash-stat-icon-danger">
                             <AlertCircle size={28} />
                         </div>
-                        <div className="admin-stat-content">
-                            <div className="admin-stat-value">{urgentCount}</div>
-                            <div className="admin-stat-label">ด่วนมาก</div>
+                        <div className="dash-stat-content">
+                            <div className="dash-stat-value">{urgentCount}</div>
+                            <div className="dash-stat-label">ด่วนมาก</div>
                         </div>
                     </div>
                 </div>
 
-                <button className="admin-btn admin-btn-primary">
+                <button className="dash-btn dash-btn-primary">
                     <Plus size={20} />
                     สร้างประกาศ
                 </button>
             </div>
 
-            <div className="admin-grid admin-grid-auto">
+            <div className="dash-grid dash-grid-auto">
                 {announcements.map((announcement) => (
-                    <div key={announcement._id} className="admin-card">
-                        <div className="admin-card-header">
+                    <div key={announcement._id} className="dash-card">
+                        <div className="dash-card-header">
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                                 <div style={{
                                     width: '40px',
@@ -187,20 +192,20 @@ export default function AnnouncementsPage() {
                                     {getTypeIcon(announcement.type)}
                                 </div>
                                 <div>
-                                    <h3 className="admin-card-title" style={{ marginBottom: '0.25rem' }}>
+                                    <h3 className="dash-card-title" style={{ marginBottom: '0.25rem' }}>
                                         {announcement.title}
                                     </h3>
-                                    <span className={`admin-badge ${getTypeBadge(announcement.type)}`}>
+                                    <span className={`dash-badge ${getTypeBadge(announcement.type)}`}>
                                         {getTypeLabel(announcement.type)}
                                     </span>
                                 </div>
                             </div>
-                            <span className={`admin-badge ${announcement.isActive ? 'admin-badge-success' : 'admin-badge-secondary'}`}>
+                            <span className={`dash-badge ${announcement.isActive ? 'dash-badge-success' : 'dash-badge-secondary'}`}>
                                 {announcement.isActive ? 'แสดง' : 'ซ่อน'}
                             </span>
                         </div>
 
-                        <div className="admin-card-body">
+                        <div className="dash-card-body">
                             <p style={{ color: '#cbd5e1', marginBottom: '1rem', lineHeight: 1.6 }}>
                                 {announcement.content}
                             </p>
@@ -220,11 +225,11 @@ export default function AnnouncementsPage() {
                                     {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
                                 </div>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button className="admin-btn admin-btn-secondary" style={{ padding: '0.5rem' }}>
+                                    <button className="dash-btn dash-btn-secondary" style={{ padding: '0.5rem' }}>
                                         <Edit size={16} />
                                     </button>
                                     <button
-                                        className="admin-btn admin-btn-danger"
+                                        className="dash-btn dash-btn-danger"
                                         style={{ padding: '0.5rem' }}
                                         onClick={() => handleDelete(announcement._id, announcement.title)}
                                     >
@@ -242,7 +247,7 @@ export default function AnnouncementsPage() {
                     <Megaphone size={64} style={{ opacity: 0.5, marginBottom: '1rem' }} />
                     <p>ยังไม่มีประกาศในระบบ</p>
                     <button
-                        className="admin-btn admin-btn-primary"
+                        className="dash-btn dash-btn-primary"
                         style={{ marginTop: '1rem' }}
                     >
                         <Plus size={20} />
@@ -250,6 +255,6 @@ export default function AnnouncementsPage() {
                     </button>
                 </div>
             )}
-        </AdminLayout>
+        </DashboardLayout>
     );
 }

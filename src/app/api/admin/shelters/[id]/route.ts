@@ -7,12 +7,13 @@ import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib
 import { ZodError } from 'zod';
 
 interface RouteParams {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const shelter = await Shelter.findById(params.id).lean();
+        const shelter = await Shelter.findById(id).lean();
 
         if (!shelter) {
             return NextResponse.json({ error: 'ไม่พบศูนย์พักพิง' }, { status: 404 });
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             shelter
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/shelters/${params.id}`, method: 'GET' });
+        errorTracker.logError(error, { endpoint: `/api/admin/shelters/${id}`, method: 'GET' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลศูนย์พักพิงได้'),
             { status: 500 }
@@ -46,7 +47,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -70,7 +72,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         if (validatedData.code) {
             const existingShelter = await Shelter.findOne({
                 code: validatedData.code,
-                _id: { $ne: params.id }
+                _id: { $ne: id }
             });
             if (existingShelter) {
                 return NextResponse.json(
@@ -81,7 +83,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         const shelter = await Shelter.findByIdAndUpdate(
-            params.id,
+            id,
             { $set: validatedData },
             { new: true, runValidators: true }
         );
@@ -108,7 +110,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        errorTracker.logError(error, { endpoint: `/api/admin/shelters/${params.id}`, method: 'PATCH' });
+        errorTracker.logError(error, { endpoint: `/api/admin/shelters/${id}`, method: 'PATCH' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถอัพเดทศูนย์พักพิงได้'),
             { status: 500 }
@@ -116,7 +118,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -140,14 +143,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         //   );
         // }
 
-        const shelter = await Shelter.findByIdAndDelete(params.id);
+        const shelter = await Shelter.findByIdAndDelete(id);
 
         if (!shelter) {
             return NextResponse.json({ error: 'ไม่พบศูนย์พักพิง' }, { status: 404 });
         }
 
         errorTracker.logInfo('Shelter deleted successfully', {
-            shelterId: params.id,
+            shelterId: id,
             code: shelter.code,
             userId: decoded.userId
         });
@@ -157,7 +160,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             message: 'ลบศูนย์พักพิงสำเร็จ'
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/admin/shelters/${params.id}`, method: 'DELETE' });
+        errorTracker.logError(error, { endpoint: `/api/admin/shelters/${id}`, method: 'DELETE' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถลบศูนย์พักพิงได้'),
             { status: 500 }

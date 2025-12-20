@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import QuickReceive from '../components/QuickReceive';
-import styles from './page.module.css';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 export default function ReceivePage() {
   const router = useRouter();
@@ -12,11 +12,11 @@ export default function ReceivePage() {
   };
 
   return (
-    <div className={styles.container}>
-      <button onClick={() => router.back()} className={styles.backBtn}>
-        ← กลับ
-      </button>
+    <DashboardLayout
+      title="รับเข้าสต๊อกสินค้า"
+      subtitle="บันทึกรายการสินค้าที่รับเข้าสู่ศูนย์พักพิง"
+    >
       <QuickReceive onSuccess={handleSuccess} />
-    </div>
+    </DashboardLayout>
   );
 }

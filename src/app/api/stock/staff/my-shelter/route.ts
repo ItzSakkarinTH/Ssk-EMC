@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     try {
       await dbConnect();
 
-      const shelterId = user.assignedShelterId!;
+      const shelterId = user.assignedShelterId as string;
 
       // ดึงข้อมูลศูนย์
       const shelter = await Shelter.findById(shelterId);

@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import TransferManager from '../components/TransferManager';
-import AdminLayout from '@/components/AdminLayout/AdminLayout';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 export default function TransfersPage() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
-    <AdminLayout
+    <DashboardLayout
       title="โอนสต๊อกระหว่างศูนย์"
       subtitle="จัดการการโอนย้ายสต๊อกระหว่างศูนย์พักพิงต่างๆ"
     >
@@ -16,6 +16,6 @@ export default function TransfersPage() {
         key={refreshKey}
         onSuccess={() => setRefreshKey(prev => prev + 1)}
       />
-    </AdminLayout>
+    </DashboardLayout>
   );
 }

@@ -4,11 +4,13 @@ import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
 import StockRequest from '@/lib/db/models/StockRequest';
 import { StockService } from '@/lib/stock/service';
+import { Types } from 'mongoose';
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params;
   return withAdminAuth(req, async (req, user) => {
     try {
       await dbConnect();
@@ -25,7 +27,7 @@ export async function PATCH(
       }
 
       // ดึงคำร้อง
-      const request = await StockRequest.findById(params.id);
+      const request = await StockRequest.findById(id);
       if (!request) {
         return NextResponse.json(
           { error: 'Request not found' },
@@ -42,7 +44,8 @@ export async function PATCH(
 
       // อัปเดตสถานะ
       request.status = status;
-      request.reviewedBy = user.userId;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      request.reviewedBy = new Types.ObjectId(user.userId) as any;
       request.reviewedAt = new Date();
       request.adminNotes = adminNotes || '';
 
@@ -75,7 +78,8 @@ export async function PATCH(
         success: true,
         requestId: request._id,
         status: request.status,
-        approvalRate: request.getApprovalRate()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        approvalRate: (request as any).getApprovalRate()
       });
 
     } catch (error: unknown) {
@@ -100,13 +104,15 @@ export async function PATCH(
 // GET: ดึงรายละเอียดคำร้อง
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
-  return withAdminAuth(req, async (req, user) => {
+  const { id } = await context.params;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  return withAdminAuth(req, async (_req, _user) => {
     try {
       await dbConnect();
 
-      const request = await StockRequest.findById(params.id)
+      const request = await StockRequest.findById(id)
         .populate('shelterId', 'name location')
         .populate('requestedBy', 'name email')
         .populate('reviewedBy', 'name');

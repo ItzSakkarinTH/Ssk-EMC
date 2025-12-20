@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import QuickDispense from '../components/QuickDispense';
-import styles from './page.module.css';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 
 export default function DispensePage() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function DispensePage() {
         setShelterStock(data.stock);
       }
     } catch (err) {
-      console.error('Failed to fetch stock');
+      console.error('Failed to fetch stock', err);
     } finally {
       setLoading(false);
     }
@@ -39,11 +39,11 @@ export default function DispensePage() {
   if (loading) return <div>กำลังโหลด...</div>;
 
   return (
-    <div className={styles.container}>
-      <button onClick={() => router.back()} className={styles.backBtn}>
-        ← กลับ
-      </button>
+    <DashboardLayout
+      title="เบิกจ่ายสินค้า"
+      subtitle="บันทึกการเบิกจ่ายสินค้าออกจากสต๊อกของศูนย์"
+    >
       <QuickDispense shelterStock={shelterStock} onSuccess={handleSuccess} />
-    </div>
+    </DashboardLayout>
   );
 }

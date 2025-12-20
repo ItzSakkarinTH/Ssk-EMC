@@ -8,12 +8,13 @@ import { errorTracker, createErrorResponse } from '@/lib/error-tracker';
 import mongoose from 'mongoose';
 
 interface RouteParams {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -28,12 +29,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const stockRequest = await StockRequest.findById(params.id)
+        const stockRequest = await StockRequest.findById(id)
             .populate('shelterId', 'name code')
             .populate('requestedBy', 'username')
             .populate('reviewedBy', 'username')
             .populate('items.stockItemId', 'name unit')
-            .lean();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .lean() as any; // Cast to any because of populated fields
 
         if (!stockRequest) {
             return NextResponse.json({ error: 'ไม่พบคำร้องขอสินค้า' }, { status: 404 });
@@ -44,7 +46,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             request: stockRequest
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/stock/admin/requests/${params.id}`, method: 'GET' });
+        errorTracker.logError(error, { endpoint: `/api/stock/admin/requests/${id}`, method: 'GET' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลคำร้องได้'),
             { status: 500 }
@@ -52,7 +54,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, context: RouteParams) {
+    const { id } = await context.params;
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
 
@@ -77,7 +80,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         await connectDB();
 
-        const stockRequest = await StockRequest.findById(params.id)
+        const stockRequest = await StockRequest.findById(id)
             .populate('shelterId')
             .populate('items.stockItemId');
 
@@ -97,11 +100,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             stockRequest.status = 'rejected';
             stockRequest.reviewedBy = decoded.userId as unknown as mongoose.Types.ObjectId;
             stockRequest.reviewedAt = new Date();
-            stockRequest.reviewNotes = notes || 'ปฏิเสธคำร้อง';
+            stockRequest.adminNotes = notes || 'ปฏิเสธคำร้อง';
             await stockRequest.save();
 
             errorTracker.logInfo('Stock request rejected', {
-                requestId: params.id,
+                requestId: id,
                 userId: decoded.userId
             });
 
@@ -125,8 +128,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         // Process each item
         for (const approvalItem of items) {
-            const requestItem = stockRequest.items.find(
-                (item: { stockItemId: { _id: { toString: () => string } } }) =>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const requestItem: any = stockRequest.items.find(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (item: any) =>
                     item.stockItemId._id.toString() === approvalItem.stockItemId
             );
 
@@ -191,8 +196,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                     },
                     to: {
                         type: 'shelter',
-                        id: stockRequest.shelterId._id,
-                        name: stockRequest.shelterId.name
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        id: (stockRequest.shelterId as any)._id,
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        name: (stockRequest.shelterId as any).name
                     },
                     performedBy: decoded.userId,
                     notes: `อนุมัติคำร้อง #${stockRequest._id}`,
@@ -208,14 +215,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         // Update request status
-        stockRequest.status = allApproved ? 'approved' : 'partially_approved';
+        stockRequest.status = allApproved ? 'approved' : 'partial';
         stockRequest.reviewedBy = decoded.userId as unknown as mongoose.Types.ObjectId;
         stockRequest.reviewedAt = new Date();
-        stockRequest.reviewNotes = notes || 'อนุมัติคำร้อง';
+        stockRequest.adminNotes = notes || 'อนุมัติคำร้อง';
         await stockRequest.save();
 
         errorTracker.logInfo('Stock request approved', {
-            requestId: params.id,
+            requestId: id,
             status: stockRequest.status,
             movementCount: movements.length,
             userId: decoded.userId
@@ -228,7 +235,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             message: allApproved ? 'อนุมัติคำร้องสำเร็จ' : 'อนุมัติคำร้องบางส่วนสำเร็จ'
         });
     } catch (error) {
-        errorTracker.logError(error, { endpoint: `/api/stock/admin/requests/${params.id}`, method: 'PATCH' });
+        errorTracker.logError(error, { endpoint: `/api/stock/admin/requests/${id}`, method: 'PATCH' });
         return NextResponse.json(
             createErrorResponse(error, 'ไม่สามารถพิจารณาคำร้องได้'),
             { status: 500 }
