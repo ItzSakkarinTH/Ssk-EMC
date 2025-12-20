@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const decoded = verifyToken(token);
+        const decoded = await verifyToken(token);
         if (!decoded) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
@@ -60,7 +60,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const decoded = verifyToken(token);
+        const decoded = await verifyToken(token);
         if (!decoded || decoded.role !== 'admin') {
             return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 });
         }
