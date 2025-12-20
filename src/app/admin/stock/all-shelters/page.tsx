@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ShelterComparison from '../components/ShelterComparison';
-import styles from './page.module.css';
+import styles from './allShelters.module.css';
 
 export default function AllSheltersPage() {
   return (

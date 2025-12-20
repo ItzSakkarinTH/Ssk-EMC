@@ -1,15 +1,5 @@
 /* Container */
 .container {
-  min-height: 100vh;
-  background: #0f172a;
-  display: flex;
-}
-
-/* Sidebar takes 280px, so mainWrapper needs padding */
-.mainWrapper {
-  flex: 1;
-  margin-left: 280px;
-  /* Same as sidebar width */
   padding: 2rem;
   background: #0f172a;
   min-height: 100vh;
@@ -208,14 +198,4 @@
   color: #a5b4fc;
   font-size: 0.75rem;
   border-radius: 99px;
-}
-
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 80px;
-  }
-
-  .mainWrapper {
-    margin-left: 80px;
-  }
 }

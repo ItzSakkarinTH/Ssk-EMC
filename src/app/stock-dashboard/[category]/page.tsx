@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import styles from './page.module.css';
+import styles from './Category.module.css';
 
 interface StockItem {
   itemName: string;

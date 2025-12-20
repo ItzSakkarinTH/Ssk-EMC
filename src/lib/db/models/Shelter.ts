@@ -47,7 +47,6 @@ const ShelterSchema = new Schema<IShelter>({
 });
 
 // Index
-ShelterSchema.index({ code: 1 });
 ShelterSchema.index({ status: 1 });
 
 export default mongoose.models.Shelter || mongoose.model<IShelter>('Shelter', ShelterSchema);
