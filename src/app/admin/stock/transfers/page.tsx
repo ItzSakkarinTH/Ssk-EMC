@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import TransferManager from '../components/TransferManager';
-import styles from './page.module.css';
+import styles from './transfers.module.css';
 
 export default function TransfersPage() {
   const [refreshKey, setRefreshKey] = useState(0);

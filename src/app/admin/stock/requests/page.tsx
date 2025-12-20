@@ -1,7 +1,7 @@
 'use client';
 
 import RequestApproval from '../components/RequestApproval';
-import styles from './page.module.css';
+import styles from './requests.module.css';
 
 export default function RequestsPage() {
   return (

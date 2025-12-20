@@ -1,4 +1,4 @@
-// src/lib/stock/service.ts
+
 import Stock from '@/lib/db/models/Stock';
 import StockMovement from '@/lib/db/models/StockMovement';
 import mongoose from 'mongoose';

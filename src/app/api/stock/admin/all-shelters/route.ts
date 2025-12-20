@@ -1,40 +1,50 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
-import Stock from '@/lib/db/models/Stock';
-import Shelter from '@/lib/db/models/Shelter';
+import Stock, { IStock, IShelterStock } from '@/lib/db/models/Stock';
+import Shelter, { IShelter } from '@/lib/db/models/Shelter';
+import { Types } from 'mongoose';
 
 export async function GET(req: NextRequest) {
-  return withAdminAuth(req, async (req, user) => {
+  return withAdminAuth(req, async () => {
     try {
       await dbConnect();
 
-      // ดึงศูนย์ทั้งหมด
-      const shelters = await Shelter.find({ status: 'active' });
+      // ดึงศูนย์ทั้งหมด แบบ JSON object (lean)
+      const shelters = await Shelter.find({ status: 'active' }).lean() as unknown as (IShelter & { _id: Types.ObjectId })[];
 
       // ดึงสต๊อกทั้งหมด
-      const allStocks = await Stock.find({});
+      const allStocks = await Stock.find({}).lean() as unknown as (IStock & { _id: Types.ObjectId })[];
+
+      if (!shelters) {
+        return NextResponse.json({ shelters: [], summary: null });
+      }
 
       // คำนวณสรุปแต่ละศูนย์
-      const shelterSummary = shelters.map((shelter: { _id: { toString: () => string }; name: string; code: string; location: string; capacity: number; currentOccupancy: number }) => {
+      const shelterSummary = shelters.map((shelter) => {
         let totalItems = 0;
         let totalQuantity = 0;
         let lowStockCount = 0;
         let criticalCount = 0;
 
-        allStocks.forEach((stock: { shelterStock: Array<{ shelterId: { toString: () => string }; quantity: number }>; criticalLevel: number; minStockLevel: number }) => {
+        allStocks.forEach((stock) => {
+          if (!stock.shelterStock) return;
+
+          const shelterIdStr = shelter._id.toString();
           const shelterStock = stock.shelterStock.find(
-            (s: { shelterId: { toString: () => string } }) => s.shelterId.toString() === shelter._id.toString()
+            (s: IShelterStock) => s.shelterId && s.shelterId.toString() === shelterIdStr
           );
 
           if (shelterStock && shelterStock.quantity > 0) {
             totalItems++;
             totalQuantity += shelterStock.quantity;
 
-            if (shelterStock.quantity <= stock.criticalLevel) {
+            const critical = stock.criticalLevel || 5;
+            const min = stock.minStockLevel || 10;
+
+            if (shelterStock.quantity <= critical) {
               criticalCount++;
-            } else if (shelterStock.quantity <= stock.minStockLevel) {
+            } else if (shelterStock.quantity <= min) {
               lowStockCount++;
             }
           }
@@ -49,10 +59,12 @@ export async function GET(req: NextRequest) {
         }
 
         return {
-          shelterId: shelter._id,
+          shelterId: shelter._id.toString(),
           shelterName: shelter.name,
           shelterCode: shelter.code,
-          location: shelter.location,
+          location: typeof shelter.location === 'object'
+            ? `${shelter.location.district}, ${shelter.location.province}`
+            : shelter.location,
           totalItems,
           totalQuantity,
           alerts: {
@@ -61,8 +73,8 @@ export async function GET(req: NextRequest) {
             total: lowStockCount + criticalCount
           },
           status,
-          capacity: shelter.capacity,
-          currentOccupancy: shelter.currentOccupancy
+          capacity: shelter.capacity || 0,
+          currentOccupancy: shelter.currentOccupancy || 0
         };
       });
 
@@ -70,17 +82,17 @@ export async function GET(req: NextRequest) {
         shelters: shelterSummary,
         summary: {
           totalShelters: shelters.length,
-          normalShelters: shelterSummary.filter((s: { status: string }) => s.status === 'normal').length,
-          tightShelters: shelterSummary.filter((s: { status: string }) => s.status === 'tight').length,
-          criticalShelters: shelterSummary.filter((s: { status: string }) => s.status === 'critical').length
+          normalShelters: shelterSummary.filter((s) => s.status === 'normal').length,
+          tightShelters: shelterSummary.filter((s) => s.status === 'tight').length,
+          criticalShelters: shelterSummary.filter((s) => s.status === 'critical').length
         }
       });
 
     } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Get all shelters error:', err);
+      console.error('Get all shelters api error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown database error';
       return NextResponse.json(
-        { error: 'Failed to fetch shelter data' },
+        { error: `API Error: ${errorMessage}` },
         { status: 500 }
       );
     }

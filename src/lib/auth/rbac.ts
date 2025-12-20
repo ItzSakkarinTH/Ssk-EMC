@@ -1,18 +1,8 @@
-
 import { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
-import User from '@/lib/db/models/User';
+import { JWTService, TokenPayload } from './jwt';
 
-const JWT_SECRET = process.env.JWT_SECRET!;
-
-export interface JWTPayload {
-  userId: string;
-  role: 'staff' | 'admin';
-  assignedShelterId?: string;
-  sessionId: string;
-  ip: string;
-  userAgent: string;
-}
+// ใช้ TokenPayload จาก jwt.ts เป็น base
+export type JWTPayload = TokenPayload;
 
 interface StockWithShelters {
   itemName: string;
@@ -32,28 +22,26 @@ interface StockWithShelters {
 // ตรวจสอบ JWT Token
 export async function verifyToken(req: NextRequest): Promise<JWTPayload | null> {
   try {
+    let token: string | undefined;
+
+    // 1. ลองหาจาก Authorization header
     const authHeader = req.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+
+    // 2. ถ้าไม่มี ลองหาจาก Cookie
+    if (!token) {
+      token = req.cookies.get('accessToken')?.value;
+    }
+
+    if (!token) {
       return null;
     }
 
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-
-    // ตรวจสอบ IP และ User-Agent
-    const currentIP = req.headers.get('x-forwarded-for') || 'unknown';
-    const currentUA = req.headers.get('user-agent') || 'unknown';
-
-    if (decoded.ip !== currentIP || decoded.userAgent !== currentUA) {
-      console.warn('Session mismatch detected', {
-        user: decoded.userId,
-        expectedIP: decoded.ip,
-        actualIP: currentIP
-      });
-      return null;
-    }
-
+    const decoded = await JWTService.verifyAccessToken(token);
     return decoded;
+
   } catch (error) {
     console.error('Token verification failed:', error);
     return null;
