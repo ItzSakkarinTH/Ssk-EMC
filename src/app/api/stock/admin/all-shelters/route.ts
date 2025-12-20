@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       await dbConnect();
 
       // ดึงศูนย์ทั้งหมด แบบ JSON object (lean)
-      const shelters = await Shelter.find({ status: 'active' }).lean() as unknown as (IShelter & { _id: Types.ObjectId })[];
+      const shelters = await Shelter.find({ status: { $in: ['active', 'full'] } }).lean() as unknown as (IShelter & { _id: Types.ObjectId })[];
 
       // ดึงสต๊อกทั้งหมด
       const allStocks = await Stock.find({}).lean() as unknown as (IStock & { _id: Types.ObjectId })[];

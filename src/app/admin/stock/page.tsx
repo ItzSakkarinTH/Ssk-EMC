@@ -1,5 +1,6 @@
 import ProvinceStockOverview from './components/ProvinceStockOverview';
 import Link from 'next/link';
+import AdminLayout from '@/components/AdminLayout/AdminLayout';
 import styles from './adminStock.module.css';
 
 export default function AdminStockPage() {
@@ -11,9 +12,10 @@ export default function AdminStockPage() {
   ];
 
   return (
-    <div className={styles.container}>
-      <h1>จัดการสต๊อกระดับจังหวัด</h1>
-      
+    <AdminLayout
+      title="จัดการสต๊อกระดับจังหวัด"
+      subtitle="ภาพรวมและการจัดการสต๊อกทั้งหมดในระบบ"
+    >
       <div className={styles.quickLinks}>
         {quickLinks.map(link => (
           <Link key={link.href} href={link.href} className={styles.linkCard}>
@@ -24,6 +26,6 @@ export default function AdminStockPage() {
       </div>
 
       <ProvinceStockOverview />
-    </div>
+    </AdminLayout>
   );
 }

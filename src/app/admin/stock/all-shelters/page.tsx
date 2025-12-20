@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import ShelterComparison from '../components/ShelterComparison';
-import styles from './allShelters.module.css';
+import AdminLayout from '@/components/AdminLayout/AdminLayout';
 
 export default function AllSheltersPage() {
   return (
-    <div className={styles.container}>
-      <h1>สต๊อกทุกศูนย์พักพิง</h1>
+    <AdminLayout
+      title="สต๊อกทุกศูนย์พักพิง"
+      subtitle="ภาพรวมและเปรียบเทียบสต๊อกของทุกศูนย์พักพิงในระบบ"
+    >
       <ShelterComparison />
-    </div>
+    </AdminLayout>
   );
 }

@@ -1,60 +1,25 @@
-/* src/app/admin/stock/adminStock.module.css */
+/* Admin Stock Page - ใช้ Global Admin Theme */
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 2rem;
-    animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.container h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.container h1::before {
-    content: '';
-    width: 4px;
-    height: 32px;
-    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 2px;
-}
-
-/* ===== Quick Links ===== */
 .quickLinks {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1.25rem;
-    margin-bottom: 2.5rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .linkCard {
-    background: white;
-    border-radius: 12px;
-    padding: 1.75rem 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid var(--admin-border, rgba(148, 163, 184, 0.15));
+    border-radius: var(--admin-radius-lg, 16px);
+    padding: 2rem;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    transition: all var(--admin-transition-slow, 0.3s cubic-bezier(0.4, 0, 0.2, 1));
+    backdrop-filter: blur(10px);
+    box-shadow: var(--admin-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.3));
     position: relative;
     overflow: hidden;
 }
@@ -66,121 +31,52 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
 .linkCard:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
-    border-color: #3b82f6;
+    transform: translateY(-6px);
+    border-color: var(--admin-border-hover, rgba(59, 130, 246, 0.4));
+    box-shadow: var(--admin-shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.4)),
+        0 0 20px rgba(59, 130, 246, 0.3);
 }
 
 .linkCard:hover::before {
-    transform: scaleX(1);
-}
-
-.linkCard:active {
-    transform: translateY(-2px);
+    opacity: 1;
 }
 
 .linkIcon {
-    font-size: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-    border-radius: 12px;
-    flex-shrink: 0;
-    transition: all 0.3s;
+    font-size: 3rem;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    transition: transform 0.3s;
 }
 
 .linkCard:hover .linkIcon {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    transform: scale(1.1) rotate(5deg);
-}
-
-.linkCard:hover .linkIcon {
-    filter: brightness(1.1);
+    transform: scale(1.1);
 }
 
 .linkLabel {
     font-size: 1.125rem;
-    font-weight: 600;
-    color: #2d3748;
-    transition: color 0.3s;
+    font-weight: 700;
+    color: var(--admin-text-primary, #f1f5f9);
+    text-align: center;
 }
 
-.linkCard:hover .linkLabel {
-    color: #3b82f6;
-}
-
-/* ===== Quick Links - Specific Colors ===== */
-.linkCard:nth-child(1) .linkIcon {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-}
-
-.linkCard:nth-child(1):hover .linkIcon {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-}
-
-.linkCard:nth-child(2) .linkIcon {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-}
-
-.linkCard:nth-child(2):hover .linkIcon {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.linkCard:nth-child(3) .linkIcon {
-    background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
-}
-
-.linkCard:nth-child(3):hover .linkIcon {
-    background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
-}
-
-.linkCard:nth-child(4) .linkIcon {
-    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-}
-
-.linkCard:nth-child(4):hover .linkIcon {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-/* ===== Responsive Design ===== */
-@media (max-width: 1024px) {
+/* Responsive */
+@media (max-width: 768px) {
     .quickLinks {
         grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .container {
-        padding: 1.5rem;
-    }
-
-    .container h1 {
-        font-size: 1.75rem;
-    }
-
-    .quickLinks {
-        grid-template-columns: 1fr;
         gap: 1rem;
     }
 
     .linkCard {
-        padding: 1.5rem 1.25rem;
+        padding: 1.5rem;
     }
 
     .linkIcon {
-        width: 56px;
-        height: 56px;
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
 
     .linkLabel {
@@ -189,73 +85,7 @@
 }
 
 @media (max-width: 480px) {
-    .container {
-        padding: 1rem;
-    }
-
-    .container h1 {
-        font-size: 1.5rem;
-    }
-
-    .linkCard {
-        padding: 1.25rem 1rem;
-        gap: 1rem;
-    }
-
-    .linkIcon {
-        width: 48px;
-        height: 48px;
-        font-size: 1.75rem;
-    }
-
-    .linkLabel {
-        font-size: 0.9375rem;
-    }
-}
-
-/* ===== Loading State (Optional) ===== */
-@keyframes shimmer {
-    0% {
-        background-position: -1000px 0;
-    }
-    100% {
-        background-position: 1000px 0;
-    }
-}
-
-.linkCard.loading {
-    background: linear-gradient(
-        90deg,
-        #f0f0f0 0%,
-        #e0e0e0 50%,
-        #f0f0f0 100%
-    );
-    background-size: 1000px 100%;
-    animation: shimmer 2s infinite;
-    pointer-events: none;
-}
-
-/* ===== Dark Mode Support (Optional) ===== */
-@media (prefers-color-scheme: dark) {
-    .container h1 {
-        color: #f7fafc;
-    }
-
-    .linkCard {
-        background: #2d3748;
-        border-color: #4a5568;
-    }
-
-    .linkCard:hover {
-        background: #374151;
-        border-color: #60a5fa;
-    }
-
-    .linkLabel {
-        color: #e2e8f0;
-    }
-
-    .linkCard:hover .linkLabel {
-        color: #60a5fa;
+    .quickLinks {
+        grid-template-columns: 1fr;
     }
 }

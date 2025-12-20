@@ -37,7 +37,6 @@ export default function RequestApproval() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
-  const [approvalMode, setApprovalMode] = useState<'full' | 'partial'>('full');
 
   useEffect(() => {
     fetchRequests();
@@ -154,110 +153,138 @@ export default function RequestApproval() {
     }
   };
 
+  if (requests.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.emptyState}>
+          <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p>ไม่มีคำร้องรอพิจารณา</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
-      <h2>อนุมัติคำร้องขอสินค้า</h2>
-
-      <div className={styles.layout}>
-        {/* รายการคำร้อง */}
-        <div className={styles.requestList}>
-          <h3>คำร้องรอพิจารณา ({requests.length})</h3>
-          {requests.length === 0 ? (
-            <div className={styles.empty}>ไม่มีคำร้องรอพิจารณา</div>
-          ) : (
-            requests.map(req => (
-              <div
-                key={req.id}
-                className={`${styles.requestCard} ${req.urgency === 'high' ? styles.urgent : ''}`}
-                onClick={() => viewRequest(req.id)}
-              >
-                <div className={styles.requestHeader}>
-                  <span className={styles.requestNumber}>{req.requestNumber}</span>
-                  {req.urgency === 'high' && <span className={styles.urgentBadge}>ด่วน</span>}
+      <div className={styles.requestList}>
+        {requests.map(req => (
+          <div
+            key={req.id}
+            className={styles.requestCard}
+            onClick={() => viewRequest(req.id)}
+          >
+            <div className={styles.requestHeader}>
+              <div className={styles.requestInfo}>
+                <div className={styles.requestTitle}>
+                  {req.requestNumber}
                 </div>
-                <div className={styles.requestInfo}>
-                  <div>ศูนย์: {req.shelter.name}</div>
-                  <div>จำนวนรายการ: {req.itemCount}</div>
-                  <div>โดย: {req.requestedBy.name}</div>
-                </div>
-                <div className={styles.requestDate}>
-                  {new Date(req.requestedAt).toLocaleString('th-TH')}
+                <div className={styles.requestMeta}>
+                  <span>📍 {req.shelter.name}</span>
+                  <span>📦 {req.itemCount} รายการ</span>
+                  <span>👤 {req.requestedBy.name}</span>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-
-        {/* รายละเอียดคำร้อง */}
-        <div className={styles.requestDetail}>
-          {!selectedRequest ? (
-            <div className={styles.placeholder}>เลือกคำร้องเพื่อดูรายละเอียด</div>
-          ) : (
-            <>
-              <h3>รายละเอียดคำร้อง</h3>
-
-              {error && <div className={styles.error}>{error}</div>}
-
-              <div className={styles.detailSection}>
-                <div className={styles.detailRow}>
-                  <span>เลขที่:</span>
-                  <strong>{selectedRequest.requestNumber}</strong>
-                </div>
-                <div className={styles.detailRow}>
-                  <span>ศูนย์:</span>
-                  <strong>{selectedRequest.shelterId.name}</strong>
-                </div>
-                <div className={styles.detailRow}>
-                  <span>ผู้ยื่น:</span>
-                  <strong>{selectedRequest.requestedBy.name}</strong>
-                </div>
+              <div className={`${styles.statusBadge} ${styles.statusPending}`}>
+                รอพิจารณา
               </div>
+            </div>
 
-              <h4>รายการสินค้า</h4>
-              <div className={styles.itemsList}>
-                {selectedRequest.items.map((item: RequestItem, idx: number) => (
-                  <div key={idx} className={styles.itemCard}>
-                    <div className={styles.itemName}>{item.itemName}</div>
-                    <div className={styles.itemQty}>
-                      {item.requestedQuantity} {item.unit}
-                    </div>
-                    <div className={styles.itemReason}>
-                      เหตุผล: {item.reason}
-                    </div>
+            {selectedRequest && selectedRequest._id === req.id && (
+              <div className={styles.requestBody}>
+                {error && <div className={styles.errorMessage}>{error}</div>}
+
+                <div className={styles.requestDetails}>
+                  <div className={styles.detailItem}>
+                    <div className={styles.detailLabel}>เลขที่คำร้อง</div>
+                    <div className={styles.detailValue}>{selectedRequest.requestNumber}</div>
                   </div>
-                ))}
-              </div>
+                  <div className={styles.detailItem}>
+                    <div className={styles.detailLabel}>ศูนย์พักพิง</div>
+                    <div className={styles.detailValue}>{selectedRequest.shelterId.name}</div>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <div className={styles.detailLabel}>ผู้ยื่นคำร้อง</div>
+                    <div className={styles.detailValue}>{selectedRequest.requestedBy.name}</div>
+                  </div>
+                </div>
 
-              <div className={styles.notesSection}>
-                <label>หมายเหตุจาก Admin</label>
-                <textarea
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  placeholder="ระบุหมายเหตุหรือเหตุผล"
-                  rows={3}
-                  disabled={loading}
-                />
-              </div>
+                <div style={{ marginTop: '1.5rem' }}>
+                  <h4 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.125rem', fontWeight: 700 }}>
+                    รายการสินค้า
+                  </h4>
+                  {selectedRequest.items.map((item: RequestItem, idx: number) => (
+                    <div key={idx} style={{
+                      padding: '1rem',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      borderRadius: '8px',
+                      marginBottom: '0.75rem',
+                      border: '1px solid rgba(148, 163, 184, 0.1)'
+                    }}>
+                      <div style={{ fontWeight: 600, color: '#f1f5f9', marginBottom: '0.5rem' }}>
+                        {item.itemName}
+                      </div>
+                      <div style={{ color: '#cbd5e1', fontSize: '0.875rem' }}>
+                        จำนวน: {item.requestedQuantity} {item.unit}
+                      </div>
+                      <div style={{ color: '#94a3b8', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+                        เหตุผล: {item.reason}
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-              <div className={styles.actions}>
-                <button
-                  onClick={handleReject}
-                  className={styles.rejectBtn}
-                  disabled={loading}
-                >
-                  ปฏิเสธ
-                </button>
-                <button
-                  onClick={handleApprove}
-                  className={styles.approveBtn}
-                  disabled={loading}
-                >
-                  {loading ? 'กำลังดำเนินการ...' : 'อนุมัติ'}
-                </button>
+                <div style={{ marginTop: '1.5rem' }}>
+                  <label style={{
+                    display: 'block',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                    color: '#cbd5e1',
+                    marginBottom: '0.5rem'
+                  }}>
+                    หมายเหตุจาก Admin
+                  </label>
+                  <textarea
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder="ระบุหมายเหตุหรือเหตุผล"
+                    rows={3}
+                    disabled={loading}
+                    style={{
+                      width: '100%',
+                      padding: '0.875rem 1rem',
+                      background: 'rgba(15, 23, 42, 0.8)',
+                      border: '1px solid rgba(148, 163, 184, 0.15)',
+                      borderRadius: '12px',
+                      color: '#f1f5f9',
+                      fontSize: '0.9375rem',
+                      resize: 'vertical',
+                      minHeight: '100px'
+                    }}
+                  />
+                </div>
+
+                <div className={styles.requestActions}>
+                  <button
+                    onClick={handleReject}
+                    className={styles.rejectButton}
+                    disabled={loading}
+                  >
+                    ปฏิเสธ
+                  </button>
+                  <button
+                    onClick={handleApprove}
+                    className={styles.approveButton}
+                    disabled={loading}
+                  >
+                    {loading ? 'กำลังดำเนินการ...' : 'อนุมัติ'}
+                  </button>
+                </div>
               </div>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

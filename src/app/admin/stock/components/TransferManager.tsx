@@ -112,93 +112,102 @@ export default function TransferManager({ onSuccess }: Props) {
 
   return (
     <div className={styles.container}>
-      <h2>โอนสต๊อกระหว่างศูนย์</h2>
+      <div className={styles.transferForm}>
+        <h2 className={styles.formTitle}>โอนสต๊อกระหว่างศูนย์</h2>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {error && <div className={styles.error}>{error}</div>}
+        <form onSubmit={handleSubmit}>
+          {error && <div className={styles.errorMessage}>{error}</div>}
 
-        <div className={styles.field}>
-          <label>รหัสสินค้า *</label>
-          <input
-            type="text"
-            value={stockId}
-            onChange={(e) => setStockId(e.target.value)}
-            placeholder="กรอกรหัสสินค้า"
-            disabled={loading}
-            required
-          />
-        </div>
+          <div className={styles.formGrid}>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>รหัสสินค้า</label>
+              <input
+                type="text"
+                className={styles.input}
+                value={stockId}
+                onChange={(e) => setStockId(e.target.value)}
+                placeholder="กรอกรหัสสินค้า"
+                disabled={loading}
+                required
+              />
+            </div>
 
-        <div className={styles.field}>
-          <label>จำนวน *</label>
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            min="1"
-            step="1"
-            disabled={loading}
-            required
-          />
-        </div>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>จำนวน</label>
+              <input
+                type="number"
+                className={styles.input}
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                min="1"
+                step="1"
+                disabled={loading}
+                required
+              />
+            </div>
 
-        <div className={styles.field}>
-          <label>จาก *</label>
-          <select
-            value={fromShelterId}
-            onChange={(e) => setFromShelterId(e.target.value)}
-            disabled={loading}
-            required
-          >
-            <option value="provincial">กองกลางจังหวัด</option>
-            {shelters.map(s => (
-              <option key={s.shelterId} value={s.shelterId}>
-                {s.shelterName} ({s.shelterCode})
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>จาก</label>
+              <select
+                className={styles.select}
+                value={fromShelterId}
+                onChange={(e) => setFromShelterId(e.target.value)}
+                disabled={loading}
+                required
+              >
+                <option value="provincial">กองกลางจังหวัด</option>
+                {shelters.map(s => (
+                  <option key={s.shelterId} value={s.shelterId}>
+                    {s.shelterName} ({s.shelterCode})
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className={styles.transferArrow}>↓</div>
+            <div className={styles.formGroup}>
+              <label className={`${styles.label} ${styles.required}`}>ไปยัง</label>
+              <select
+                className={styles.select}
+                value={toShelterId}
+                onChange={(e) => setToShelterId(e.target.value)}
+                disabled={loading}
+                required
+              >
+                <option value="">-- เลือกศูนย์ปลายทาง --</option>
+                {shelters
+                  .filter(s => s.shelterId !== fromShelterId)
+                  .map(s => (
+                    <option key={s.shelterId} value={s.shelterId}>
+                      {s.shelterName} ({s.shelterCode})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
 
-        <div className={styles.field}>
-          <label>ไปยัง *</label>
-          <select
-            value={toShelterId}
-            onChange={(e) => setToShelterId(e.target.value)}
-            disabled={loading}
-            required
-          >
-            <option value="">-- เลือกศูนย์ปลายทาง --</option>
-            {shelters
-              .filter(s => s.shelterId !== fromShelterId)
-              .map(s => (
-                <option key={s.shelterId} value={s.shelterId}>
-                  {s.shelterName} ({s.shelterCode})
-                </option>
-              ))}
-          </select>
-        </div>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>หมายเหตุ</label>
+            <textarea
+              className={styles.textarea}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="เพิ่มเติม (ถ้ามี)"
+              rows={3}
+              disabled={loading}
+            />
+          </div>
 
-        <div className={styles.field}>
-          <label>หมายเหตุ</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="เพิ่มเติม (ถ้ามี)"
-            rows={3}
-            disabled={loading}
-          />
-        </div>
-
-        <button
-          type="submit"
-          className={styles.submitBtn}
-          disabled={loading || !stockId || !quantity || !toShelterId}
-        >
-          {loading ? 'กำลังโอน...' : 'ยืนยันโอน'}
-        </button>
-      </form>
+          <div className={styles.formActions}>
+            <button
+              type="submit"
+              className={styles.submitButton}
+              disabled={loading || !stockId || !quantity || !toShelterId}
+            >
+              {loading ? 'กำลังโอน...' : 'ยืนยันโอน'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

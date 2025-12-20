@@ -2,18 +2,20 @@
 
 import { useState } from 'react';
 import TransferManager from '../components/TransferManager';
-import styles from './transfers.module.css';
+import AdminLayout from '@/components/AdminLayout/AdminLayout';
 
 export default function TransfersPage() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   return (
-    <div className={styles.container}>
-      <h1>โอนสต๊อกระหว่างศูนย์</h1>
-      <TransferManager 
+    <AdminLayout
+      title="โอนสต๊อกระหว่างศูนย์"
+      subtitle="จัดการการโอนย้ายสต๊อกระหว่างศูนย์พักพิงต่างๆ"
+    >
+      <TransferManager
         key={refreshKey}
-        onSuccess={() => setRefreshKey(prev => prev + 1)} 
+        onSuccess={() => setRefreshKey(prev => prev + 1)}
       />
-    </div>
+    </AdminLayout>
   );
 }
