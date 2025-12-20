@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     try {
       await dbConnect();
 
-      const shelterId = user.assignedShelterId!;
+      const shelterId = user.assignedShelterId as string;
       const searchParams = req.nextUrl.searchParams;
 
       const movementType = searchParams.get('type'); // receive, dispense, transfer

@@ -25,6 +25,7 @@ export interface TokenPayload {
   username: string;
   email: string;
   role: 'admin' | 'staff' | 'viewer';
+  assignedShelterId?: string;
   sessionId: string;
   exp?: number;
   iat?: number;

@@ -1,7 +1,7 @@
 
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface IRequestItem {
+export interface IRequestItem {
   stockId: mongoose.Types.ObjectId;
   itemName: string;
   requestedQuantity: number;
@@ -9,7 +9,7 @@ interface IRequestItem {
   reason: string;
 }
 
-interface IApprovedItem {
+export interface IApprovedItem {
   stockId: mongoose.Types.ObjectId;
   approvedQuantity: number;
 }
@@ -99,5 +99,13 @@ StockRequestSchema.statics.createRequest = async function (data: {
   });
 };
 
-export default mongoose.models.StockRequest ||
-  mongoose.model<IStockRequest>('StockRequest', StockRequestSchema);
+interface IStockRequestModel extends mongoose.Model<IStockRequest> {
+  createRequest(data: {
+    shelterId: string;
+    requestedBy: string;
+    items: IRequestItem[];
+  }): Promise<IStockRequest>;
+}
+
+export default (mongoose.models.StockRequest as IStockRequestModel) ||
+  mongoose.model<IStockRequest, IStockRequestModel>('StockRequest', StockRequestSchema);
