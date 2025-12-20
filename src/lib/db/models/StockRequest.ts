@@ -27,6 +27,7 @@ export interface IStockRequest extends Document {
   approvedItems: IApprovedItem[];
   deliveryStatus: 'pending' | 'in_transit' | 'delivered';
   deliveredAt: Date | null;
+  getApprovalRate(): number;
 }
 
 const RequestItemSchema = new Schema({

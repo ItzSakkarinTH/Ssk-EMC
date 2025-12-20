@@ -4,6 +4,7 @@ import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
 import StockRequest from '@/lib/db/models/StockRequest';
 import { StockService } from '@/lib/stock/service';
+import { Types } from 'mongoose';
 
 export async function PATCH(
   req: NextRequest,
@@ -43,7 +44,8 @@ export async function PATCH(
 
       // อัปเดตสถานะ
       request.status = status;
-      request.reviewedBy = user.userId;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      request.reviewedBy = new Types.ObjectId(user.userId) as any;
       request.reviewedAt = new Date();
       request.adminNotes = adminNotes || '';
 
@@ -76,7 +78,8 @@ export async function PATCH(
         success: true,
         requestId: request._id,
         status: request.status,
-        approvalRate: request.getApprovalRate()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        approvalRate: (request as any).getApprovalRate()
       });
 
     } catch (error: unknown) {
