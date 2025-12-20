@@ -1,7 +1,7 @@
 'use client';
 
 import StockAnalytics from '../components/StockAnalytics';
-import styles from './page.module.css';
+import styles from './analytics.module.css';
 
 export default function AnalyticsPage() {
   return (

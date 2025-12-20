@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Navbar from '@/components/Navbar/Navbar';
 import {
   Building2,
   Home,
@@ -15,6 +16,9 @@ import styles from './page.module.css';
 export default function HomePage() {
   return (
     <div className={styles.container}>
+      {/* Navbar Component */}
+      <Navbar />
+
       {/* Hero Section */}
       <div className={styles.hero}>
         <div className={styles.heroContent}>
@@ -105,45 +109,6 @@ export default function HomePage() {
               <span className={styles.tag}>ยา</span>
             </div>
           </div>
-        </div>
-
-        {/* Additional Info Cards */}
-        <div className={styles.infoGrid}>
-          <Link href="/admin/stock/analytics" className={`${styles.infoCard} ${styles.blueInfo}`}>
-            <div className={styles.infoIcon}>
-              <FileText size={24} />
-            </div>
-            <div className={styles.infoContent}>
-              <h3 className={styles.infoTitle}>รายงานและสถิติ</h3>
-              <p className={styles.infoText}>
-                ดูข้อมูลสถิติและรายงานการจัดการสภาวะวิกฤติ
-              </p>
-            </div>
-          </Link>
-
-          <Link href="/stock-dashboard" className={`${styles.infoCard} ${styles.emeraldInfo}`}>
-            <div className={styles.infoIcon}>
-              <Package size={24} />
-            </div>
-            <div className={styles.infoContent}>
-              <h3 className={styles.infoTitle}>คลังสิ่งของ</h3>
-              <p className={styles.infoText}>
-                จัดการและติดตามสต๊อกสิ่งของบริจาค
-              </p>
-            </div>
-          </Link>
-
-          <Link href="/admin/stock/all-shelters" className={`${styles.infoCard} ${styles.amberInfo}`}>
-            <div className={styles.infoIcon}>
-              <Users size={24} />
-            </div>
-            <div className={styles.infoContent}>
-              <h3 className={styles.infoTitle}>จัดการศูนย์พักพิง</h3>
-              <p className={styles.infoText}>
-                ดูและจัดการข้อมูลศูนย์พักพิงทั้งหมด
-              </p>
-            </div>
-          </Link>
         </div>
       </div>
     </div>
