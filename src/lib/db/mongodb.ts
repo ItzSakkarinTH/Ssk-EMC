@@ -1,5 +1,14 @@
 import mongoose from 'mongoose';
 
+// Import all models to ensure they're registered
+import '@/lib/db/models/User';
+import '@/lib/db/models/Shelter';
+import '@/lib/db/models/Stock';
+import '@/lib/db/models/StockItem';
+import '@/lib/db/models/StockMovement';
+import '@/lib/db/models/StockRequest';
+import '@/lib/db/models/Announcement';
+
 const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
