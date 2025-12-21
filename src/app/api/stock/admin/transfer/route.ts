@@ -50,7 +50,10 @@ export async function POST(request: NextRequest) {
       stock.provincialStock -= validatedData.quantity;
       fromName = 'กองกลางจังหวัด';
     } else {
-      // โอนจากศูนย์พักพิง
+      // โอนจากศูนย์พักพิง - ดึงชื่อศูนย์
+      const Shelter = (await import('@/lib/db/models/Shelter')).default;
+      const fromShelter = await Shelter.findById(validatedData.fromShelterId).select('name');
+
       const fromShelterIndex = stock.shelterStock.findIndex(
         (s: IShelterStock) => s.shelterId.toString() === validatedData.fromShelterId
       );
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
       }
       stock.shelterStock[fromShelterIndex].quantity -= validatedData.quantity;
       stock.shelterStock[fromShelterIndex].lastUpdated = new Date();
-      fromName = 'ศูนย์พักพิงต้นทาง';
+      fromName = fromShelter?.name || 'ศูนย์พักพิง (ไม่พบชื่อ)';
     }
 
     // 📌 จัดการฝั่ง "ปลายทาง"
@@ -72,7 +75,10 @@ export async function POST(request: NextRequest) {
       stock.provincialStock += validatedData.quantity;
       toName = 'กองกลางจังหวัด';
     } else {
-      // โอนเข้าศูนย์พักพิง
+      // โอนเข้าศูนย์พักพิง - ดึงชื่อศูนย์
+      const Shelter = (await import('@/lib/db/models/Shelter')).default;
+      const toShelter = await Shelter.findById(validatedData.toShelterId).select('name');
+
       const toShelterIndex = stock.shelterStock.findIndex(
         (s: IShelterStock) => s.shelterId.toString() === validatedData.toShelterId
       );
@@ -88,7 +94,7 @@ export async function POST(request: NextRequest) {
           lastUpdated: new Date()
         });
       }
-      toName = 'ศูนย์พักพิงปลายทาง';
+      toName = toShelter?.name || 'ศูนย์พักพิง (ไม่พบชื่อ)';
     }
 
     // บันทึกการเปลี่ยนแปลง

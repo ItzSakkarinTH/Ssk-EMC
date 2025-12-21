@@ -35,7 +35,6 @@ export default function SimpleStockPage() {
     const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
     const [quantity, setQuantity] = useState(0);
     const [supplier, setSupplier] = useState('');
-    const [documentNo, setDocumentNo] = useState('');
     const [notes, setNotes] = useState('');
     const [receivedDate, setReceivedDate] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -89,7 +88,6 @@ export default function SimpleStockPage() {
         // Reset form และตั้งเวลาปัจจุบัน
         setQuantity(0);
         setSupplier('');
-        setDocumentNo('');
         setNotes('');
 
         // ตั้งวันเวลาปัจจุบันในรูปแบบ datetime-local
@@ -124,7 +122,6 @@ export default function SimpleStockPage() {
                     stockId: selectedStock._id,
                     quantity,
                     supplier,
-                    documentNo,
                     notes,
                     receivedDate
                 };
@@ -140,23 +137,12 @@ export default function SimpleStockPage() {
                 });
             } else if (selectedItem) {
                 // Initialize new stock
-                // Map category
-                const categoryMap: Record<string, string> = {
-                    'อาหาร': 'food',
-                    'เครื่องดื่ม': 'food',
-                    'ยา': 'medicine',
-                    'เวชภัณฑ์': 'medicine',
-                    'เสื้อผ้า': 'clothing',
-                    'ผ้าห่ม': 'clothing'
-                };
-
                 const payload = {
                     itemName: selectedItem.name,
                     category: selectedItem.category,
                     unit: selectedItem.unit,
                     initialQuantity: quantity,
                     supplier,
-                    documentNo,
                     notes,
                     receivedDate,
                     minStockLevel: selectedItem.minStock || 10,
@@ -400,16 +386,7 @@ export default function SimpleStockPage() {
                                         />
                                     </div>
 
-                                    <div className="dash-form-group">
-                                        <label className="dash-label">เลขที่เอกสาร</label>
-                                        <input
-                                            type="text"
-                                            className="dash-input"
-                                            value={documentNo}
-                                            onChange={(e) => setDocumentNo(e.target.value)}
-                                            placeholder="DOC-2024-001"
-                                        />
-                                    </div>
+
 
                                     <div className="dash-form-group" style={{ gridColumn: '1 / -1' }}>
                                         <label className="dash-label">วันเวลาที่รับ</label>
@@ -418,7 +395,15 @@ export default function SimpleStockPage() {
                                             className="dash-input"
                                             value={receivedDate}
                                             onChange={(e) => setReceivedDate(e.target.value)}
-                                            max={new Date().toISOString().slice(0, 16)}
+                                            max={(() => {
+                                                const now = new Date();
+                                                const year = now.getFullYear();
+                                                const month = String(now.getMonth() + 1).padStart(2, '0');
+                                                const day = String(now.getDate()).padStart(2, '0');
+                                                const hours = String(now.getHours()).padStart(2, '0');
+                                                const minutes = String(now.getMinutes()).padStart(2, '0');
+                                                return `${year}-${month}-${day}T${hours}:${minutes}`;
+                                            })()}
                                         />
                                         <small style={{ color: 'var(--dash-text-muted)', fontSize: '0.8125rem', marginTop: '0.25rem', display: 'block' }}>
                                             กำหนดเอง หรือใช้เวลาปัจจุบัน
