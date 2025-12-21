@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Building2, MapPin, Users, Edit, Trash2, Plus, X, Phone, FileText } from 'lucide-react';
+import { Building2, MapPin, Users, Edit, Trash2, Plus, X, Phone, FileText, User } from 'lucide-react';
 import styles from './shelters.module.css';
 import { getDistricts, getSubDistricts } from '@/lib/sisaket-data';
 
@@ -24,6 +24,12 @@ interface Shelter {
         name: string;
         phone: string;
     };
+    assignedStaff?: {
+        _id: string;
+        username: string;
+        name: string;
+        email: string;
+    }[];
 }
 
 interface ShelterFormData {
@@ -37,11 +43,20 @@ interface ShelterFormData {
     contactName: string;
     contactPhone: string;
     status: 'active' | 'inactive';
+    assignedStaffId: string;
+}
+
+interface StaffUser {
+    _id: string;
+    username: string;
+    name: string;
+    email: string;
 }
 
 export default function SheltersPage() {
     const toast = useToast();
     const [shelters, setShelters] = useState<Shelter[]>([]);
+    const [staffUsers, setStaffUsers] = useState<StaffUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingShelter, setEditingShelter] = useState<Shelter | null>(null);
@@ -55,7 +70,8 @@ export default function SheltersPage() {
         capacity: 100,
         contactName: '',
         contactPhone: '',
-        status: 'active'
+        status: 'active',
+        assignedStaffId: ''
     });
     const [submitting, setSubmitting] = useState(false);
 
@@ -65,8 +81,25 @@ export default function SheltersPage() {
 
     useEffect(() => {
         fetchShelters();
+        fetchStaffUsers();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const fetchStaffUsers = async () => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch('/api/admin/users?role=staff', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setStaffUsers(data.users || []);
+            }
+        } catch (error) {
+            console.error('Error fetching staff users:', error);
+        }
+    };
 
     const fetchShelters = async () => {
         try {
@@ -94,6 +127,7 @@ export default function SheltersPage() {
     const handleOpenModal = (shelter?: Shelter) => {
         if (shelter) {
             setEditingShelter(shelter);
+            const assignedStaff = shelter.assignedStaff?.[0];
             setFormData({
                 name: shelter.name,
                 code: shelter.code,
@@ -104,7 +138,8 @@ export default function SheltersPage() {
                 capacity: shelter.capacity,
                 contactName: shelter.contactPerson.name,
                 contactPhone: shelter.contactPerson.phone,
-                status: shelter.status === 'full' ? 'active' : shelter.status
+                status: shelter.status === 'full' ? 'active' : shelter.status,
+                assignedStaffId: assignedStaff?._id || ''
             });
         } else {
             setEditingShelter(null);
@@ -118,7 +153,8 @@ export default function SheltersPage() {
                 capacity: 100,
                 contactName: '',
                 contactPhone: '',
-                status: 'active'
+                status: 'active',
+                assignedStaffId: ''
             });
         }
         setShowModal(true);
@@ -160,7 +196,8 @@ export default function SheltersPage() {
                         name: formData.contactName,
                         phone: formData.contactPhone
                     },
-                    status: formData.status
+                    status: formData.status,
+                    assignedStaffId: formData.assignedStaffId || null
                 })
             });
 
@@ -380,6 +417,20 @@ export default function SheltersPage() {
                                     <span>{shelter.contactPerson.phone}</span>
                                 </div>
 
+                                {/* Assigned Staff */}
+                                <div className={styles.contactInfo} style={{ borderTop: '1px solid rgba(148, 163, 184, 0.1)', paddingTop: '0.75rem', marginTop: '0.75rem' }}>
+                                    <User size={16} />
+                                    <span>
+                                        {shelter.assignedStaff && shelter.assignedStaff.length > 0 ? (
+                                            <span style={{ color: '#10b981', fontWeight: 600 }}>
+                                                👤 {shelter.assignedStaff[0].name}
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#f59e0b' }}>ยังไม่มีผู้ดูแล</span>
+                                        )}
+                                    </span>
+                                </div>
+
                                 {/* Actions */}
                                 <div className={styles.cardActions}>
                                     <button
@@ -530,6 +581,27 @@ export default function SheltersPage() {
                                             onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                                             required
                                         />
+                                    </div>
+
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">
+                                            👤 เจ้าหน้าที่ผู้ดูแล
+                                            <span style={{ fontSize: '0.875rem', color: '#94a3b8', marginLeft: '0.5rem' }}>
+                                                (เลือกเจ้าหน้าที่ที่จะรับผิดชอบศูนย์นี้)
+                                            </span>
+                                        </label>
+                                        <select
+                                            className="dash-input"
+                                            value={formData.assignedStaffId}
+                                            onChange={(e) => setFormData({ ...formData, assignedStaffId: e.target.value })}
+                                        >
+                                            <option value="">-- ไม่มีผู้ดูแล --</option>
+                                            {staffUsers.map(staff => (
+                                                <option key={staff._id} value={staff._id}>
+                                                    {staff.name} ({staff.email})
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     <div className="dash-form-group">

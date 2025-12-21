@@ -74,7 +74,7 @@ const StockRequestSchema = new Schema<IStockRequest>({
 // Indexes
 StockRequestSchema.index({ shelterId: 1, status: 1, requestedAt: -1 });
 StockRequestSchema.index({ status: 1, requestedAt: -1 });
-StockRequestSchema.index({ requestNumber: 1 });
+// requestNumber index is created automatically by unique: true
 
 // Method: คำนวณ Approval Rate
 StockRequestSchema.methods.getApprovalRate = function () {

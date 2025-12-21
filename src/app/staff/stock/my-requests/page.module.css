@@ -1,0 +1,189 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.filters label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.emptyIcon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty h3 {
+    margin: 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.empty p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.requestsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.requestCard {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.requestCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.requestHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    color: white;
+    gap: 1rem;
+}
+
+.requestInfo h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.requestDate {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.statusBadge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+.statusPending {
+    background: #fbbf24;
+    color: #78350f;
+}
+
+.statusApproved {
+    background: #34d399;
+    color: #065f46;
+}
+
+.statusRejected {
+    background: #f87171;
+    color: #7f1d1d;
+}
+
+.statusPartial {
+    background: #60a5fa;
+    color: #1e3a8a;
+}
+
+.requestBody {
+    padding: 1.5rem;
+}
+
+.requestBody h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.itemsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.item {
+    padding: 0.75rem;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border-left: 3px solid var(--primary);
+}
+
+.itemName {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.itemDetails {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.itemDetails .approved {
+    color: var(--success);
+    font-weight: 600;
+}
+
+.itemReason {
+    font-size: 0.813rem;
+    color: var(--text-tertiary);
+    font-style: italic;
+}
+
+.delivery,
+.reviewInfo,
+.adminNotes {
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.adminNotes {
+    background: #fef3c7;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid #fbbf24;
+    color: #78350f;
+}
+
+@media (max-width: 640px) {
+    .requestHeader {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .statusBadge {
+        text-align: center;
+    }
+
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}

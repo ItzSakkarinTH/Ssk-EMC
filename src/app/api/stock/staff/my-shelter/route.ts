@@ -10,7 +10,17 @@ export async function GET(req: NextRequest) {
     try {
       await dbConnect();
 
+      console.log('Staff user:', { userId: user.userId, role: user.role, assignedShelterId: user.assignedShelterId });
+
       const shelterId = user.assignedShelterId as string;
+
+      if (!shelterId) {
+        console.error('No shelterId for user:', user.userId);
+        return NextResponse.json(
+          { error: 'No shelter assigned to your account' },
+          { status: 400 }
+        );
+      }
 
       // ดึงข้อมูลศูนย์
       const shelter = await Shelter.findById(shelterId);
