@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { connectDB } from '@/lib/db/mongodb';
 import Shelter from '@/lib/db/models/Shelter';
+import User from '@/lib/db/models/User';
 import { shelterUpdateSchema } from '@/lib/validations';
 import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib/error-tracker';
 import { ZodError } from 'zod';
@@ -62,9 +63,10 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
         }
 
         const body = await request.json();
+        const { assignedStaffId, ...shelterData } = body;
 
         // Validate input
-        const validatedData = shelterUpdateSchema.parse(body);
+        const validatedData = shelterUpdateSchema.parse(shelterData);
 
         await connectDB();
 
@@ -92,8 +94,23 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
             return NextResponse.json({ error: 'ไม่พบศูนย์พักพิง' }, { status: 404 });
         }
 
+        // Handle staff assignment
+        // First, remove this shelter from any staff currently assigned
+        await User.updateMany(
+            { assignedShelterId: id },
+            { $unset: { assignedShelterId: 1 } }
+        );
+
+        // Then assign new staff if provided
+        if (assignedStaffId) {
+            await User.findByIdAndUpdate(assignedStaffId, {
+                assignedShelterId: shelter._id
+            });
+        }
+
         errorTracker.logInfo('Shelter updated successfully', {
             shelterId: shelter._id,
+            assignedStaffId: assignedStaffId || null,
             userId: decoded.userId
         });
 

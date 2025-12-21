@@ -9,6 +9,7 @@ export interface IUser extends Document {
   role: 'staff' | 'admin';
   assignedShelterId?: mongoose.Types.ObjectId;
   isActive: boolean;
+  lastLogin?: Date;
   createdAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -21,6 +22,7 @@ const UserSchema = new Schema<IUser>({
   role: { type: String, enum: ['staff', 'admin'], required: true },
   assignedShelterId: { type: Schema.Types.ObjectId, ref: 'Shelter' },
   isActive: { type: Boolean, default: true },
+  lastLogin: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });
 

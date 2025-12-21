@@ -41,6 +41,12 @@ export async function POST(request: Request) {
         // Reset Rate Limit
         resetRateLimit(limitKey);
 
+        // Update lastLogin timestamp
+        await db.collection('users').updateOne(
+            { _id: user._id },
+            { $set: { lastLogin: new Date() } }
+        );
+
         // Generate Tokens
         const sessionId = generateToken(16);
         const accessToken = await JWTService.generateAccessToken({
@@ -48,6 +54,7 @@ export async function POST(request: Request) {
             username: user.username,
             email: user.email,
             role: user.role,
+            assignedShelterId: user.assignedShelterId?.toString(),
             sessionId
         });
 
@@ -84,7 +91,8 @@ export async function POST(request: Request) {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                assignedShelterId: user.assignedShelterId
             }
         });
 

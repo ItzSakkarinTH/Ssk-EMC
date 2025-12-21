@@ -1,56 +1,53 @@
-
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import MyShelterStock from './components/MyShelterStock';
+import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import styles from './page.module.css';
 
 export default function StaffStockPage() {
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  const handleRefresh = () => {
-    setRefreshKey(prev => prev + 1);
-  };
-
   const quickActions = [
-    { 
-      label: 'รับเข้า', 
-      icon: '📥', 
+    {
+      label: 'รับเข้า',
+      icon: '📥',
       href: '/staff/stock/receive',
-      color: styles.receive 
+      color: styles.receive
     },
-    { 
-      label: 'เบิกจ่าย', 
-      icon: '📤', 
+    {
+      label: 'เบิกจ่าย',
+      icon: '📤',
       href: '/staff/stock/dispense',
-      color: styles.dispense 
+      color: styles.dispense
     },
-    { 
-      label: 'ยื่นคำร้อง', 
-      icon: '📝', 
+    {
+      label: 'ยื่นคำร้อง',
+      icon: '📝',
       href: '/staff/stock/request',
-      color: styles.request 
+      color: styles.request
     },
-    { 
-      label: 'ประวัติ', 
-      icon: '📊', 
+    {
+      label: 'คำร้องของฉัน',
+      icon: '📋',
+      href: '/staff/stock/my-requests',
+      color: styles.myRequests
+    },
+    {
+      label: 'ประวัติ',
+      icon: '📊',
       href: '/staff/stock/history',
-      color: styles.history 
+      color: styles.history
     }
   ];
 
   return (
-    <div className={styles.container}>
-      <header className={styles.header}>
-        <h1>จัดการสต๊อกสินค้า</h1>
-        <p>ศูนย์พักพิงของคุณ</p>
-      </header>
-
+    <DashboardLayout
+      title="จัดการสต๊อกสินค้า"
+      subtitle="ศูนย์พักพิงของคุณ"
+    >
       {/* Quick Actions */}
       <div className={styles.quickActions}>
         {quickActions.map(action => (
-          <Link 
+          <Link
             key={action.label}
             href={action.href}
             className={`${styles.actionCard} ${action.color}`}
@@ -62,7 +59,7 @@ export default function StaffStockPage() {
       </div>
 
       {/* Stock List */}
-      <MyShelterStock key={refreshKey} />
-    </div>
+      <MyShelterStock />
+    </DashboardLayout>
   );
 }

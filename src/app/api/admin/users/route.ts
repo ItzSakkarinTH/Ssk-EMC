@@ -22,7 +22,13 @@ export async function GET(request: NextRequest) {
 
         await connectDB();
 
-        const users = await User.find({})
+        // Get role filter from query params
+        const { searchParams } = new URL(request.url);
+        const roleFilter = searchParams.get('role');
+
+        const query = roleFilter ? { role: roleFilter } : {};
+
+        const users = await User.find(query)
             .select('-password') // Don't return passwords
             .populate('assignedShelterId', 'name code')
             .sort({ createdAt: -1 })
@@ -30,6 +36,7 @@ export async function GET(request: NextRequest) {
 
         errorTracker.logInfo('Users fetched successfully', {
             count: users.length,
+            roleFilter: roleFilter || 'all',
             userId: decoded.userId
         });
 
