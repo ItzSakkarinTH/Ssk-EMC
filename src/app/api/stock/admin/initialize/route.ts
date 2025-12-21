@@ -4,6 +4,7 @@ import { connectDB } from '@/lib/db/mongodb';
 import Stock from '@/lib/db/models/Stock';
 import StockMovement from '@/lib/db/models/StockMovement';
 import { errorTracker, createErrorResponse } from '@/lib/error-tracker';
+import { generateReferenceId } from '@/lib/utils/ref-id';
 import { z } from 'zod';
 
 const initializeSchema = z.object({
@@ -12,7 +13,6 @@ const initializeSchema = z.object({
     unit: z.string().min(1, 'กรุณาระบุหน่วย'),
     initialQuantity: z.number().min(0, 'จำนวนต้องไม่เป็นลบ'),
     supplier: z.string().optional(),
-    documentNo: z.string().optional(),
     notes: z.string().optional(),
     receivedDate: z.string().optional(), // วันเวลาที่รับ
     minStockLevel: z.number().positive('สต็อกต่ำสุดต้องมากกว่า 0'),
@@ -99,12 +99,12 @@ export async function POST(request: NextRequest) {
                 to: {
                     type: 'provincial',
                     id: null,
-                    name: 'Provincial Stock'
+                    name: 'กองกลาง'
                 },
                 performedBy: decoded.userId,
                 performedAt: receivedAt,
                 notes: validatedData.notes || 'การสร้างรายการสต็อกครั้งแรก',
-                referenceId: validatedData.documentNo || `INIT-${Date.now()}`,
+                referenceId: generateReferenceId('INIT'),
                 snapshot: {
                     before: 0,
                     after: validatedData.initialQuantity

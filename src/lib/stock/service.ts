@@ -68,7 +68,7 @@ export class StockService {
         to: {
           type: data.destination,
           id: data.shelterId ? new mongoose.Types.ObjectId(data.shelterId) : null,
-          name: data.destination === 'provincial' ? 'Provincial Stock' : 'Shelter'
+          name: data.destination === 'provincial' ? 'กองกลาง' : 'Shelter'
         },
         performedBy: new mongoose.Types.ObjectId(data.userId),
         referenceId: data.referenceId,
@@ -223,7 +223,7 @@ export class StockService {
           id: data.fromShelterId === 'provincial'
             ? null
             : new mongoose.Types.ObjectId(data.fromShelterId),
-          name: data.fromShelterId === 'provincial' ? 'Provincial' : 'Shelter'
+          name: data.fromShelterId === 'provincial' ? 'กองกลาง' : 'Shelter'
         },
         to: {
           type: 'shelter',

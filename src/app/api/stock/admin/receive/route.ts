@@ -4,13 +4,13 @@ import { connectDB } from '@/lib/db/mongodb';
 import Stock from '@/lib/db/models/Stock';
 import StockMovement from '@/lib/db/models/StockMovement';
 import { errorTracker, createErrorResponse } from '@/lib/error-tracker';
+import { generateReferenceId } from '@/lib/utils/ref-id';
 import { z } from 'zod';
 
 const receiveSchema = z.object({
     stockId: z.string().min(1, 'กรุณาระบุรหัสสินค้า'),
     quantity: z.number().positive('จำนวนต้องมากกว่า 0'),
     supplier: z.string().min(1, 'กรุณาระบุผู้ส่ง'),
-    documentNo: z.string().optional(),
     notes: z.string().optional(),
     receivedDate: z.string().optional()
 });
@@ -72,12 +72,12 @@ export async function POST(request: NextRequest) {
             to: {
                 type: 'provincial',
                 id: null,
-                name: 'Provincial Stock'
+                name: 'กองกลาง'
             },
             performedBy: decoded.userId,
             performedAt: receivedAt,
             notes: validatedData.notes || '',
-            referenceId: validatedData.documentNo || `RCV-${Date.now()}`,
+            referenceId: generateReferenceId('RCV'),
             snapshot: {
                 before: previousStock,
                 after: stock.provincialStock

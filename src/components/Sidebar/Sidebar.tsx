@@ -18,7 +18,8 @@ import {
     AlertCircle,
     BarChart3,
     Megaphone,
-    Wrench
+    Wrench,
+    History
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './Sidebar.module.css';
@@ -63,7 +64,7 @@ export default function Sidebar() {
                     subItems: [
                         { title: 'ภาพรวมสต๊อก', path: '/admin/stock', icon: LayoutDashboard },
                         { title: 'จัดการสต็อก', path: '/admin/stock/simple', icon: Package },
-                        { title: 'ประวัติการรับสินค้า', path: '/admin/stock/receive-history', icon: FileText },
+                        { title: 'ประวัติการเคลื่อนไหว', path: '/admin/stock/history', icon: History },
                         { title: 'ทุกศูนย์พักพิง', path: '/admin/stock/all-shelters', icon: Building2 },
                         { title: 'โอนสต๊อก', path: '/admin/stock/transfers', icon: ArrowLeftRight },
                         { title: 'คำร้องขอสินค้า', path: '/admin/stock/requests', icon: ClipboardList },
