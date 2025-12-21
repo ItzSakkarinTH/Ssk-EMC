@@ -382,9 +382,9 @@ export default function SheltersPage() {
                                 <div className={styles.capacitySection}>
                                     <div className={styles.capacityHeader}>
                                         <Users size={16} />
-                                        <span>สินค้าทั้งหมด: {shelter.capacity} รายการ</span>
+                                        <span>รายการสินค้าในศูนย์</span>
                                         <span className={styles.capacityCount}>
-                                            {shelter.currentOccupancy} / {shelter.capacity}
+                                            {shelter.currentOccupancy} รายการ
                                         </span>
                                     </div>
                                     <div className={styles.progressBar}>
@@ -407,7 +407,7 @@ export default function SheltersPage() {
                                             fontWeight: 600
                                         }}
                                     >
-                                        {occupancyPercent}% อัตราการใช้งาน
+                                        {occupancyPercent}% ของความจุ ({shelter.capacity} รายการ)
                                     </div>
                                 </div>
 

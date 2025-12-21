@@ -3,6 +3,7 @@ import { verifyToken } from '@/lib/auth';
 import { connectDB } from '@/lib/db/mongodb';
 import Shelter from '@/lib/db/models/Shelter';
 import User from '@/lib/db/models/User';
+import Stock from '@/lib/db/models/Stock';
 import { shelterSchema } from '@/lib/validations';
 import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib/error-tracker';
 import { ZodError } from 'zod';
@@ -28,14 +29,25 @@ export async function GET(request: NextRequest) {
         // Get all shelters
         const sheltersRaw = await Shelter.find({}).sort({ createdAt: -1 }).lean();
 
-        // Map staff to their shelters
+        // Get all stock items
+        const allStock = await Stock.find({}).lean();
+
+        // Map staff and stock count to their shelters
         const shelters = sheltersRaw.map(shelter => {
             const assignedStaff = staffUsers.filter(
                 staff => staff.assignedShelterId?.toString() === shelter._id.toString()
             );
 
+            // Count distinct stock items for this shelter
+            const stockItemsCount = allStock.filter(stock =>
+                stock.shelterStock?.some((s: { shelterId: { toString: () => string }; quantity: number }) =>
+                    s.shelterId?.toString() === shelter._id.toString() && s.quantity > 0
+                )
+            ).length;
+
             return {
                 ...shelter,
+                currentOccupancy: stockItemsCount, // จำนวนสินค้าจริงที่มี
                 assignedStaff: assignedStaff.map(staff => ({
                     _id: staff._id,
                     username: staff.username,
