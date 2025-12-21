@@ -512,31 +512,53 @@ export default function SheltersPage() {
                                             type="text"
                                             className="dash-input"
                                             value={formData.province}
-                                            onChange={(e) => setFormData({ ...formData, province: e.target.value })}
-                                            required
+                                            disabled
+                                            style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}
                                         />
+                                        <small style={{ color: '#94a3b8' }}>จังหวัดคงที่: ศรีสะเกษ</small>
                                     </div>
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">อำเภอ *</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             className="dash-input"
                                             value={formData.district}
-                                            onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                                            onChange={(e) => {
+                                                setFormData({
+                                                    ...formData,
+                                                    district: e.target.value,
+                                                    subdistrict: '' // รีเซ็ตตำบลเมื่อเปลี่ยนอำเภอ
+                                                });
+                                            }}
                                             required
-                                        />
+                                        >
+                                            <option value="">-- เลือกอำเภอ --</option>
+                                            {getDistricts().map(district => (
+                                                <option key={district} value={district}>
+                                                    {district}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">ตำบล *</label>
-                                        <input
-                                            type="text"
+                                        <select
                                             className="dash-input"
                                             value={formData.subdistrict}
                                             onChange={(e) => setFormData({ ...formData, subdistrict: e.target.value })}
                                             required
-                                        />
+                                            disabled={!formData.district}
+                                        >
+                                            <option value="">
+                                                {formData.district ? '-- เลือกตำบล --' : '-- เลือกอำเภอก่อน --'}
+                                            </option>
+                                            {formData.district && getSubDistricts(formData.district).map(subdistrict => (
+                                                <option key={subdistrict} value={subdistrict}>
+                                                    {subdistrict}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
 
                                     <div className="dash-form-group">

@@ -8,7 +8,7 @@ export const shelterSchema = z.object({
         province: z.string().min(2),
         district: z.string().min(2),
         subdistrict: z.string().min(2),
-        address: z.string().min(10)
+        address: z.string().optional()
     }),
     capacity: z.number().int().positive('จำนวนรองรับต้องมากกว่า 0'),
     contactPerson: z.object({
@@ -39,26 +39,20 @@ export const itemUpdateSchema = itemSchema.partial();
 export const userCreateSchema = z.object({
     username: z.string().min(3, 'ชื่อผู้ใช้ต้องมีอย่างน้อย 3 ตัวอักษร').max(50)
         .regex(/^[a-zA-Z0-9_]+$/, 'ชื่อผู้ใช้ต้องเป็นตัวอักษรและตัวเลขเท่านั้น'),
+    name: z.string().min(2, 'ชื่อต้องมีอย่างน้อย 2 ตัวอักษร').max(100),
     email: z.string().email('อีเมลไม่ถูกต้อง'),
     password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'),
     role: z.enum(['admin', 'staff']),
-    shelterId: z.string().optional()
-}).refine(data => {
-    if (data.role === 'staff' && !data.shelterId) {
-        return false;
-    }
-    return true;
-}, {
-    message: 'Staff ต้องระบุศูนย์พักพิง',
-    path: ['shelterId']
+    assignedShelterId: z.string().optional()
 });
 
 export const userUpdateSchema = z.object({
     username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/).optional(),
+    name: z.string().min(2).max(100).optional(),
     email: z.string().email().optional(),
     password: z.string().min(6).optional(),
     role: z.enum(['admin', 'staff']).optional(),
-    shelterId: z.string().optional()
+    assignedShelterId: z.string().optional()
 });
 
 // Announcement Validation Schema
