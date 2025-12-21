@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import Stock from '@/lib/db/models/Stock';
+import Shelter from '@/lib/db/models/Shelter';
 import dbConnect from '@/lib/db/mongodb';
 
 export async function GET(req: NextRequest) {
@@ -14,6 +15,13 @@ export async function GET(req: NextRequest) {
     const totalQuantity = allStocks.reduce((sum: number, s: { totalQuantity: number }) => sum + s.totalQuantity, 0);
     const totalReceived = allStocks.reduce((sum: number, s: { totalReceived: number }) => sum + s.totalReceived, 0);
     const totalDispensed = allStocks.reduce((sum: number, s: { totalDispensed: number }) => sum + s.totalDispensed, 0);
+
+    // ดึงข้อมูลศูนย์พักพิง
+    const allShelters = await Shelter.find({});
+    const totalShelters = allShelters.length;
+    const activeShelters = allShelters.filter((s: { status: string }) => s.status === 'active').length;
+    const inactiveShelters = allShelters.filter((s: { status: string }) => s.status === 'inactive').length;
+    const fullShelters = allShelters.filter((s: { status: string }) => s.status === 'full').length;
 
     // แยกตามหมวด
     const byCategory = {
@@ -47,6 +55,12 @@ export async function GET(req: NextRequest) {
       alerts: {
         lowStock,
         outOfStock
+      },
+      shelters: {
+        total: totalShelters,
+        active: activeShelters,
+        inactive: inactiveShelters,
+        full: fullShelters
       },
       lastUpdated: new Date()
     });
