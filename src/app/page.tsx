@@ -121,7 +121,7 @@ export default function HomePage() {
     }).format(date);
   };
 
-  // Calculate percentage for progress bars
+  // Calculate percentage for progress bars มาดูว่าเป็นไงงงงง
   const getStatusColor = (quantity: number, max: number) => {
     const percent = (quantity / max) * 100;
     if (percent > 70) return '#10b981'; // Green - ปกติ
