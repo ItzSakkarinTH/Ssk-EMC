@@ -20,6 +20,8 @@ interface ConfirmOptions {
 }
 
 interface ToastContextType {
+    toasts: Toast[];
+    removeToast: (id: string) => void;
     success: (message: string) => void;
     error: (message: string) => void;
     warning: (message: string) => void;
@@ -129,6 +131,8 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
 
     const value: ToastContextType = {
+        toasts,
+        removeToast,
         success: (message: string) => addToast('success', message),
         error: (message: string) => addToast('error', message),
         warning: (message: string) => addToast('warning', message),
