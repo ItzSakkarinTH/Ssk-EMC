@@ -279,9 +279,9 @@ export default function ReceivePage() {
           </div>
           <div className="dash-card-body">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '500px', overflowY: 'auto' }}>
-              {availableStock.map(stock => (
+              {availableStock.map((stock, index) => (
                 <div
-                  key={stock._id}
+                  key={stock._id || `stock-${index}`}
                   className="dash-card"
                   style={{
                     padding: '1rem',

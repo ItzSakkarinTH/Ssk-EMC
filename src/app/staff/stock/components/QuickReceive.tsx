@@ -1,7 +1,7 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 import styles from './QuickReceive.module.css';
 
 interface StockOption {
@@ -15,6 +15,7 @@ interface Props {
 }
 
 export default function QuickReceive({ onSuccess }: Props) {
+  const toast = useToast();
   const [allStocks, setAllStocks] = useState<StockOption[]>([]);
   const [selectedStock, setSelectedStock] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -91,12 +92,13 @@ export default function QuickReceive({ onSuccess }: Props) {
       setReferenceId('');
       setNotes('');
 
-      alert(`รับเข้าสำเร็จ\nสต๊อกใหม่: ${result.newQuantity}`);
+      toast.success(`รับเข้าสำเร็จ - สต๊อกใหม่: ${result.newQuantity}`);
       onSuccess();
 
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }

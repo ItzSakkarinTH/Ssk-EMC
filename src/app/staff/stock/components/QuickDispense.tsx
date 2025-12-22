@@ -1,7 +1,7 @@
-
 'use client';
 
 import { useState } from 'react';
+import { useToast } from '@/contexts/ToastContext';
 import styles from './QuickDispense.module.css';
 
 interface StockItem {
@@ -18,6 +18,7 @@ interface Props {
 }
 
 export default function QuickDispense({ shelterStock, onSuccess }: Props) {
+  const toast = useToast();
   const [selectedStock, setSelectedStock] = useState('');
   const [quantity, setQuantity] = useState('');
   const [recipient, setRecipient] = useState('');
@@ -78,11 +79,11 @@ export default function QuickDispense({ shelterStock, onSuccess }: Props) {
       setRecipient('');
       setNotes('');
 
-      // แจ้งเตือนถ้าสต๊อกต่ำ
+      // แจ้งเตือนด้วย toast
       if (result.alert) {
-        alert(`เบิกจ่ายสำเร็จ\n${result.alert}`);
+        toast.success(`เบิกจ่ายสำเร็จ - ${result.alert}`);
       } else {
-        alert('เบิกจ่ายสำเร็จ');
+        toast.success('เบิกจ่ายสำเร็จ');
       }
 
       onSuccess();
@@ -90,6 +91,7 @@ export default function QuickDispense({ shelterStock, onSuccess }: Props) {
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
