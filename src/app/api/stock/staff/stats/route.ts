@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
             let criticalItems = 0;
             let lowStockItems = 0;
             let sufficientItems = 0;
-            const categoryMap = new Map<string, { count: number; totalQuantity: number }>();
+            const categoryMap = new Map<string, { count: number; totalQuantity: number; category: string }>();
 
             allStocks.forEach(stock => {
                 const shelterStock = stock.shelterStock.find(
@@ -48,11 +48,11 @@ export async function GET(req: NextRequest) {
                         sufficientItems++;
                     }
 
-                    // Category stats
-                    const existing = categoryMap.get(stock.category) || { count: 0, totalQuantity: 0 };
-                    categoryMap.set(stock.category, {
-                        count: existing.count + 1,
-                        totalQuantity: existing.totalQuantity + shelterStock.quantity
+                    // Item stats with category info for icon
+                    categoryMap.set(stock.itemName, {
+                        count: 1,
+                        totalQuantity: shelterStock.quantity,
+                        category: stock.category // เก็บ category สำหรับ icon
                     });
                 }
             });
@@ -84,9 +84,23 @@ export async function GET(req: NextRequest) {
                 const dateStr = movement.createdAt.toISOString().split('T')[0];
                 const existing = movementsByDate.get(dateStr) || { receives: 0, dispenses: 0 };
 
-                if (movement.movementType === 'receive') {
+                // Check if this movement affects this shelter
+                const isReceivingToShelter = movement.to.type === 'shelter' &&
+                    movement.to.id?.toString() === shelterId.toString();
+                const isDispenseFromShelter = movement.from.type === 'shelter' &&
+                    movement.from.id?.toString() === shelterId.toString();
+
+                // Count as 'receives' if:
+                // 1. movementType is 'receive' and coming to this shelter
+                // 2. movementType is 'transfer' and coming to this shelter (from provincial/other)
+                if (isReceivingToShelter && (movement.movementType === 'receive' || movement.movementType === 'transfer')) {
                     existing.receives++;
-                } else if (movement.movementType === 'dispense') {
+                }
+
+                // Count as 'dispenses' if:
+                // 1. movementType is 'dispense' and going out from this shelter
+                // 2. movementType is 'transfer' and going out from this shelter
+                if (isDispenseFromShelter && (movement.movementType === 'dispense' || movement.movementType === 'transfer')) {
                     existing.dispenses++;
                 }
 
@@ -100,11 +114,12 @@ export async function GET(req: NextRequest) {
                 dispenses: data.dispenses
             }));
 
-            const byCategory = Array.from(categoryMap.entries()).map(([category, data]) => ({
-                category,
+            const byCategory = Array.from(categoryMap.entries()).map(([itemName, data]) => ({
+                itemName, // ชื่อสินค้า เช่น ข้าวสาร, น้ำดื่ม
+                category: data.category, // category สำหรับกำหนด icon
                 count: data.count,
                 totalQuantity: data.totalQuantity
-            })).sort((a, b) => b.count - a.count);
+            })).sort((a, b) => b.totalQuantity - a.totalQuantity).slice(0, 10); // แสดงแค่ top 10
 
             return NextResponse.json({
                 totalItems,

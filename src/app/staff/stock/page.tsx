@@ -20,6 +20,7 @@ interface StockStats {
   lowStockItems: number;
   sufficientItems: number;
   byCategory: {
+    itemName: string;
     category: string;
     count: number;
     totalQuantity: number;
@@ -149,7 +150,7 @@ export default function StaffStockPage() {
               <div className="dash-card-header">
                 <h3 className="dash-card-title">
                   <BarChart3 size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                  กระจายสินค้าตามประเภท
+                  สินค้ายอดนิยม (Top 10)
                 </h3>
               </div>
               <div className="dash-card-body">
@@ -161,21 +162,22 @@ export default function StaffStockPage() {
                       alignItems: 'flex-end',
                       justifyContent: 'space-around',
                       height: '200px',
-                      gap: '1rem',
+                      gap: '0.5rem',
                       marginBottom: '1rem',
                       paddingBottom: '0.5rem',
-                      borderBottom: '2px solid rgba(100, 116, 139, 0.2)'
+                      borderBottom: '2px solid rgba(100, 116, 139, 0.2)',
+                      overflowX: 'auto'
                     }}>
-                      {stats.byCategory.map((cat) => {
-                        const style = getCategoryColor(cat.category);
-                        const maxCount = Math.max(...stats.byCategory.map(c => c.count));
-                        const heightPercent = (cat.count / maxCount) * 100;
+                      {stats.byCategory.map((item) => {
+                        const style = getCategoryColor(item.category);
+                        const maxQuantity = Math.max(...stats.byCategory.map(c => c.totalQuantity));
+                        const heightPercent = (item.totalQuantity / maxQuantity) * 100;
 
                         return (
                           <div
-                            key={cat.category}
+                            key={item.itemName}
                             style={{
-                              flex: 1,
+                              minWidth: '60px',
                               display: 'flex',
                               flexDirection: 'column',
                               alignItems: 'center',
@@ -184,51 +186,39 @@ export default function StaffStockPage() {
                           >
                             {/* Value on top */}
                             <div style={{
-                              fontSize: '1.25rem',
+                              fontSize: '1.125rem',
                               fontWeight: 700,
                               color: style.color,
                               textAlign: 'center'
                             }}>
-                              {cat.count}
+                              {item.totalQuantity}
                             </div>
 
                             {/* Bar */}
                             <div style={{
                               width: '100%',
-                              maxWidth: '80px',
+                              maxWidth: '50px',
                               height: `${heightPercent}%`,
                               background: `linear-gradient(180deg, ${style.color}, ${style.color}cc)`,
                               borderRadius: '8px 8px 0 0',
                               minHeight: '20px',
-                              position: 'relative',
                               transition: 'all 0.6s ease',
                               boxShadow: `0 -4px 12px ${style.color}40`
-                            }}>
-                              {/* Quantity label */}
-                              <div style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                fontSize: '0.75rem',
-                                color: 'white',
-                                fontWeight: 600,
-                                whiteSpace: 'nowrap'
-                              }}>
-                                {cat.totalQuantity.toLocaleString()}
-                              </div>
-                            </div>
+                            }}></div>
 
                             {/* Label */}
                             <div style={{
                               textAlign: 'center',
-                              fontSize: '0.875rem',
+                              fontSize: '0.75rem',
                               color: '#cbd5e1',
-                              whiteSpace: 'nowrap'
+                              whiteSpace: 'nowrap',
+                              maxWidth: '80px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
                             }}>
                               <div>{style.icon}</div>
-                              <div style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                                {cat.category}
+                              <div style={{ fontSize: '0.7rem', marginTop: '0.25rem' }} title={item.itemName}>
+                                {item.itemName.length > 10 ? item.itemName.substring(0, 10) + '...' : item.itemName}
                               </div>
                             </div>
                           </div>
@@ -247,11 +237,7 @@ export default function StaffStockPage() {
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <div style={{ width: '12px', height: '12px', background: '#3b82f6', borderRadius: '2px' }}></div>
-                        จำนวนชนิด (บน)
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{ width: '12px', height: '12px', background: 'rgba(255,255,255,0.5)', borderRadius: '2px' }}></div>
-                        จำนวนชิ้น (ในแท่ง)
+                        จำนวนชิ้น
                       </div>
                     </div>
                   </div>
