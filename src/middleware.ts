@@ -12,7 +12,7 @@ export function middleware(request: NextRequest) {
   ];
 
   const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
-  
+
   if (isPublicRoute) {
     return NextResponse.next();
   }
@@ -20,7 +20,7 @@ export function middleware(request: NextRequest) {
   // Staff routes - ต้องมี token
   if (pathname.startsWith('/staff')) {
     const token = request.cookies.get('accessToken')?.value;
-    
+
     if (!token) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
   // Admin routes - ต้องเป็น admin
   if (pathname.startsWith('/admin')) {
     const token = request.cookies.get('accessToken')?.value;
-    
+
     if (!token) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
@@ -45,21 +45,22 @@ export function middleware(request: NextRequest) {
 
     // ในระบบจริงต้องตรวจสอบ role จาก token
     // และ redirect ถ้าไม่ใช่ admin
-    
+
     return NextResponse.next();
   }
 
   // API routes - ตรวจสอบ Authorization header
   if (pathname.startsWith('/api')) {
     // Public API ไม่ต้องตรวจสอบ
-    if (pathname.startsWith('/api/stock/public') || 
-        pathname.startsWith('/api/auth')) {
+    if (pathname.startsWith('/api/stock/public') ||
+      pathname.startsWith('/api/auth') ||
+      pathname.startsWith('/api/announcements/active')) {
       return NextResponse.next();
     }
 
     // Protected API ต้องมี token
     const authHeader = request.headers.get('authorization');
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Unauthorized' },

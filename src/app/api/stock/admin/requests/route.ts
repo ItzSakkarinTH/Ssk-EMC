@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth';
 import { connectDB } from '@/lib/db/mongodb';
@@ -7,6 +6,31 @@ import { stockRequestSchema } from '@/lib/validations';
 import { errorTracker, createErrorResponse, formatValidationErrors } from '@/lib/error-tracker';
 import { ZodError } from 'zod';
 import { Types } from 'mongoose';
+
+interface PopulatedStockRequest {
+    _id: Types.ObjectId;
+    requestNumber: string;
+    shelterId: {
+        name: string;
+        code: string;
+    } | null;
+    requestedBy: {
+        username: string;
+    } | null;
+    reviewedBy?: {
+        username: string;
+    } | null;
+    items: Array<{
+        stockId: Types.ObjectId;
+        requestedQuantity: number;
+        itemName: string;
+        unit: string;
+        reason: string;
+    }>;
+    status: string;
+    createdAt: Date;
+    urgency?: string;
+}
 
 export async function GET(request: NextRequest) {
     try {
@@ -32,18 +56,35 @@ export async function GET(request: NextRequest) {
             .populate('shelterId', 'name code')
             .populate('requestedBy', 'username')
             .populate('reviewedBy', 'username')
-            .populate('items.stockItemId', 'name unit')
+            .populate('items.stockId', 'itemName unit')
             .sort({ createdAt: -1 })
-            .lean();
+            .lean() as unknown as PopulatedStockRequest[];
+
+        // Transform to match frontend interface
+        const transformedRequests = requests.map((req) => ({
+            id: req._id.toString(),
+            requestNumber: req.requestNumber,
+            shelter: req.shelterId ? {
+                name: req.shelterId.name,
+                code: req.shelterId.code
+            } : { name: 'Unknown', code: '' },
+            requestedBy: req.requestedBy ? {
+                name: req.requestedBy.username
+            } : { name: 'Unknown' },
+            requestedAt: req.createdAt,
+            status: req.status,
+            itemCount: req.items?.length || 0,
+            urgency: req.urgency || 'normal'
+        }));
 
         errorTracker.logInfo('Stock requests fetched successfully', {
-            count: requests.length,
+            count: transformedRequests.length,
             userId: decoded.userId
         });
 
         return NextResponse.json({
             success: true,
-            requests
+            requests: transformedRequests
         });
     } catch (error) {
         errorTracker.logError(error, { endpoint: '/api/stock/admin/requests', method: 'GET' });

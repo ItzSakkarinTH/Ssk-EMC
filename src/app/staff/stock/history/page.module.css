@@ -1,196 +1,210 @@
-/* Staff Stock History Premium Styles */
-
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem;
-    animation: fadeIn 0.5s ease-out;
+/* Filters Section */
+.filtersSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 12px;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.searchBox {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
 }
 
-.header {
+.searchIcon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    pointer-events: none;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 3rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    color: #f1f5f9;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+.searchInput:focus {
+    outline: none;
+    border-color: var(--dash-primary);
+    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.searchInput::placeholder {
+    color: #64748b;
+}
+
+.filterGroup {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(139, 92, 246, 0.2);
+    gap: 0.75rem;
+    flex-wrap: wrap;
 }
 
-.header h1 {
-    font-size: 2.25rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin: 0;
-}
-
-.backBtn {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    color: #94a3b8;
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.backBtn:hover {
-    background: rgba(148, 163, 184, 0.1);
-    color: #f1f5f9;
-    transform: translateX(-5px);
-}
-
-.filters {
-    margin-bottom: 2.5rem;
+.filterItem {
     display: flex;
-    justify-content: flex-end;
-}
-
-.filters select {
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    border-radius: 10px;
-    padding: 0.75rem 1.5rem;
-    color: #f1f5f9;
-    font-weight: 600;
-    cursor: pointer;
-    outline: none;
-    backdrop-filter: blur(8px);
-}
-
-.filters select:focus {
-    border-color: #8b5cf6;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-}
-
-/* Timeline */
-.timeline {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    position: relative;
-    padding-left: 2rem;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: linear-gradient(180deg, #8b5cf6 0%, rgba(139, 92, 246, 0.1) 100%);
-}
-
-.timelineItem {
-    background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%);
-    border: 1px solid rgba(148, 163, 184, 0.1);
-    border-radius: 20px;
-    padding: 1.75rem;
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.timelineItem::before {
-    content: '';
-    position: absolute;
-    left: -2.35rem;
-    top: 2rem;
-    width: 12px;
-    height: 12px;
-    background: #8b5cf6;
-    border: 4px solid #0f172a;
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.2);
-}
-
-.timelineItem:hover {
-    transform: translateX(10px);
-    border-color: rgba(139, 92, 246, 0.4);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-}
-
-.timelineDate {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: #94a3b8;
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.timelineContent {
-    display: flex;
-    flex-direction: column;
+    align-items: center;
     gap: 0.5rem;
+    color: #94a3b8;
+    font-size: 0.875rem;
 }
 
-.timelineType {
-    font-size: 0.75rem;
-    font-weight: 800;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    width: fit-content;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    background: rgba(139, 92, 246, 0.1);
-    color: #a78bfa;
-    border: 1px solid rgba(139, 92, 246, 0.2);
+.filterItem svg {
+    color: var(--dash-primary);
 }
 
-.timelineDetail {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #f1f5f9;
-}
-
-.timelineNotes {
-    font-size: 0.95rem;
+.filterSelect {
+    padding: 0.625rem 2.5rem 0.625rem 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
     color: #cbd5e1;
-    font-style: italic;
-    padding: 0.75rem;
-    background: rgba(15, 23, 42, 0.3);
-    border-radius: 10px;
-    margin: 0.5rem 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
 }
 
-.timelineUser {
+.filterSelect:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: var(--dash-primary);
+}
+
+.filterSelect:focus {
+    outline: none;
+    border-color: var(--dash-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1rem;
+    flex-wrap: wrap;
+}
+
+.paginationInfo {
     font-size: 0.875rem;
     color: #94a3b8;
     font-weight: 500;
-    margin-top: 0.5rem;
 }
 
-.empty {
-    text-align: center;
-    padding: 5rem 2rem;
-    color: #94a3b8;
+.paginationControls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.paginationButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.5);
+    color: #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.paginationButton:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: var(--dash-primary);
+    color: var(--dash-primary);
+}
+
+.paginationButton:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.paginationNumbers {
+    font-size: 0.875rem;
     font-weight: 600;
-    font-size: 1.25rem;
+    color: #f1f5f9;
+    min-width: 60px;
+    text-align: center;
+}
+
+.paginationSelect {
+    padding: 0.625rem 2.5rem 0.625rem 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+}
+
+.paginationSelect:hover {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: var(--dash-primary);
+}
+
+.paginationSelect:focus {
+    outline: none;
+    border-color: var(--dash-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-    .header h1 {
-        font-size: 1.75rem;
+    .filtersSection {
+        padding: 1rem;
     }
 
-    .timelineItem {
-        padding: 1.25rem;
+    .searchBox {
+        min-width: 100%;
+    }
+
+    .filterGroup {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .paginationInfo {
+        order: 3;
+    }
+
+    .paginationControls {
+        order: 1;
+    }
+
+    .paginationSelect {
+        order: 2;
     }
 }

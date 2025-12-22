@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './RequestForm.module.css';
+import { Package, Plus, Minus, Trash2, ShoppingCart, Send, AlertCircle, Search, Filter } from 'lucide-react';
+import { useToast } from '@/contexts/ToastContext';
 
 interface StockItem {
   _id: string;
@@ -11,12 +12,9 @@ interface StockItem {
   category: string;
 }
 
-interface RequestItem {
-  stockId: string;
-  itemName: string;
+interface CartItem extends StockItem {
   quantity: number;
   reason: string;
-  unit: string;
 }
 
 interface Props {
@@ -24,22 +22,23 @@ interface Props {
 }
 
 export default function RequestForm({ onSuccess }: Props) {
+  const { success, error: showError, warning, info } = useToast();
   const [availableStock, setAvailableStock] = useState<StockItem[]>([]);
-  const [items, setItems] = useState<RequestItem[]>([
-    { stockId: '', itemName: '', quantity: 0, reason: '', unit: '' }
-  ]);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingStock, setLoadingStock] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [showCart, setShowCart] = useState(false);
 
   useEffect(() => {
-    fetchAvailableStock();
+    void fetchAvailableStock();
   }, []);
 
   const fetchAvailableStock = async () => {
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch('/api/stock/admin?provincial=true', {
+      const res = await fetch('/api/stock/provincial', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -49,54 +48,51 @@ export default function RequestForm({ onSuccess }: Props) {
       }
     } catch (err) {
       console.error('Failed to fetch stock', err);
-      setError('ไม่สามารถโหลดข้อมูลสต๊อกได้');
+      showError('ไม่สามารถโหลดข้อมูลสต็อกได้');
     } finally {
       setLoadingStock(false);
     }
   };
 
-  const addItem = () => {
-    setItems([...items, { stockId: '', itemName: '', quantity: 0, reason: '', unit: '' }]);
+  const addToCart = (item: StockItem) => {
+    const existing = cart.find(c => c._id === item._id);
+    if (existing) {
+      warning('สินค้านี้อยู่ในรถเข็นแล้ว');
+      setShowCart(true);
+      return;
+    }
+    setCart([...cart, { ...item, quantity: 1, reason: '' }]);
+    success(`เพิ่ม ${item.itemName} ลงรถเข็นแล้ว`);
   };
 
-  const removeItem = (index: number) => {
-    if (items.length === 1) return;
-    setItems(items.filter((_, i) => i !== index));
+  const removeFromCart = (id: string) => {
+    setCart(cart.filter(item => item._id !== id));
+    info('ลบออกจากรถเข็นแล้ว');
   };
 
-  const updateItem = (index: number, field: keyof RequestItem, value: string | number) => {
-    const updated = [...items];
+  const updateQuantity = (id: string, quantity: number) => {
+    if (quantity <= 0) return;
+    setCart(cart.map(item =>
+      item._id === id ? { ...item, quantity } : item
+    ));
+  };
 
-    // ถ้าเลือกสินค้า ให้เติมข้อมูลอัตโนมัติ
-    if (field === 'stockId') {
-      const selectedStock = availableStock.find(s => s._id === value);
-      if (selectedStock) {
-        updated[index] = {
-          ...updated[index],
-          stockId: value as string,
-          itemName: selectedStock.itemName,
-          unit: selectedStock.unit
-        };
-      }
-    } else {
-      updated[index] = { ...updated[index], [field]: value };
+  const updateReason = (id: string, reason: string) => {
+    setCart(cart.map(item =>
+      item._id === id ? { ...item, reason } : item
+    ));
+  };
+
+  const handleSubmit = async () => {
+    // Validation
+    if (cart.length === 0) {
+      showError('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
+      return;
     }
 
-    setItems(updated);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    // Validation
-    for (const item of items) {
-      if (!item.stockId || !item.quantity || !item.reason) {
-        setError('กรุณากรอกข้อมูลให้ครบถ้วนในทุกรายการ');
-        return;
-      }
-      if (item.quantity <= 0) {
-        setError('จำนวนต้องมากกว่า 0');
+    for (const item of cart) {
+      if (!item.reason.trim()) {
+        showError(`กรุณาระบุเหตุผลสำหรับ ${item.itemName}`);
         return;
       }
     }
@@ -105,6 +101,14 @@ export default function RequestForm({ onSuccess }: Props) {
 
     try {
       const token = localStorage.getItem('accessToken');
+      const items = cart.map(c => ({
+        stockId: c._id,
+        itemName: c.itemName,
+        quantity: c.quantity,
+        reason: c.reason,
+        unit: c.unit
+      }));
+
       const res = await fetch('/api/stock/staff/request', {
         method: 'POST',
         headers: {
@@ -120,22 +124,13 @@ export default function RequestForm({ onSuccess }: Props) {
       }
 
       const result = await res.json();
-
-      let message = `ยื่นคำร้องสำเร็จ\nเลขที่: ${result.requestNumber}\nสถานะ: รอพิจารณา`;
-
-      if (result.warnings && result.warnings.length > 0) {
-        message += '\n\n⚠️ คำเตือน:\n' + result.warnings.join('\n');
-      }
-
-      alert(message);
-
-      // รีเซ็ตฟอร์ม
-      setItems([{ stockId: '', itemName: '', quantity: 0, reason: '', unit: '' }]);
+      success(`ยื่นคำขอสำเร็จ! เลขที่: ${result.requestNumber}`);
+      setCart([]);
       onSuccess();
 
     } catch (err: unknown) {
       const error = err as Error;
-      setError(error.message);
+      showError('เกิดข้อผิดพลาด: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -143,154 +138,338 @@ export default function RequestForm({ onSuccess }: Props) {
 
   if (loadingStock) {
     return (
-      <div className="dash-loading">
-        <div className="dash-spinner"></div>
-        <p>กำลังโหลดข้อมูลสินค้า...</p>
+      <div className="dash-card" style={{ padding: '3rem', textAlign: 'center' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔄</div>
+        <p style={{ color: '#94a3b8' }}>กำลังโหลดสินค้า...</p>
       </div>
     );
   }
 
-  // จัดกลุ่มสินค้าตามหมวดหมู่
-  const categoryLabels: Record<string, string> = {
-    food: '🍚 อาหาร',
-    medicine: '💊 ยา',
-    clothing: '👕 เสื้อผ้า',
-    other: '📦 อื่นๆ'
+  // Filter items
+  let filteredItems = availableStock;
+
+  if (searchTerm) {
+    filteredItems = filteredItems.filter(item =>
+      item.itemName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+
+  if (filterCategory !== 'all') {
+    filteredItems = filteredItems.filter(item => item.category === filterCategory);
+  }
+
+  const categoryConfig: Record<string, { emoji: string; label: string; color: string }> = {
+    food: { emoji: '🍚', label: 'อาหาร', color: '#22c55e' },
+    medicine: { emoji: '💊', label: 'ยา', color: '#3b82f6' },
+    clothing: { emoji: '👕', label: 'เสื้อผ้า', color: '#f59e0b' },
+    other: { emoji: '📦', label: 'อื่นๆ', color: '#8b5cf6' }
   };
 
   return (
-    <div className={styles.container}>
-      <form onSubmit={handleSubmit} className={styles.form}>
-        {error && <div className="dash-alert dash-alert-error">{error}</div>}
+    <div style={{ display: 'grid', gridTemplateColumns: showCart ? '1fr 400px' : '1fr', gap: '1.5rem' }}>
+      {/* Product List */}
+      <div>
+        {/* Search & Filter */}
+        <div className="dash-card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div className="dash-form-group">
+              <label className="dash-label">
+                <Search size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                ค้นหาสินค้า
+              </label>
+              <input
+                type="text"
+                className="dash-input"
+                placeholder="ชื่อสินค้า..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="dash-form-group">
+              <label className="dash-label">
+                <Filter size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+                หมวดหมู่
+              </label>
+              <select
+                className="dash-input"
+                value={filterCategory}
+                onChange={(e) => setFilterCategory(e.target.value)}
+              >
+                <option value="all">ทั้งหมด</option>
+                {Object.entries(categoryConfig).map(([key, config]) => (
+                  <option key={key} value={key}>
+                    {config.emoji} {config.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
 
-        <div className={styles.itemsList}>
-          {items.map((item, index) => {
-            const selectedStock = availableStock.find(s => s._id === item.stockId);
+        {/* Product Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: '1.5rem'
+        }}>
+          {filteredItems.map(item => {
+            const config = categoryConfig[item.category];
+            const inCart = cart.some(c => c._id === item._id);
 
             return (
-              <div key={index} className={styles.itemCard}>
-                <div className={styles.itemHeader}>
-                  <span className={styles.itemNumber}>รายการที่ {index + 1}</span>
-                  {items.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeItem(index)}
-                      className="dash-btn dash-btn-sm dash-btn-danger"
-                      disabled={loading}
-                    >
-                      ✕ ลบ
-                    </button>
-                  )}
-                </div>
-
-                <div className={styles.field}>
-                  <label className="dash-label">
-                    เลือกสินค้า <span className="dash-required">*</span>
-                  </label>
-                  <select
-                    value={item.stockId}
-                    onChange={(e) => updateItem(index, 'stockId', e.target.value)}
-                    className="dash-select"
-                    disabled={loading}
-                    required
-                  >
-                    <option value="">-- เลือกสินค้า --</option>
-                    {Object.keys(categoryLabels).map(category => {
-                      const categoryItems = availableStock.filter(s => s.category === category);
-                      if (categoryItems.length === 0) return null;
-
-                      return (
-                        <optgroup key={category} label={categoryLabels[category]}>
-                          {categoryItems.map(stock => (
-                            <option key={stock._id} value={stock._id}>
-                              {stock.itemName} (คงเหลือ: {stock.provincialStock} {stock.unit})
-                            </option>
-                          ))}
-                        </optgroup>
-                      );
-                    })}
-                  </select>
-                </div>
-
-                {selectedStock && (
-                  <div className={styles.stockInfo}>
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>สต๊อกจังหวัด:</span>
-                      <span className={styles.infoValue}>
-                        {selectedStock.provincialStock} {selectedStock.unit}
-                      </span>
-                    </div>
+              <div key={item._id} className="dash-card" style={{ padding: '1.5rem' }}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{
+                    display: 'inline-block',
+                    padding: '0.5rem 0.75rem',
+                    borderRadius: '8px',
+                    background: `${config.color}20`,
+                    color: config.color,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    marginBottom: '0.75rem'
+                  }}>
+                    {config.emoji} {config.label}
                   </div>
-                )}
-
-                <div className={styles.field}>
-                  <label className="dash-label">
-                    จำนวนที่ขอ <span className="dash-required">*</span>
-                  </label>
-                  <div className={styles.quantityField}>
-                    <input
-                      type="number"
-                      value={item.quantity || ''}
-                      onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
-                      className="dash-input"
-                      min="1"
-                      step="1"
-                      disabled={loading}
-                      placeholder="จำนวน"
-                      required
-                    />
-                    {item.unit && <span className={styles.unit}>{item.unit}</span>}
+                  <h3 style={{
+                    fontSize: '1.125rem',
+                    fontWeight: 600,
+                    color: '#f1f5f9',
+                    margin: '0 0 0.5rem 0'
+                  }}>
+                    {item.itemName}
+                  </h3>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: '0.5rem'
+                  }}>
+                    <span style={{
+                      fontSize: '1.5rem',
+                      fontWeight: 700,
+                      color: item.provincialStock > 100 ? '#22c55e' : item.provincialStock > 50 ? '#f59e0b' : '#ef4444'
+                    }}>
+                      {item.provincialStock}
+                    </span>
+                    <span style={{ color: '#94a3b8' }}>{item.unit}</span>
+                    <span style={{ color: '#64748b', fontSize: '0.875rem' }}>คงเหลือ</span>
                   </div>
-                  {selectedStock && item.quantity > selectedStock.provincialStock && (
-                    <div className={styles.warning}>
-                      ⚠️ จำนวนที่ขอมากกว่าสต๊อกที่มี อาจได้รับไม่ครบ
-                    </div>
+                </div>
+                <button
+                  onClick={() => addToCart(item)}
+                  className="dash-btn dash-btn-primary dash-btn-block"
+                  disabled={inCart}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  {inCart ? (
+                    <>✓ อยู่ในรถเข็น</>
+                  ) : (
+                    <>
+                      <Plus size={18} />
+                      เพิ่มในรถเข็น
+                    </>
                   )}
-                </div>
-
-                <div className={styles.field}>
-                  <label className="dash-label">
-                    เหตุผลที่ขอ <span className="dash-required">*</span>
-                  </label>
-                  <textarea
-                    value={item.reason}
-                    onChange={(e) => updateItem(index, 'reason', e.target.value)}
-                    className="dash-textarea"
-                    placeholder="ระบุเหตุผลที่ขอ (เช่น: มีผู้ประสบภัยเพิ่ม, สต๊อกหมด, การแจกจ่ายตามแผน)"
-                    rows={3}
-                    disabled={loading}
-                    required
-                  />
-                </div>
+                </button>
               </div>
             );
           })}
         </div>
 
-        <button
-          type="button"
-          onClick={addItem}
-          className="dash-btn dash-btn-secondary dash-btn-block"
-          disabled={loading}
-        >
-          + เพิ่มรายการสินค้า
-        </button>
+        {filteredItems.length === 0 && (
+          <div className="dash-card" style={{ padding: '3rem', textAlign: 'center' }}>
+            <Package size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+            <p style={{ color: '#94a3b8' }}>ไม่พบสินค้า</p>
+          </div>
+        )}
+      </div>
 
-        <div className={styles.actions}>
+      {/* Floating Cart Button (Mobile) */}
+      {!showCart && cart.length > 0 && (
+        <button
+          onClick={() => setShowCart(true)}
+          className="dash-btn dash-btn-primary"
+          style={{
+            position: 'fixed',
+            bottom: '2rem',
+            right: '2rem',
+            borderRadius: '50%',
+            width: '60px',
+            height: '60px',
+            padding: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            zIndex: 1000
+          }}
+        >
+          <ShoppingCart size={24} />
+          <span style={{
+            position: 'absolute',
+            top: '-5px',
+            right: '-5px',
+            background: '#ef4444',
+            color: 'white',
+            borderRadius: '50%',
+            width: '24px',
+            height: '24px',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            {cart.length}
+          </span>
+        </button>
+      )}
+
+      {/* Shopping Cart */}
+      {showCart && cart.length > 0 && (
+        <div className="dash-card" style={{
+          padding: '1.5rem',
+          position: 'sticky',
+          top: '1rem',
+          maxHeight: 'calc(100vh - 2rem)',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '1.5rem'
+          }}>
+            <h3 className="dash-card-title" style={{ margin: 0 }}>
+              <ShoppingCart size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+              รถเข็น ({cart.length})
+            </h3>
+            <button
+              onClick={() => setShowCart(false)}
+              className="dash-btn-icon"
+              style={{ fontSize: '1.25rem' }}
+            >
+              ✕
+            </button>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
+            {cart.map(item => (
+              <div key={item._id} className="dash-card" style={{
+                padding: '1rem',
+                marginBottom: '1rem',
+                background: 'rgba(15, 23, 42, 0.5)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '0.75rem'
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{
+                      fontSize: '0.9375rem',
+                      fontWeight: 600,
+                      color: '#f1f5f9',
+                      margin: '0 0 0.25rem 0'
+                    }}>
+                      {item.itemName}
+                    </h4>
+                    <span style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
+                      คงเหลือ: {item.provincialStock} {item.unit}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => removeFromCart(item._id)}
+                    className="dash-btn-icon"
+                    style={{ color: '#ef4444' }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+
+                <div className="dash-form-group" style={{ marginBottom: '0.75rem' }}>
+                  <label className="dash-label" style={{ fontSize: '0.875rem' }}>จำนวน</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                      className="dash-btn dash-btn-sm"
+                      disabled={item.quantity <= 1}
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <input
+                      type="number"
+                      className="dash-input"
+                      style={{ width: '80px', textAlign: 'center' }}
+                      value={item.quantity}
+                      onChange={(e) => updateQuantity(item._id, parseInt(e.target.value) || 1)}
+                      min={1}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                      className="dash-btn dash-btn-sm"
+                    >
+                      <Plus size={14} />
+                    </button>
+                    <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{item.unit}</span>
+                  </div>
+                  {item.quantity > item.provincialStock && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      <AlertCircle size={14} style={{ color: '#f59e0b' }} />
+                      <span style={{ fontSize: '0.75rem', color: '#f59e0b' }}>
+                        มากกว่าสต็อกที่มี
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="dash-form-group">
+                  <label className="dash-label" style={{ fontSize: '0.875rem' }}>
+                    เหตุผล <span className="dash-required">*</span>
+                  </label>
+                  <textarea
+                    className="dash-input"
+                    rows={2}
+                    placeholder="ระบุเหตุผล..."
+                    value={item.reason}
+                    onChange={(e) => updateReason(item._id, e.target.value)}
+                    style={{ fontSize: '0.875rem' }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
           <button
-            type="submit"
-            className="dash-btn dash-btn-primary dash-btn-lg"
+            onClick={() => void handleSubmit()}
+            className="dash-btn dash-btn-primary dash-btn-lg dash-btn-block"
             disabled={loading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem'
+            }}
           >
-            {loading ? '🔄 กำลังส่งคำร้อง...' : '✉️ ยืนยันส่งคำร้อง'}
+            {loading ? (
+              <>🔄 กำลังส่ง...</>
+            ) : (
+              <>
+                <Send size={20} />
+                ยืนยันส่งคำขอ
+              </>
+            )}
           </button>
         </div>
-
-        <div className={styles.info}>
-          <p>💡 <strong>หมายเหตุ:</strong> คำร้องจะถูกส่งไปยังเจ้าหน้าที่ระดับจังหวัดเพื่อพิจารณา</p>
-          <p>คุณสามารถตรวจสอบสถานะคำร้องได้ในเมนู &ldquo;ประวัติ&rdquo;</p>
-        </div>
-      </form>
+      )}
     </div>
   );
 }

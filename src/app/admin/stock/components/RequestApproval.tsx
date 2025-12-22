@@ -1,8 +1,8 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import styles from './RequestApproval.module.css';
+import { useToast } from '@/contexts/ToastContext';
+import { Package, Clock, User, MapPin, CheckCircle2, XCircle, AlertTriangle, FileText } from 'lucide-react';
 
 interface RequestItem {
   stockId: string;
@@ -26,20 +26,23 @@ interface Request {
 interface RequestDetail {
   _id: string;
   requestNumber: string;
-  shelterId: { name: string };
-  requestedBy: { name: string };
+  shelterId: { name: string; code: string };
+  requestedBy: { username: string };
   items: RequestItem[];
+  createdAt: string;
+  status: string;
 }
 
 export default function RequestApproval() {
+  const { success, error: showError, info } = useToast();
   const [requests, setRequests] = useState<Request[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<RequestDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    fetchRequests();
+    void fetchRequests();
   }, []);
 
   const fetchRequests = async () => {
@@ -51,10 +54,11 @@ export default function RequestApproval() {
 
       if (res.ok) {
         const data = await res.json();
-        setRequests(data.requests);
+        setRequests(data.requests || []);
       }
     } catch (err) {
-      console.error('Failed to fetch requests');
+      console.error('Failed to fetch requests', err);
+      showError('ไม่สามารถโหลดรายการคำขอได้');
     }
   };
 
@@ -69,16 +73,16 @@ export default function RequestApproval() {
         const data = await res.json();
         setSelectedRequest(data);
         setAdminNotes('');
-        setError(null);
+        setShowModal(true);
       }
     } catch (err) {
-      console.error('Failed to fetch request details');
+      console.error('Failed to fetch request details', err);
+      showError('ไม่สามารถโหลดรายละเอียดคำขอได้');
     }
   };
 
   const handleApprove = async () => {
     if (!selectedRequest) return;
-    setError(null);
     setLoading(true);
 
     try {
@@ -100,13 +104,14 @@ export default function RequestApproval() {
         throw new Error(err.error || 'เกิดข้อผิดพลาด');
       }
 
-      alert('อนุมัติคำร้องสำเร็จ');
+      success('อนุมัติคำขอสำเร็จ! สต็อกได้ถูกโอนแล้ว');
+      setShowModal(false);
       setSelectedRequest(null);
-      fetchRequests();
+      void fetchRequests();
 
     } catch (err: unknown) {
       const error = err as Error;
-      setError(error.message);
+      showError(error.message);
     } finally {
       setLoading(false);
     }
@@ -115,11 +120,10 @@ export default function RequestApproval() {
   const handleReject = async () => {
     if (!selectedRequest) return;
     if (!adminNotes.trim()) {
-      setError('กรุณาระบุเหตุผลในการปฏิเสธ');
+      showError('กรุณาระบุเหตุผลในการปฏิเสธ');
       return;
     }
 
-    setError(null);
     setLoading(true);
 
     try {
@@ -141,151 +145,357 @@ export default function RequestApproval() {
         throw new Error(err.error || 'เกิดข้อผิดพลาด');
       }
 
-      alert('ปฏิเสธคำร้องสำเร็จ');
+      info('ปฏิเสธคำขอแล้ว');
+      setShowModal(false);
       setSelectedRequest(null);
-      fetchRequests();
+      void fetchRequests();
 
     } catch (err: unknown) {
       const error = err as Error;
-      setError(error.message);
+      showError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  const getUrgencyConfig = (urgency: string) => {
+    switch (urgency) {
+      case 'high':
+        return { label: 'ด่วนมาก', color: '#ef4444', icon: AlertTriangle };
+      case 'medium':
+        return { label: 'ปานกลาง', color: '#f59e0b', icon: Clock };
+      default:
+        return { label: 'ปกติ', color: '#3b82f6', icon: FileText };
+    }
+  };
+
   if (requests.length === 0) {
     return (
-      <div className={styles.container}>
-        <div className={styles.emptyState}>
-          <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <p>ไม่มีคำร้องรอพิจารณา</p>
-        </div>
+      <div className="dash-card" style={{ padding: '4rem', textAlign: 'center' }}>
+        <Package size={80} style={{ opacity: 0.3, marginBottom: '1.5rem' }} />
+        <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#f1f5f9', marginBottom: '0.5rem' }}>
+          ไม่มีคำขอรอพิจารณา
+        </h3>
+        <p style={{ color: '#94a3b8' }}>
+          คำขอทั้งหมดได้รับการพิจารณาแล้ว
+        </p>
       </div>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.requestList}>
-        {requests.map(req => (
-          <div
-            key={req.id}
-            className={styles.requestCard}
-            onClick={() => viewRequest(req.id)}
-          >
-            <div className={styles.requestHeader}>
-              <div className={styles.requestInfo}>
-                <div className={styles.requestTitle}>
-                  {req.requestNumber}
+    <div>
+      {/* Request Cards Grid */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+        gap: '1.5rem'
+      }}>
+        {requests.map(req => {
+          const urgencyConfig = getUrgencyConfig(req.urgency);
+          const UrgencyIcon = urgencyConfig.icon;
+
+          return (
+            <div
+              key={req.id}
+              className="dash-card"
+              style={{
+                padding: '1.5rem',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                border: '1px solid rgba(148, 163, 184, 0.15)'
+              }}
+              onClick={() => void viewRequest(req.id)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)';
+                e.currentTarget.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '';
+              }}
+            >
+              {/* Header */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '1rem'
+              }}>
+                <div>
+                  <h3 style={{
+                    fontSize: '1.125rem',
+                    fontWeight: 600,
+                    color: '#f1f5f9',
+                    marginBottom: '0.25rem'
+                  }}>
+                    {req.requestNumber}
+                  </h3>
+                  <span style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
+                    {new Date(req.requestedAt).toLocaleDateString('th-TH', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
                 </div>
-                <div className={styles.requestMeta}>
-                  <span>📍 {req.shelter.name}</span>
-                  <span>📦 {req.itemCount} รายการ</span>
-                  <span>👤 {req.requestedBy.name}</span>
+                <span className="dash-badge" style={{
+                  background: `${urgencyConfig.color}20`,
+                  color: urgencyConfig.color,
+                  border: `1px solid ${urgencyConfig.color}40`,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.375rem'
+                }}>
+                  <UrgencyIcon size={14} />
+                  {urgencyConfig.label}
+                </span>
+              </div>
+
+              {/* Info */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                  <MapPin size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
+                  <span style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                    {req.shelter.name}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                  <User size={16} style={{ color: '#8b5cf6', flexShrink: 0 }} />
+                  <span style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                    {req.requestedBy.name}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                  <Package size={16} style={{ color: '#22c55e', flexShrink: 0 }} />
+                  <span style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                    {req.itemCount} รายการ
+                  </span>
                 </div>
               </div>
-              <div className={`${styles.statusBadge} ${styles.statusPending}`}>
-                รอพิจารณา
+
+              {/* CTA */}
+              <div style={{
+                marginTop: '1.25rem',
+                paddingTop: '1.25rem',
+                borderTop: '1px solid rgba(148, 163, 184, 0.1)'
+              }}>
+                <div style={{
+                  color: '#3b82f6',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  คลิกเพื่อดูรายละเอียด →
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal */}
+      {showModal && selectedRequest && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '2rem'
+        }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="dash-card"
+            style={{
+              maxWidth: '800px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              padding: '2rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: '2rem'
+            }}>
+              <div>
+                <h2 className="dash-card-title" style={{ marginBottom: '0.5rem' }}>
+                  {selectedRequest.requestNumber}
+                </h2>
+                <p style={{ color: '#94a3b8', margin: 0 }}>
+                  รายละเอียดคำขอสินค้า
+                </p>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="dash-btn-icon"
+                style={{ fontSize: '1.5rem' }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Info Cards */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '1rem',
+              marginBottom: '2rem'
+            }}>
+              <div className="dash-stat-card">
+                <div className="dash-stat-icon dash-stat-icon-primary">
+                  <MapPin size={24} />
+                </div>
+                <div className="dash-stat-content">
+                  <div className="dash-stat-value" style={{ fontSize: '1rem' }}>
+                    {selectedRequest.shelterId.name}
+                  </div>
+                  <div className="dash-stat-label">ศูนย์พักพิง</div>
+                </div>
+              </div>
+
+              <div className="dash-stat-card">
+                <div className="dash-stat-icon dash-stat-icon-success">
+                  <User size={24} />
+                </div>
+                <div className="dash-stat-content">
+                  <div className="dash-stat-value" style={{ fontSize: '1rem' }}>
+                    {selectedRequest.requestedBy.username}
+                  </div>
+                  <div className="dash-stat-label">ผู้ยื่นคำขอ</div>
+                </div>
               </div>
             </div>
 
-            {selectedRequest && selectedRequest._id === req.id && (
-              <div className={styles.requestBody}>
-                {error && <div className={styles.errorMessage}>{error}</div>}
-
-                <div className={styles.requestDetails}>
-                  <div className={styles.detailItem}>
-                    <div className={styles.detailLabel}>เลขที่คำร้อง</div>
-                    <div className={styles.detailValue}>{selectedRequest.requestNumber}</div>
-                  </div>
-                  <div className={styles.detailItem}>
-                    <div className={styles.detailLabel}>ศูนย์พักพิง</div>
-                    <div className={styles.detailValue}>{selectedRequest.shelterId.name}</div>
-                  </div>
-                  <div className={styles.detailItem}>
-                    <div className={styles.detailLabel}>ผู้ยื่นคำร้อง</div>
-                    <div className={styles.detailValue}>{selectedRequest.requestedBy.name}</div>
-                  </div>
-                </div>
-
-                <div style={{ marginTop: '1.5rem' }}>
-                  <h4 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.125rem', fontWeight: 700 }}>
-                    รายการสินค้า
-                  </h4>
-                  {selectedRequest.items.map((item: RequestItem, idx: number) => (
-                    <div key={idx} style={{
-                      padding: '1rem',
-                      background: 'rgba(15, 23, 42, 0.6)',
-                      borderRadius: '8px',
-                      marginBottom: '0.75rem',
-                      border: '1px solid rgba(148, 163, 184, 0.1)'
+            {/* Items List */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 className="dash-card-title" style={{ marginBottom: '1rem' }}>
+                รายการสินค้า ({selectedRequest.items.length})
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {selectedRequest.items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="dash-card"
+                    style={{
+                      padding: '1.25rem',
+                      background: 'rgba(15, 23, 42, 0.5)'
+                    }}
+                  >
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      marginBottom: '0.75rem'
                     }}>
-                      <div style={{ fontWeight: 600, color: '#f1f5f9', marginBottom: '0.5rem' }}>
+                      <h4 style={{
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        color: '#f1f5f9',
+                        margin: 0
+                      }}>
                         {item.itemName}
-                      </div>
-                      <div style={{ color: '#cbd5e1', fontSize: '0.875rem' }}>
-                        จำนวน: {item.requestedQuantity} {item.unit}
-                      </div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-                        เหตุผล: {item.reason}
+                      </h4>
+                      <div style={{
+                        fontSize: '1.25rem',
+                        fontWeight: 700,
+                        color: '#3b82f6'
+                      }}>
+                        {item.requestedQuantity} {item.unit}
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                <div style={{ marginTop: '1.5rem' }}>
-                  <label style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 600,
-                    color: '#cbd5e1',
-                    marginBottom: '0.5rem'
-                  }}>
-                    หมายเหตุจาก Admin
-                  </label>
-                  <textarea
-                    value={adminNotes}
-                    onChange={(e) => setAdminNotes(e.target.value)}
-                    placeholder="ระบุหมายเหตุหรือเหตุผล"
-                    rows={3}
-                    disabled={loading}
-                    style={{
-                      width: '100%',
-                      padding: '0.875rem 1rem',
-                      background: 'rgba(15, 23, 42, 0.8)',
-                      border: '1px solid rgba(148, 163, 184, 0.15)',
-                      borderRadius: '12px',
-                      color: '#f1f5f9',
-                      fontSize: '0.9375rem',
-                      resize: 'vertical',
-                      minHeight: '100px'
-                    }}
-                  />
-                </div>
-
-                <div className={styles.requestActions}>
-                  <button
-                    onClick={handleReject}
-                    className={styles.rejectButton}
-                    disabled={loading}
-                  >
-                    ปฏิเสธ
-                  </button>
-                  <button
-                    onClick={handleApprove}
-                    className={styles.approveButton}
-                    disabled={loading}
-                  >
-                    {loading ? 'กำลังดำเนินการ...' : 'อนุมัติ'}
-                  </button>
-                </div>
+                    <div style={{
+                      padding: '0.75rem',
+                      background: 'rgba(100, 116, 139, 0.1)',
+                      borderRadius: '8px',
+                      borderLeft: '3px solid #64748b'
+                    }}>
+                      <div style={{
+                        fontSize: '0.8125rem',
+                        color: '#94a3b8',
+                        marginBottom: '0.25rem'
+                      }}>
+                        เหตุผล:
+                      </div>
+                      <div style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                        {item.reason}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+
+            {/* Admin Notes */}
+            <div className="dash-form-group" style={{ marginBottom: '2rem' }}>
+              <label className="dash-label">
+                หมายเหตุจาก Admin
+              </label>
+              <textarea
+                className="dash-input"
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="ระบุหมายเหตุหรือเหตุผล (จำเป็นสำหรับการปฏิเสธ)"
+                rows={4}
+                disabled={loading}
+              />
+            </div>
+
+            {/* Actions */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '1rem'
+            }}>
+              <button
+                onClick={() => void handleReject()}
+                className="dash-btn dash-btn-danger dash-btn-lg"
+                disabled={loading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <XCircle size={20} />
+                {loading ? 'กำลังดำเนินการ...' : 'ปฏิเสธคำขอ'}
+              </button>
+              <button
+                onClick={() => void handleApprove()}
+                className="dash-btn dash-btn-success dash-btn-lg"
+                disabled={loading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <CheckCircle2 size={20} />
+                {loading ? 'กำลังดำเนินการ...' : 'อนุมัติและโอนสต็อก'}
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
