@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/Sidebar/Sidebar';
+import StockNotificationListener from '@/components/Notifications/StockNotificationListener';
 import styles from './RootLayoutContent.module.css';
 
 export default function RootLayoutContent({
@@ -21,6 +22,7 @@ export default function RootLayoutContent({
     return (
         <div className={styles.container}>
             <Sidebar />
+            <StockNotificationListener />
             <main className={styles.mainContent}>
                 {children}
             </main>

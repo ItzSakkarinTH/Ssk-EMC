@@ -67,6 +67,13 @@ export default function StaffStockDashboard() {
 
   useEffect(() => {
     void fetchStats();
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => {
+      void fetchStats();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, [fetchStats]);
 
   if (loading) {
