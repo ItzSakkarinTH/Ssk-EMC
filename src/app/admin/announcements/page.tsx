@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Megaphone, Plus, Edit, Trash2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
+import { Bell, Plus, Edit, Trash2, AlertCircle, Info, AlertTriangle, X, Radio, Siren, Eye, EyeOff, Sparkles } from 'lucide-react';
 
 interface Announcement {
     _id: string;
@@ -212,31 +212,65 @@ export default function AnnouncementsPage() {
                 gap: '1rem',
                 flexWrap: 'wrap'
             }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', flex: 1 }}>
-                    <div className="dash-stat-card">
-                        <div className="dash-stat-icon dash-stat-icon-primary">
-                            <Megaphone size={28} />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', flex: 1 }}>
+                    <div className="dash-stat-card" style={{
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                        border: '1px solid rgba(99, 102, 241, 0.2)'
+                    }}>
+                        <div className="dash-stat-icon" style={{
+                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                            boxShadow: '0 8px 16px rgba(99, 102, 241, 0.3)'
+                        }}>
+                            <Bell size={28} />
                         </div>
                         <div className="dash-stat-content">
-                            <div className="dash-stat-value">{announcements.length}</div>
+                            <div className="dash-stat-value" style={{
+                                background: 'linear-gradient(135deg, #818cf8 0%, #a78bfa 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text'
+                            }}>{announcements.length}</div>
                             <div className="dash-stat-label">ประกาศทั้งหมด</div>
                         </div>
                     </div>
-                    <div className="dash-stat-card">
-                        <div className="dash-stat-icon dash-stat-icon-success">
-                            <Megaphone size={28} />
+                    <div className="dash-stat-card" style={{
+                        background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                        border: '1px solid rgba(34, 197, 94, 0.2)'
+                    }}>
+                        <div className="dash-stat-icon" style={{
+                            background: 'linear-gradient(135deg, #22c55e 0%, #10b981 100%)',
+                            boxShadow: '0 8px 16px rgba(34, 197, 94, 0.3)'
+                        }}>
+                            <Radio size={28} />
                         </div>
                         <div className="dash-stat-content">
-                            <div className="dash-stat-value">{activeCount}</div>
+                            <div className="dash-stat-value" style={{
+                                background: 'linear-gradient(135deg, #4ade80 0%, #34d399 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text'
+                            }}>{activeCount}</div>
                             <div className="dash-stat-label">กำลังแสดง</div>
                         </div>
                     </div>
-                    <div className="dash-stat-card">
-                        <div className="dash-stat-icon dash-stat-icon-danger">
-                            <AlertCircle size={28} />
+                    <div className="dash-stat-card" style={{
+                        background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)'
+                    }}>
+                        <div className="dash-stat-icon" style={{
+                            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                            boxShadow: '0 8px 16px rgba(239, 68, 68, 0.3)',
+                            animation: urgentCount > 0 ? 'pulse 2s ease-in-out infinite' : 'none'
+                        }}>
+                            <Siren size={28} />
                         </div>
                         <div className="dash-stat-content">
-                            <div className="dash-stat-value">{urgentCount}</div>
+                            <div className="dash-stat-value" style={{
+                                background: 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                backgroundClip: 'text'
+                            }}>{urgentCount}</div>
                             <div className="dash-stat-label">ด่วนมาก</div>
                         </div>
                     </div>
@@ -245,6 +279,20 @@ export default function AnnouncementsPage() {
                 <button
                     className="dash-btn dash-btn-primary"
                     onClick={() => handleOpenModal()}
+                    style={{
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        border: 'none',
+                        boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+                        transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 20px rgba(99, 102, 241, 0.5)';
+                    }}
+                    onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.4)';
+                    }}
                 >
                     <Plus size={20} />
                     สร้างประกาศ
@@ -328,13 +376,35 @@ export default function AnnouncementsPage() {
             </div>
 
             {announcements.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-                    <Megaphone size={64} style={{ opacity: 0.5, marginBottom: '1rem' }} />
-                    <p>ยังไม่มีประกาศในระบบ</p>
+                <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#94a3b8' }}>
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                        width: '120px',
+                        height: '120px',
+                        borderRadius: '50%',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '1.5rem',
+                        border: '2px solid rgba(99, 102, 241, 0.2)'
+                    }}>
+                        <Bell size={64} style={{ opacity: 0.6, color: '#818cf8' }} />
+                    </div>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem', color: '#cbd5e1' }}>
+                        ยังไม่มีประกาศในระบบ
+                    </h3>
+                    <p style={{ marginBottom: '2rem', color: '#94a3b8' }}>
+                        เริ่มสร้างประกาศแรกของคุณเพื่อแจ้งข่าวสารสำคัญ
+                    </p>
                     <button
                         className="dash-btn dash-btn-primary"
-                        style={{ marginTop: '1rem' }}
                         onClick={() => handleOpenModal()}
+                        style={{
+                            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                            border: 'none',
+                            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.4)',
+                            padding: '0.75rem 2rem'
+                        }}
                     >
                         <Plus size={20} />
                         สร้างประกาศแรก
@@ -345,9 +415,26 @@ export default function AnnouncementsPage() {
             {/* Modal */}
             {showModal && (
                 <div className="dash-modal-overlay" onClick={handleCloseModal}>
-                    <div className="dash-modal" onClick={(e) => e.stopPropagation()}>
-                        <div className="dash-modal-header">
-                            <h2>{editingAnnouncement ? 'แก้ไขประกาศ' : 'สร้างประกาศใหม่'}</h2>
+                    <div className="dash-modal" onClick={(e) => e.stopPropagation()} style={{
+                        maxWidth: '600px'
+                    }}>
+                        <div className="dash-modal-header" style={{
+                            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                            borderBottom: '1px solid rgba(99, 102, 241, 0.2)'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                    padding: '0.5rem',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <Sparkles size={20} />
+                                </div>
+                                <h2 style={{ margin: 0 }}>{editingAnnouncement ? 'แก้ไขประกาศ' : 'สร้างประกาศใหม่'}</h2>
+                            </div>
                             <button className="dash-modal-close" onClick={handleCloseModal}>
                                 <X size={24} />
                             </button>
@@ -363,7 +450,7 @@ export default function AnnouncementsPage() {
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         required
-                                        placeholder="กรุณากรอกหัวข้อประกาศ"
+                                        placeholder="เช่น: ประกาศสำคัญ, การอัพเดตระบบ"
                                     />
                                 </div>
 
@@ -375,8 +462,8 @@ export default function AnnouncementsPage() {
                                         onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                         required
                                         rows={4}
-                                        placeholder="กรุณากรอกเนื้อหาประกาศ"
-                                        style={{ resize: 'vertical', minHeight: '100px' }}
+                                        placeholder="กรุณากรอกรายละเอียดประกาศ..."
+                                        style={{ resize: 'vertical', minHeight: '120px' }}
                                     />
                                 </div>
 
@@ -387,11 +474,20 @@ export default function AnnouncementsPage() {
                                             className="dash-input"
                                             value={formData.type}
                                             onChange={(e) => setFormData({ ...formData, type: e.target.value as 'info' | 'warning' | 'urgent' })}
+                                            style={{
+                                                borderColor: formData.type === 'urgent' ? '#ef4444' :
+                                                    formData.type === 'warning' ? '#f59e0b' : '#6366f1'
+                                            }}
                                         >
-                                            <option value="info">ℹ️ ข้อมูลทั่วไป</option>
-                                            <option value="warning">⚠️ คำเตือน</option>
-                                            <option value="urgent">🚨 ด่วนมาก</option>
+                                            <option value="info">💙 ข้อมูลทั่วไป - สำหรับข่าวสารทั่วไป</option>
+                                            <option value="warning">⚠️ คำเตือน - ควรให้ความสนใจ</option>
+                                            <option value="urgent">🚨 ด่วนมาก - ต้องดำเนินการทันที!</option>
                                         </select>
+                                        <small style={{ color: '#94a3b8', marginTop: '0.5rem', display: 'block' }}>
+                                            {formData.type === 'urgent' && '⚡ ประกาศนี้จะแสดงด้วยสีแดงและมี animation'}
+                                            {formData.type === 'warning' && '⚡ ประกาศนี้จะแสดงด้วยสีส้ม'}
+                                            {formData.type === 'info' && '⚡ ประกาศนี้จะแสดงด้วยสีน้ำเงิน'}
+                                        </small>
                                     </div>
 
                                     <div className="dash-form-group">
@@ -400,20 +496,33 @@ export default function AnnouncementsPage() {
                                             className="dash-input"
                                             value={formData.isActive ? 'active' : 'inactive'}
                                             onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'active' })}
+                                            style={{
+                                                borderColor: formData.isActive ? '#22c55e' : '#94a3b8'
+                                            }}
                                         >
-                                            <option value="active">✅ แสดงประกาศ</option>
-                                            <option value="inactive">❌ ซ่อนประกาศ</option>
+                                            <option value="active">👁️ แสดงประกาศ - Visible</option>
+                                            <option value="inactive">🚫 ซ่อนประกาศ - Hidden</option>
                                         </select>
+                                        <small style={{ color: '#94a3b8', marginTop: '0.5rem', display: 'block' }}>
+                                            {formData.isActive ? '✅ ประกาศนี้จะแสดงบนหน้า Dashboard' : '⚠️ ประกาศนี้จะไม่แสดงบนหน้า Dashboard'}
+                                        </small>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="dash-modal-footer">
+                            <div className="dash-modal-footer" style={{
+                                background: 'rgba(15, 23, 42, 0.5)',
+                                borderTop: '1px solid rgba(148, 163, 184, 0.1)'
+                            }}>
                                 <button
                                     type="button"
                                     className="dash-btn dash-btn-secondary"
                                     onClick={handleCloseModal}
                                     disabled={submitting}
+                                    style={{
+                                        background: 'rgba(148, 163, 184, 0.1)',
+                                        border: '1px solid rgba(148, 163, 184, 0.2)'
+                                    }}
                                 >
                                     ยกเลิก
                                 </button>
@@ -421,8 +530,17 @@ export default function AnnouncementsPage() {
                                     type="submit"
                                     className="dash-btn dash-btn-primary"
                                     disabled={submitting}
+                                    style={{
+                                        background: submitting ? '#94a3b8' : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                                        border: 'none',
+                                        boxShadow: submitting ? 'none' : '0 4px 12px rgba(99, 102, 241, 0.4)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem'
+                                    }}
                                 >
-                                    {submitting ? 'กำลังบันทึก...' : (editingAnnouncement ? 'บันทึกการแก้ไข' : 'สร้างประกาศ')}
+                                    {submitting && <span style={{ animation: 'spin 1s linear infinite' }}>⏳</span>}
+                                    {submitting ? 'กำลังบันทึก...' : (editingAnnouncement ? '💾 บันทึกการแก้ไข' : '✨ สร้างประกาศ')}
                                 </button>
                             </div>
                         </form>
