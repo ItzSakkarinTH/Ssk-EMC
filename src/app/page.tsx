@@ -9,10 +9,9 @@ import {
   AlertTriangle,
   AlertCircle,
   ChevronRight,
-  Home,
-  BarChart3,
 } from 'lucide-react';
 import styles from './page.module.css';
+import AnnouncementBanner from '@/components/AnnouncementBanner/AnnouncementBanner';
 
 // Types
 interface StockOverview {
@@ -151,6 +150,9 @@ export default function HomePage() {
             )}
           </div>
         </header>
+
+        {/* Announcement Banner */}
+        <AnnouncementBanner />
 
         {/* Alert Banner */}
         <div className={`${styles.alertBannerNew} ${urgentAlerts > 0 ? styles.alertDanger : styles.alertNormal}`}>

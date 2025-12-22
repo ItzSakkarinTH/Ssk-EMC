@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Megaphone, Plus, Edit, Trash2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { Megaphone, Plus, Edit, Trash2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 
 interface Announcement {
     _id: string;
@@ -17,10 +17,26 @@ interface Announcement {
     isActive: boolean;
 }
 
+interface AnnouncementFormData {
+    title: string;
+    content: string;
+    type: 'info' | 'warning' | 'urgent';
+    isActive: boolean;
+}
+
 export default function AnnouncementsPage() {
     const toast = useToast();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [formData, setFormData] = useState<AnnouncementFormData>({
+        title: '',
+        content: '',
+        type: 'info',
+        isActive: true
+    });
 
     useEffect(() => {
         fetchAnnouncements();
@@ -46,6 +62,68 @@ export default function AnnouncementsPage() {
             toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleOpenModal = (announcement?: Announcement) => {
+        if (announcement) {
+            setEditingAnnouncement(announcement);
+            setFormData({
+                title: announcement.title,
+                content: announcement.content,
+                type: announcement.type,
+                isActive: announcement.isActive
+            });
+        } else {
+            setEditingAnnouncement(null);
+            setFormData({
+                title: '',
+                content: '',
+                type: 'info',
+                isActive: true
+            });
+        }
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setEditingAnnouncement(null);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            const url = editingAnnouncement
+                ? `/api/admin/announcements/${editingAnnouncement._id}`
+                : '/api/admin/announcements';
+            const method = editingAnnouncement ? 'PATCH' : 'POST';
+
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                toast.success(editingAnnouncement ? 'แก้ไขประกาศสำเร็จ' : 'สร้างประกาศสำเร็จ');
+                handleCloseModal();
+                fetchAnnouncements();
+            } else {
+                const errorData = await res.json();
+                toast.error(errorData.error || 'เกิดข้อผิดพลาด');
+            }
+        } catch (error) {
+            console.error('Error submitting announcement:', error);
+            toast.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -164,7 +242,10 @@ export default function AnnouncementsPage() {
                     </div>
                 </div>
 
-                <button className="dash-btn dash-btn-primary">
+                <button
+                    className="dash-btn dash-btn-primary"
+                    onClick={() => handleOpenModal()}
+                >
                     <Plus size={20} />
                     สร้างประกาศ
                 </button>
@@ -225,7 +306,11 @@ export default function AnnouncementsPage() {
                                     {new Date(announcement.createdAt).toLocaleDateString('th-TH')}
                                 </div>
                                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                    <button className="dash-btn dash-btn-secondary" style={{ padding: '0.5rem' }}>
+                                    <button
+                                        className="dash-btn dash-btn-secondary"
+                                        style={{ padding: '0.5rem' }}
+                                        onClick={() => handleOpenModal(announcement)}
+                                    >
                                         <Edit size={16} />
                                     </button>
                                     <button
@@ -249,10 +334,99 @@ export default function AnnouncementsPage() {
                     <button
                         className="dash-btn dash-btn-primary"
                         style={{ marginTop: '1rem' }}
+                        onClick={() => handleOpenModal()}
                     >
                         <Plus size={20} />
                         สร้างประกาศแรก
                     </button>
+                </div>
+            )}
+
+            {/* Modal */}
+            {showModal && (
+                <div className="dash-modal-overlay" onClick={handleCloseModal}>
+                    <div className="dash-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="dash-modal-header">
+                            <h2>{editingAnnouncement ? 'แก้ไขประกาศ' : 'สร้างประกาศใหม่'}</h2>
+                            <button className="dash-modal-close" onClick={handleCloseModal}>
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="dash-modal-body">
+                                <div className="dash-form-group">
+                                    <label className="dash-label">หัวข้อประกาศ *</label>
+                                    <input
+                                        type="text"
+                                        className="dash-input"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        required
+                                        placeholder="กรุณากรอกหัวข้อประกาศ"
+                                    />
+                                </div>
+
+                                <div className="dash-form-group">
+                                    <label className="dash-label">เนื้อหาประกาศ *</label>
+                                    <textarea
+                                        className="dash-input"
+                                        value={formData.content}
+                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                        required
+                                        rows={4}
+                                        placeholder="กรุณากรอกเนื้อหาประกาศ"
+                                        style={{ resize: 'vertical', minHeight: '100px' }}
+                                    />
+                                </div>
+
+                                <div className="dash-form-grid">
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">ประเภทประกาศ *</label>
+                                        <select
+                                            className="dash-input"
+                                            value={formData.type}
+                                            onChange={(e) => setFormData({ ...formData, type: e.target.value as 'info' | 'warning' | 'urgent' })}
+                                        >
+                                            <option value="info">ℹ️ ข้อมูลทั่วไป</option>
+                                            <option value="warning">⚠️ คำเตือน</option>
+                                            <option value="urgent">🚨 ด่วนมาก</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="dash-form-group">
+                                        <label className="dash-label">สถานะ *</label>
+                                        <select
+                                            className="dash-input"
+                                            value={formData.isActive ? 'active' : 'inactive'}
+                                            onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'active' })}
+                                        >
+                                            <option value="active">✅ แสดงประกาศ</option>
+                                            <option value="inactive">❌ ซ่อนประกาศ</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="dash-modal-footer">
+                                <button
+                                    type="button"
+                                    className="dash-btn dash-btn-secondary"
+                                    onClick={handleCloseModal}
+                                    disabled={submitting}
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="dash-btn dash-btn-primary"
+                                    disabled={submitting}
+                                >
+                                    {submitting ? 'กำลังบันทึก...' : (editingAnnouncement ? 'บันทึกการแก้ไข' : 'สร้างประกาศ')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </DashboardLayout>
