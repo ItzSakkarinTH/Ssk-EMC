@@ -8,7 +8,7 @@ type ToastType = 'success' | 'error' | 'warning' | 'info';
 interface Toast {
     id: string;
     type: ToastType;
-    message: string;
+    message: string | React.ReactNode;
 }
 
 interface ConfirmOptions {
@@ -22,10 +22,10 @@ interface ConfirmOptions {
 interface ToastContextType {
     toasts: Toast[];
     removeToast: (id: string) => void;
-    success: (message: string) => void;
-    error: (message: string) => void;
-    warning: (message: string) => void;
-    info: (message: string) => void;
+    success: (message: string | React.ReactNode) => void;
+    error: (message: string | React.ReactNode) => void;
+    warning: (message: string | React.ReactNode) => void;
+    info: (message: string | React.ReactNode) => void;
     confirm: (options: ConfirmOptions) => Promise<boolean>;
 }
 
@@ -47,7 +47,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         resolve: (value: boolean) => void;
     } | null>(null);
 
-    const addToast = useCallback((type: ToastType, message: string) => {
+    const addToast = useCallback((type: ToastType, message: string | React.ReactNode) => {
         const id = Math.random().toString(36).substr(2, 9);
         setToasts(prev => [...prev, { id, type, message }]);
 
@@ -133,10 +133,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const value: ToastContextType = {
         toasts,
         removeToast,
-        success: (message: string) => addToast('success', message),
-        error: (message: string) => addToast('error', message),
-        warning: (message: string) => addToast('warning', message),
-        info: (message: string) => addToast('info', message),
+        success: (message: string | React.ReactNode) => addToast('success', message),
+        error: (message: string | React.ReactNode) => addToast('error', message),
+        warning: (message: string | React.ReactNode) => addToast('warning', message),
+        info: (message: string | React.ReactNode) => addToast('info', message),
         confirm
     };
 
