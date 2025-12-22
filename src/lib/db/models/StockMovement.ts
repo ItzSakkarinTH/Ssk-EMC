@@ -14,6 +14,7 @@ interface ISnapshot {
 
 export interface IStockMovement extends Document {
   stockId: mongoose.Types.ObjectId;
+  itemName: string;
   movementType: 'receive' | 'transfer' | 'dispense';
   quantity: number;
   unit: string;
@@ -24,6 +25,8 @@ export interface IStockMovement extends Document {
   notes: string;
   referenceId: string;
   snapshot: ISnapshot;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const LocationSchema = new Schema({
@@ -43,6 +46,7 @@ const SnapshotSchema = new Schema({
 
 const StockMovementSchema = new Schema<IStockMovement>({
   stockId: { type: Schema.Types.ObjectId, ref: 'Stock', required: true },
+  itemName: { type: String, required: true },
   movementType: {
     type: String,
     enum: ['receive', 'transfer', 'dispense'],
@@ -67,7 +71,7 @@ StockMovementSchema.index({ performedAt: -1 });
 StockMovementSchema.index({ referenceId: 1 });
 
 // Static method: สร้าง Movement Log
-StockMovementSchema.statics.logMovement = async function(data: {
+StockMovementSchema.statics.logMovement = async function (data: {
   stockId: string;
   type: 'receive' | 'transfer' | 'dispense';
   quantity: number;
@@ -93,6 +97,5 @@ StockMovementSchema.statics.logMovement = async function(data: {
   });
 };
 
-export default mongoose.models.StockMovement || 
+export default mongoose.models.StockMovement ||
   mongoose.model<IStockMovement>('StockMovement', StockMovementSchema);
-  

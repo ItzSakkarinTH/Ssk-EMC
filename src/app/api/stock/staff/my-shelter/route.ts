@@ -38,11 +38,11 @@ export async function GET(req: NextRequest) {
         );
 
         return {
-          _id: stock._id.toString(),
+          stockId: stock._id.toString(), // แก้จาก _id เป็น stockId
           itemName: stock.itemName,
           category: stock.category,
           unit: stock.unit,
-          currentQuantity: shelterStock?.quantity || 0,
+          quantity: shelterStock?.quantity || 0, // แก้จาก currentQuantity เป็น quantity
           provincialStock: stock.provincialStock,
           status: shelterStock
             ? (shelterStock.quantity <= stock.criticalLevel ? 'critical'

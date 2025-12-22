@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Package, Plus, Minus, Trash2, ShoppingCart, Send, AlertCircle, Search, Filter } from 'lucide-react';
+import { Package, Plus, Minus, Trash2, ClipboardList, Send, AlertCircle, Search, Filter } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 
 interface StockItem {
@@ -12,7 +12,7 @@ interface StockItem {
   category: string;
 }
 
-interface CartItem extends StockItem {
+interface RequestItem extends StockItem {
   quantity: number;
   reason: string;
 }
@@ -24,12 +24,12 @@ interface Props {
 export default function RequestForm({ onSuccess }: Props) {
   const { success, error: showError, warning, info } = useToast();
   const [availableStock, setAvailableStock] = useState<StockItem[]>([]);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [requestList, setRequestList] = useState<RequestItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingStock, setLoadingStock] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [showCart, setShowCart] = useState(false);
+  const [showList, setShowList] = useState(false);
 
   useEffect(() => {
     void fetchAvailableStock();
@@ -54,43 +54,43 @@ export default function RequestForm({ onSuccess }: Props) {
     }
   };
 
-  const addToCart = (item: StockItem) => {
-    const existing = cart.find(c => c._id === item._id);
+  const addToList = (item: StockItem) => {
+    const existing = requestList.find(c => c._id === item._id);
     if (existing) {
-      warning('สินค้านี้อยู่ในรถเข็นแล้ว');
-      setShowCart(true);
+      warning('สินค้านี้อยู่ในรายการแล้ว');
+      setShowList(true);
       return;
     }
-    setCart([...cart, { ...item, quantity: 1, reason: '' }]);
-    success(`เพิ่ม ${item.itemName} ลงรถเข็นแล้ว`);
+    setRequestList([...requestList, { ...item, quantity: 1, reason: '' }]);
+    success(`เพิ่ม ${item.itemName} ในรายการแล้ว`);
   };
 
-  const removeFromCart = (id: string) => {
-    setCart(cart.filter(item => item._id !== id));
-    info('ลบออกจากรถเข็นแล้ว');
+  const removeFromList = (id: string) => {
+    setRequestList(requestList.filter(item => item._id !== id));
+    info('ลบออกจากรายการแล้ว');
   };
 
   const updateQuantity = (id: string, quantity: number) => {
     if (quantity <= 0) return;
-    setCart(cart.map(item =>
+    setRequestList(requestList.map(item =>
       item._id === id ? { ...item, quantity } : item
     ));
   };
 
   const updateReason = (id: string, reason: string) => {
-    setCart(cart.map(item =>
+    setRequestList(requestList.map(item =>
       item._id === id ? { ...item, reason } : item
     ));
   };
 
   const handleSubmit = async () => {
     // Validation
-    if (cart.length === 0) {
+    if (requestList.length === 0) {
       showError('กรุณาเลือกสินค้าอย่างน้อย 1 รายการ');
       return;
     }
 
-    for (const item of cart) {
+    for (const item of requestList) {
       if (!item.reason.trim()) {
         showError(`กรุณาระบุเหตุผลสำหรับ ${item.itemName}`);
         return;
@@ -101,7 +101,7 @@ export default function RequestForm({ onSuccess }: Props) {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const items = cart.map(c => ({
+      const items = requestList.map(c => ({
         stockId: c._id,
         itemName: c.itemName,
         quantity: c.quantity,
@@ -125,7 +125,7 @@ export default function RequestForm({ onSuccess }: Props) {
 
       const result = await res.json();
       success(`ยื่นคำขอสำเร็จ! เลขที่: ${result.requestNumber}`);
-      setCart([]);
+      setRequestList([]);
       onSuccess();
 
     } catch (err: unknown) {
@@ -166,7 +166,7 @@ export default function RequestForm({ onSuccess }: Props) {
   };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: showCart ? '1fr 400px' : '1fr', gap: '1.5rem' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: showList ? '1fr 400px' : '1fr', gap: '1.5rem' }}>
       {/* Product List */}
       <div>
         {/* Search & Filter */}
@@ -214,7 +214,7 @@ export default function RequestForm({ onSuccess }: Props) {
         }}>
           {filteredItems.map(item => {
             const config = categoryConfig[item.category];
-            const inCart = cart.some(c => c._id === item._id);
+            const inList = requestList.some(c => c._id === item._id);
 
             return (
               <div key={item._id} className="dash-card" style={{ padding: '1.5rem' }}>
@@ -256,9 +256,9 @@ export default function RequestForm({ onSuccess }: Props) {
                   </div>
                 </div>
                 <button
-                  onClick={() => addToCart(item)}
+                  onClick={() => addToList(item)}
                   className="dash-btn dash-btn-primary dash-btn-block"
-                  disabled={inCart}
+                  disabled={inList}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -266,12 +266,12 @@ export default function RequestForm({ onSuccess }: Props) {
                     gap: '0.5rem'
                   }}
                 >
-                  {inCart ? (
-                    <>✓ อยู่ในรถเข็น</>
+                  {inList ? (
+                    <>✓ อยู่ในรายการแล้ว</>
                   ) : (
                     <>
                       <Plus size={18} />
-                      เพิ่มในรถเข็น
+                      เพิ่มในรายการ
                     </>
                   )}
                 </button>
@@ -288,10 +288,10 @@ export default function RequestForm({ onSuccess }: Props) {
         )}
       </div>
 
-      {/* Floating Cart Button (Mobile) */}
-      {!showCart && cart.length > 0 && (
+      {/* Floating List Button (Mobile) */}
+      {!showList && requestList.length > 0 && (
         <button
-          onClick={() => setShowCart(true)}
+          onClick={() => setShowList(true)}
           className="dash-btn dash-btn-primary"
           style={{
             position: 'fixed',
@@ -308,7 +308,7 @@ export default function RequestForm({ onSuccess }: Props) {
             zIndex: 1000
           }}
         >
-          <ShoppingCart size={24} />
+          <ClipboardList size={24} />
           <span style={{
             position: 'absolute',
             top: '-5px',
@@ -324,13 +324,13 @@ export default function RequestForm({ onSuccess }: Props) {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            {cart.length}
+            {requestList.length}
           </span>
         </button>
       )}
 
-      {/* Shopping Cart */}
-      {showCart && cart.length > 0 && (
+      {/* Request List */}
+      {showList && requestList.length > 0 && (
         <div className="dash-card" style={{
           padding: '1.5rem',
           position: 'sticky',
@@ -346,11 +346,11 @@ export default function RequestForm({ onSuccess }: Props) {
             marginBottom: '1.5rem'
           }}>
             <h3 className="dash-card-title" style={{ margin: 0 }}>
-              <ShoppingCart size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              รถเข็น ({cart.length})
+              <ClipboardList size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+              รายการขอ ({requestList.length})
             </h3>
             <button
-              onClick={() => setShowCart(false)}
+              onClick={() => setShowList(false)}
               className="dash-btn-icon"
               style={{ fontSize: '1.25rem' }}
             >
@@ -359,7 +359,7 @@ export default function RequestForm({ onSuccess }: Props) {
           </div>
 
           <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
-            {cart.map(item => (
+            {requestList.map(item => (
               <div key={item._id} className="dash-card" style={{
                 padding: '1rem',
                 marginBottom: '1rem',
@@ -385,7 +385,7 @@ export default function RequestForm({ onSuccess }: Props) {
                     </span>
                   </div>
                   <button
-                    onClick={() => removeFromCart(item._id)}
+                    onClick={() => removeFromList(item._id)}
                     className="dash-btn-icon"
                     style={{ color: '#ef4444' }}
                   >

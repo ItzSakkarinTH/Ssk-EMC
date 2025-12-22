@@ -28,6 +28,8 @@ export interface IStockRequest extends Document {
   deliveryStatus: 'pending' | 'in_transit' | 'delivered';
   deliveredAt: Date | null;
   getApprovalRate(): number;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const RequestItemSchema = new Schema({
