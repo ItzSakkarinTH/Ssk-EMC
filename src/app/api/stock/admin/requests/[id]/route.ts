@@ -33,22 +33,17 @@ export async function GET(request: NextRequest, context: RouteParams) {
             .populate('shelterId', 'name code')
             .populate('requestedBy', 'username')
             .populate('reviewedBy', 'username')
-            .populate('items.stockItemId', 'name unit')
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .lean() as any; // Cast to any because of populated fields
+            .lean();
 
         if (!stockRequest) {
-            return NextResponse.json({ error: 'ไม่พบคำร้องขอสินค้า' }, { status: 404 });
+            return NextResponse.json({ error: 'ไม่พบคำขอสินค้า' }, { status: 404 });
         }
 
-        return NextResponse.json({
-            success: true,
-            request: stockRequest
-        });
+        return NextResponse.json(stockRequest);
     } catch (error) {
         errorTracker.logError(error, { endpoint: `/api/stock/admin/requests/${id}`, method: 'GET' });
         return NextResponse.json(
-            createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลคำร้องได้'),
+            createErrorResponse(error, 'ไม่สามารถโหลดข้อมูลคำขอได้'),
             { status: 500 }
         );
     }
@@ -69,38 +64,36 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
         }
 
         const body = await request.json();
-        const { action, items, notes } = body; // action: 'approve' | 'reject'
+        const { status, adminNotes } = body;
 
-        if (!action || !['approve', 'reject'].includes(action)) {
+        if (!status || !['approved', 'rejected'].includes(status)) {
             return NextResponse.json(
-                { error: 'กรุณาระบุ action (approve หรือ reject)' },
+                { error: 'สถานะไม่ถูกต้อง (approved หรือ rejected)' },
                 { status: 400 }
             );
         }
 
         await connectDB();
 
-        const stockRequest = await StockRequest.findById(id)
-            .populate('shelterId')
-            .populate('items.stockItemId');
+        const stockRequest = await StockRequest.findById(id).populate('shelterId');
 
         if (!stockRequest) {
-            return NextResponse.json({ error: 'ไม่พบคำร้องขอสินค้า' }, { status: 404 });
+            return NextResponse.json({ error: 'ไม่พบคำขอสินค้า' }, { status: 404 });
         }
 
         if (stockRequest.status !== 'pending') {
             return NextResponse.json(
-                { error: 'คำร้องนี้ได้รับการพิจารณาแล้ว' },
+                { error: 'คำขอนี้ได้รับการพิจารณาแล้ว' },
                 { status: 400 }
             );
         }
 
-        if (action === 'reject') {
+        if (status === 'rejected') {
             // Reject request
             stockRequest.status = 'rejected';
-            stockRequest.reviewedBy = decoded.userId as unknown as mongoose.Types.ObjectId;
+            stockRequest.reviewedBy = new mongoose.Types.ObjectId(decoded.userId);
             stockRequest.reviewedAt = new Date();
-            stockRequest.adminNotes = notes || 'ปฏิเสธคำร้อง';
+            stockRequest.adminNotes = adminNotes || 'ปฏิเสธคำขอ';
             await stockRequest.save();
 
             errorTracker.logInfo('Stock request rejected', {
@@ -110,134 +103,106 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
 
             return NextResponse.json({
                 success: true,
-                request: stockRequest,
-                message: 'ปฏิเสธคำร้องสำเร็จ'
+                message: 'ปฏิเสธคำขอสำเร็จ'
             });
         }
 
-        // Approve request
-        if (!items || !Array.isArray(items)) {
-            return NextResponse.json(
-                { error: 'กรุณาระบุจำนวนที่อนุมัติสำหรับแต่ละรายการ' },
-                { status: 400 }
-            );
-        }
-
-        let allApproved = true;
+        // Approve request - Transfer stock
         const movements = [];
 
-        // Process each item
-        for (const approvalItem of items) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const requestItem: any = stockRequest.items.find(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (item: any) =>
-                    item.stockItemId._id.toString() === approvalItem.stockItemId
+        for (const item of stockRequest.items) {
+            // Find provincial stock (shelterRef = null)
+            const provincialStock = await Stock.findOne({
+                _id: item.stockId,
+                shelterRef: null
+            });
+
+            if (!provincialStock) {
+                return NextResponse.json(
+                    { error: `ไม่พบสต็อกจังหวัดสำหรับ ${item.itemName}` },
+                    { status: 404 }
+                );
+            }
+
+            if (provincialStock.provincialStock < item.requestedQuantity) {
+                return NextResponse.json(
+                    { error: `สต็อกจังหวัดไม่เพียงพอสำหรับ ${item.itemName} (มีอยู่ ${provincialStock.provincialStock} ${item.unit})` },
+                    { status: 400 }
+                );
+            }
+
+            // Deduct from provincial
+            const beforeProvincial = provincialStock.provincialStock;
+            provincialStock.provincialStock -= item.requestedQuantity;
+            await provincialStock.save();
+
+            // Add to shelter
+            const shelterId = (stockRequest.shelterId as unknown as { _id: mongoose.Types.ObjectId; name: string })._id;
+            const shelterStock = provincialStock.shelterStock.find(
+                (s: { shelterId: mongoose.Types.ObjectId; quantity: number; lastUpdated: Date }) =>
+                    s.shelterId.toString() === shelterId.toString()
             );
 
-            if (!requestItem) continue;
-
-            const approvedQty = approvalItem.approvedQuantity || 0;
-            requestItem.approvedQuantity = approvedQty;
-
-            if (approvedQty < requestItem.requestedQuantity) {
-                allApproved = false;
+            if (shelterStock) {
+                shelterStock.quantity += item.requestedQuantity;
+            } else {
+                provincialStock.shelterStock.push({
+                    shelterId: shelterId,
+                    quantity: item.requestedQuantity,
+                    lastUpdated: new Date()
+                });
             }
 
-            if (approvedQty > 0) {
-                // Transfer stock from provincial to shelter
-                const provincialStock = await Stock.findOne({
-                    itemId: requestItem.stockItemId._id,
-                    shelterId: null // Provincial stock
-                });
+            await provincialStock.save();
 
-                if (!provincialStock || provincialStock.currentQuantity < approvedQty) {
-                    return NextResponse.json(
-                        { error: `สต๊อกจังหวัดไม่เพียงพอสำหรับ ${requestItem.stockItemId.name}` },
-                        { status: 400 }
-                    );
+            // Create movement log
+            const movement = await StockMovement.create({
+                stockId: provincialStock._id,
+                movementType: 'transfer',
+                quantity: item.requestedQuantity,
+                unit: item.unit,
+                from: {
+                    type: 'provincial',
+                    name: 'กองกลางจังหวัด'
+                },
+                to: {
+                    type: 'shelter',
+                    name: (stockRequest.shelterId as unknown as { name: string }).name
+                },
+                performedBy: new mongoose.Types.ObjectId(decoded.userId),
+                notes: `อนุมัติคำขอ ${stockRequest.requestNumber}${adminNotes ? ': ' + adminNotes : ''}`,
+                referenceId: stockRequest.requestNumber,
+                itemName: item.itemName,
+                snapshot: {
+                    before: beforeProvincial,
+                    after: provincialStock.provincialStock
                 }
+            });
 
-                // Update provincial stock
-                const beforeProvincial = provincialStock.currentQuantity;
-                provincialStock.currentQuantity -= approvedQty;
-                await provincialStock.save();
-
-                // Update shelter stock
-                let shelterStock = await Stock.findOne({
-                    itemId: requestItem.stockItemId._id,
-                    shelterId: stockRequest.shelterId._id
-                });
-
-                if (shelterStock) {
-                    shelterStock.currentQuantity += approvedQty;
-                    await shelterStock.save();
-                } else {
-                    shelterStock = await Stock.create({
-                        itemId: requestItem.stockItemId._id,
-                        shelterId: stockRequest.shelterId._id,
-                        currentQuantity: approvedQty,
-                        unit: requestItem.stockItemId.unit,
-                        minThreshold: 10,
-                        maxCapacity: 1000
-                    });
-                }
-
-                // Create movement log
-                const movement = await StockMovement.create({
-                    stockId: provincialStock._id,
-                    movementType: 'transfer',
-                    quantity: approvedQty,
-                    unit: requestItem.stockItemId.unit,
-                    from: {
-                        type: 'provincial',
-                        id: null,
-                        name: 'กองกลางจังหวัด'
-                    },
-                    to: {
-                        type: 'shelter',
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        id: (stockRequest.shelterId as any)._id,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        name: (stockRequest.shelterId as any).name
-                    },
-                    performedBy: decoded.userId,
-                    notes: `อนุมัติคำร้อง #${stockRequest._id}`,
-                    referenceId: `REQ-${stockRequest._id}`,
-                    snapshot: {
-                        before: beforeProvincial,
-                        after: provincialStock.currentQuantity
-                    }
-                });
-
-                movements.push(movement);
-            }
+            movements.push(movement);
         }
 
         // Update request status
-        stockRequest.status = allApproved ? 'approved' : 'partial';
-        stockRequest.reviewedBy = decoded.userId as unknown as mongoose.Types.ObjectId;
+        stockRequest.status = 'approved';
+        stockRequest.reviewedBy = new mongoose.Types.ObjectId(decoded.userId);
         stockRequest.reviewedAt = new Date();
-        stockRequest.adminNotes = notes || 'อนุมัติคำร้อง';
+        stockRequest.adminNotes = adminNotes || 'อนุมัติคำขอ';
         await stockRequest.save();
 
         errorTracker.logInfo('Stock request approved', {
             requestId: id,
-            status: stockRequest.status,
             movementCount: movements.length,
             userId: decoded.userId
         });
 
         return NextResponse.json({
             success: true,
-            request: stockRequest,
-            movements,
-            message: allApproved ? 'อนุมัติคำร้องสำเร็จ' : 'อนุมัติคำร้องบางส่วนสำเร็จ'
+            message: 'อนุมัติคำขอและโอนสต็อกสำเร็จ'
         });
     } catch (error) {
         errorTracker.logError(error, { endpoint: `/api/stock/admin/requests/${id}`, method: 'PATCH' });
         return NextResponse.json(
-            createErrorResponse(error, 'ไม่สามารถพิจารณาคำร้องได้'),
+            createErrorResponse(error, 'ไม่สามารถพิจารณาคำขอได้'),
             { status: 500 }
         );
     }

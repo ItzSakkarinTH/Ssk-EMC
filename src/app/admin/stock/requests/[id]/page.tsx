@@ -2,8 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { ArrowLeft, Clock, Building2, User, CheckCircle2, XCircle, AlertCircle, ShoppingBag } from 'lucide-react';
+import {
+  Package,
+  MapPin,
+  User,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  ArrowLeft,
+  Calendar,
+  AlertCircle
+} from 'lucide-react';
 
 interface RequestItem {
   stockId: string;
@@ -13,75 +24,197 @@ interface RequestItem {
   reason: string;
 }
 
-interface StockRequest {
+interface RequestDetail {
   _id: string;
   requestNumber: string;
-  shelterId?: {
+  shelterId: {
     _id: string;
     name: string;
+    code: string;
   };
   requestedBy: {
     _id: string;
-    name: string;
+    username: string;
   };
-  requestedAt: string;
-  status: 'pending' | 'approved' | 'rejected' | 'partial';
   items: RequestItem[];
+  status: 'pending' | 'approved' | 'rejected';
+  urgency?: string;
+  createdAt: string;
   reviewedBy?: {
-    _id: string;
-    name: string;
+    username: string;
   };
   reviewedAt?: string;
   adminNotes?: string;
-  deliveryStatus?: string;
 }
 
 export default function RequestDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [request, setRequest] = useState<StockRequest | null>(null);
+  const { success, error: showError, warning, confirm } = useToast();
+
+  const [request, setRequest] = useState<RequestDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [adminNotes, setAdminNotes] = useState('');
 
   useEffect(() => {
-    const fetchRequest = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        const res = await fetch(`/api/stock/admin/requests/${params.id}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setRequest(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRequest();
+    void fetchRequest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
-  const getStatusBadge = (status: string) => {
+  const fetchRequest = async () => {
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`/api/stock/admin/requests/${params.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setRequest(data);
+        setAdminNotes(data.adminNotes || '');
+      } else {
+        showError('ไม่สามารถโหลดข้อมูลได้');
+      }
+    } catch (error) {
+      console.error(error);
+      showError('เกิดข้อผิดพลาด');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!request) return;
+
+    const confirmed = await confirm({
+      title: 'อนุมัติคำขอ',
+      message: 'ต้องการอนุมัติคำขอนี้และโอนสต็อกใช่หรือไม่?',
+      confirmText: 'อนุมัติ',
+      cancelText: 'ยกเลิก',
+      type: 'info'
+    });
+
+    if (!confirmed) return;
+
+    setProcessing(true);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`/api/stock/admin/requests/${request._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: 'approved',
+          adminNotes: adminNotes.trim()
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'เกิดข้อผิดพลาด');
+      }
+
+      success('อนุมัติคำขอสำเร็จ! สต็อกได้ถูกโอนแล้ว');
+      router.push('/admin/stock/requests');
+
+    } catch (err: unknown) {
+      const error = err as Error;
+      showError(error.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!request) return;
+
+    if (!adminNotes.trim()) {
+      warning('กรุณาระบุเหตุผลในการปฏิเสธ');
+      return;
+    }
+
+    const confirmed = await confirm({
+      title: 'ปฏิเสธคำขอ',
+      message: 'ต้องการปฏิเสธคำขอนี้ใช่หรือไม่?',
+      confirmText: 'ปฏิเสธ',
+      cancelText: 'ยกเลิก',
+      type: 'danger'
+    });
+
+    if (!confirmed) return;
+
+    setProcessing(true);
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      const res = await fetch(`/api/stock/admin/requests/${request._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          status: 'rejected',
+          adminNotes: adminNotes.trim()
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'เกิดข้อผิดพลาด');
+      }
+
+      success('ปฏิเสธคำขอแล้ว');
+      router.push('/admin/stock/requests');
+
+    } catch (err: unknown) {
+      const error = err as Error;
+      showError(error.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  };
+
+  const getStatusConfig = (status: string) => {
     switch (status) {
       case 'approved':
-        return <span className="dash-badge dash-badge-success"><CheckCircle2 size={14} /> อนุมัติแล้ว</span>;
+        return { label: 'อนุมัติแล้ว', color: '#22c55e', icon: CheckCircle2 };
       case 'rejected':
-        return <span className="dash-badge dash-badge-danger"><XCircle size={14} /> ปฏิเสธ</span>;
-      case 'pending':
-        return <span className="dash-badge dash-badge-warning"><Clock size={14} /> รอพิจารณา</span>;
-      case 'partial':
-        return <span className="dash-badge dash-badge-info"><AlertCircle size={14} /> อนุมัติบางส่วน</span>;
+        return { label: 'ปฏิเสธแล้ว', color: '#ef4444', icon: XCircle };
       default:
-        return <span className="dash-badge dash-badge-info">{status}</span>;
+        return { label: 'รอพิจารณา', color: '#f59e0b', icon: AlertCircle };
+    }
+  };
+
+  const getUrgencyConfig = (urgency: string = 'normal') => {
+    switch (urgency) {
+      case 'high':
+        return { label: 'ด่วนมาก', color: '#ef4444' };
+      case 'medium':
+        return { label: 'ปานกลาง', color: '#f59e0b' };
+      default:
+        return { label: 'ปกติ', color: '#64748b' };
     }
   };
 
   if (loading) {
     return (
-      <DashboardLayout title="รายละเอียดคำร้อง">
+      <DashboardLayout title="รายละเอียดคำขอ" subtitle="กำลังโหลด...">
         <div className="dash-loading">
           <div className="dash-spinner"></div>
           <p>กำลังโหลดข้อมูล...</p>
@@ -92,144 +225,274 @@ export default function RequestDetailPage() {
 
   if (!request) {
     return (
-      <DashboardLayout title="รายละเอียดคำร้อง">
-        <div className="dash-card" style={{ textAlign: 'center', padding: '3rem' }}>
-          <AlertCircle size={64} style={{ color: '#ef4444', marginBottom: '1rem', opacity: 0.5 }} />
-          <h2>ไม่พบข้อมูลคำร้อง</h2>
-          <p className="dash-text-muted">คำร้องที่คุณต้องการอาจถูกลบหรือไม่มีอยู่ในระบบ</p>
-          <button onClick={() => router.back()} className="dash-btn dash-btn-secondary" style={{ marginTop: '1.5rem' }}>
-            <ArrowLeft size={18} /> กลับไปหน้าที่แล้ว
+      <DashboardLayout title="ไม่พบข้อมูล" subtitle="">
+        <div className="dash-card" style={{ padding: '3rem', textAlign: 'center' }}>
+          <AlertCircle size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+          <h3 style={{ color: '#f1f5f9', marginBottom: '0.5rem' }}>ไม่พบคำขอนี้</h3>
+          <button
+            onClick={() => router.push('/admin/stock/requests')}
+            className="dash-btn dash-btn-primary"
+            style={{ marginTop: '1rem' }}
+          >
+            <ArrowLeft size={18} />
+            กลับไปหน้ารายการ
           </button>
         </div>
       </DashboardLayout>
     );
   }
 
+  const statusConfig = getStatusConfig(request.status);
+  const StatusIcon = statusConfig.icon;
+  const urgencyConfig = getUrgencyConfig(request.urgency);
+
   return (
     <DashboardLayout
-      title={`คำร้อง: ${request.requestNumber}`}
-      subtitle="รายละเอียดการขอสนับสนุนทรัพยากรจากศูนย์พักพิง"
+      title={`คำขอ ${request.requestNumber}`}
+      subtitle="รายละเอียดคำขอสต็อก"
     >
-      <div style={{ marginBottom: '1.5rem' }}>
-        <button onClick={() => router.back()} className="dash-btn dash-btn-secondary">
-          <ArrowLeft size={18} /> กลับ
-        </button>
-      </div>
+      {/* Back Button */}
+      <button
+        onClick={() => router.push('/admin/stock/requests')}
+        className="dash-btn dash-btn-secondary"
+        style={{
+          marginBottom: '1.5rem',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}
+      >
+        <ArrowLeft size={18} />
+        กลับไปหน้ารายการ
+      </button>
 
-      <div className="dash-grid dash-grid-2" style={{ marginBottom: '2rem' }}>
-        {/* Summary Card */}
-        <div className="dash-card">
-          <div className="dash-card-header">
-            <h3 className="dash-card-title">ข้อมูลทั่วไป</h3>
-            {getStatusBadge(request.status)}
+      {/* Header Card */}
+      <div className="dash-card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: '2rem'
+        }}>
+          <div>
+            <h2 className="dash-card-title" style={{ marginBottom: '0.5rem' }}>
+              {request.requestNumber}
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span className="dash-badge" style={{
+                background: `${statusConfig.color}20`,
+                color: statusConfig.color,
+                border: `1px solid ${statusConfig.color}40`,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.375rem'
+              }}>
+                <StatusIcon size={14} />
+                {statusConfig.label}
+              </span>
+              <span className="dash-badge" style={{
+                background: `${urgencyConfig.color}20`,
+                color: urgencyConfig.color,
+                border: `1px solid ${urgencyConfig.color}40`
+              }}>
+                {urgencyConfig.label}
+              </span>
+            </div>
           </div>
-          <div className="dash-card-body">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Building2 size={20} style={{ color: '#3b82f6' }} />
-                <div>
-                  <div className="dash-text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>ศูนย์พักพิง</div>
-                  <div style={{ fontWeight: 600 }}>{request.shelterId?.name || 'ไม่ระบุ'}</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <User size={20} style={{ color: '#3b82f6' }} />
-                <div>
-                  <div className="dash-text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>ผู้ยื่นคำร้อง</div>
-                  <div style={{ fontWeight: 600 }}>{request.requestedBy.name}</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Clock size={20} style={{ color: '#3b82f6' }} />
-                <div>
-                  <div className="dash-text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>วันที่ยื่นคำร้อง</div>
-                  <div style={{ fontWeight: 600 }}>{new Date(request.requestedAt).toLocaleString('th-TH')}</div>
-                </div>
-              </div>
+          <div style={{ textAlign: 'right', color: '#94a3b8', fontSize: '0.875rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Calendar size={16} />
+              {formatDate(request.createdAt)}
             </div>
           </div>
         </div>
 
-        {/* Review Card or Notes */}
-        <div className="dash-card">
-          <div className="dash-card-header">
-            <h3 className="dash-card-title">สถานะการพิจารณา</h3>
+        {/* Info Grid */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: '1.5rem'
+        }}>
+          <div className="dash-stat-card">
+            <div className="dash-stat-icon dash-stat-icon-primary">
+              <MapPin size={24} />
+            </div>
+            <div className="dash-stat-content">
+              <div className="dash-stat-value" style={{ fontSize: '1rem' }}>
+                {request.shelterId.name}
+              </div>
+              <div className="dash-stat-label">ศูนย์พักพิง</div>
+            </div>
           </div>
-          <div className="dash-card-body">
-            {request.reviewedBy ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <CheckCircle2 size={20} style={{ color: '#10b981' }} />
-                  <div>
-                    <div className="dash-text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>ผู้พิจารณา</div>
-                    <div style={{ fontWeight: 600 }}>{request.reviewedBy.name}</div>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <Clock size={20} style={{ color: '#10b981' }} />
-                  <div>
-                    <div className="dash-text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase' }}>วันที่พิจารณา</div>
-                    <div style={{ fontWeight: 600 }}>{request.reviewedAt ? new Date(request.reviewedAt).toLocaleString('th-TH') : '-'}</div>
-                  </div>
-                </div>
-                {request.adminNotes && (
-                  <div style={{ marginTop: '0.5rem', padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                    <div className="dash-text-muted" style={{ fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.25rem' }}>หมายเหตุจาก Admin</div>
-                    <div style={{ color: '#f1f5f9' }}>{request.adminNotes}</div>
-                  </div>
-                )}
+
+          <div className="dash-stat-card">
+            <div className="dash-stat-icon dash-stat-icon-success">
+              <User size={24} />
+            </div>
+            <div className="dash-stat-content">
+              <div className="dash-stat-value" style={{ fontSize: '1rem' }}>
+                {request.requestedBy.username}
               </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '1rem' }}>
-                <Clock size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
-                <p className="dash-text-muted">กำลังรอเจ้าหน้าที่จังหวัดพิจารณาคำร้อง</p>
-              </div>
-            )}
+              <div className="dash-stat-label">ผู้ยื่นคำขอ</div>
+            </div>
+          </div>
+
+          <div className="dash-stat-card">
+            <div className="dash-stat-icon dash-stat-icon-warning">
+              <Package size={24} />
+            </div>
+            <div className="dash-stat-content">
+              <div className="dash-stat-value">{request.items.length}</div>
+              <div className="dash-stat-label">รายการสินค้า</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Items Table */}
-      <div className="dash-card">
+      {/* Items List */}
+      <div className="dash-card" style={{ marginBottom: '1.5rem' }}>
         <div className="dash-card-header">
-          <h3 className="dash-card-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ShoppingBag size={20} /> รายการสินค้าที่ขอ
+          <h3 className="dash-card-title">
+            <FileText size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
+            รายการสินค้า
           </h3>
+          <span className="dash-badge dash-badge-primary">{request.items.length} รายการ</span>
         </div>
-        <div className="dash-table-container">
-          <table className="dash-table">
-            <thead>
-              <tr>
-                <th>ชื่อสินค้า</th>
-                <th style={{ textAlign: 'center' }}>จำนวน</th>
-                <th>หน่วย</th>
-                <th>เหตุผลการขอ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {request.items.map((item, idx) => (
-                <tr key={idx}>
-                  <td style={{ fontWeight: 600, color: '#f1f5f9' }}>{item.itemName}</td>
-                  <td style={{ textAlign: 'center', color: '#60a5fa', fontWeight: 700, fontSize: '1.1rem' }}>
-                    {item.requestedQuantity.toLocaleString()}
-                  </td>
-                  <td>{item.unit}</td>
-                  <td style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{item.reason}</td>
+        <div className="dash-card-body">
+          <div className="dash-table-responsive">
+            <table className="dash-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '50px' }}>#</th>
+                  <th>สินค้า</th>
+                  <th style={{ textAlign: 'right', width: '150px' }}>จำนวน</th>
+                  <th>เหตุผล</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {request.items.map((item, idx) => (
+                  <tr key={idx}>
+                    <td style={{ textAlign: 'center' }}>{idx + 1}</td>
+                    <td>
+                      <strong style={{ color: '#f1f5f9' }}>{item.itemName}</strong>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <span style={{
+                        fontSize: '1.125rem',
+                        fontWeight: 700,
+                        color: '#3b82f6'
+                      }}>
+                        {item.requestedQuantity.toLocaleString()}
+                      </span>
+                      <span style={{ marginLeft: '0.5rem', color: '#94a3b8' }}>
+                        {item.unit}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{
+                        padding: '0.5rem 0.75rem',
+                        background: 'rgba(100, 116, 139, 0.1)',
+                        borderRadius: '6px',
+                        borderLeft: '3px solid #64748b',
+                        fontSize: '0.875rem',
+                        color: '#cbd5e1'
+                      }}>
+                        {item.reason}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      {request.status === 'pending' && (
-        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-          <button className="dash-btn dash-btn-danger" style={{ padding: '0.75rem 2rem' }}>
-            <XCircle size={18} /> ปฏิเสธ
-          </button>
-          <button className="dash-btn dash-btn-primary" style={{ padding: '0.75rem 2rem' }}>
-            <CheckCircle2 size={18} /> อนุมัติคำร้อง
-          </button>
+      {/* Review Section */}
+      {request.status === 'pending' ? (
+        <div className="dash-card" style={{ padding: '2rem' }}>
+          <h3 className="dash-card-title" style={{ marginBottom: '1.5rem' }}>
+            พิจารณาคำขอ
+          </h3>
+
+          <div className="dash-form-group" style={{ marginBottom: '2rem' }}>
+            <label className="dash-label">
+              หมายเหตุจาก Admin
+              {request.status === 'pending' && <span style={{ color: '#94a3b8' }}> (จำเป็นสำหรับการปฏิเสธ)</span>}
+            </label>
+            <textarea
+              className="dash-input"
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="ระบุหมายเหตุหรือเหตุผล..."
+              rows={4}
+              disabled={processing}
+            />
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '1rem'
+          }}>
+            <button
+              onClick={() => void handleReject()}
+              className="dash-btn dash-btn-danger dash-btn-lg"
+              disabled={processing}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <XCircle size={20} />
+              {processing ? 'กำลังดำเนินการ...' : 'ปฏิเสธคำขอ'}
+            </button>
+            <button
+              onClick={() => void handleApprove()}
+              className="dash-btn dash-btn-success dash-btn-lg"
+              disabled={processing}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              <CheckCircle2 size={20} />
+              {processing ? 'กำลังดำเนินการ...' : 'อนุมัติและโอนสต็อก'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="dash-card" style={{ padding: '2rem' }}>
+          <h3 className="dash-card-title" style={{ marginBottom: '1.5rem' }}>
+            ผลการพิจารณา
+          </h3>
+          {request.reviewedBy && (
+            <div style={{ marginBottom: '1rem', color: '#cbd5e1' }}>
+              <strong>พิจารณาโดย:</strong> {request.reviewedBy.username}
+              {request.reviewedAt && (
+                <> | {formatDate(request.reviewedAt)}</>
+              )}
+            </div>
+          )}
+          {request.adminNotes && (
+            <div style={{
+              padding: '1rem',
+              background: 'rgba(100, 116, 139, 0.1)',
+              borderRadius: '8px',
+              borderLeft: '3px solid #64748b'
+            }}>
+              <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
+                หมายเหตุ:
+              </div>
+              <div style={{ color: '#cbd5e1' }}>
+                {request.adminNotes}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </DashboardLayout>
