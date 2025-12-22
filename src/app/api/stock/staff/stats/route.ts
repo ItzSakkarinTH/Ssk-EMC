@@ -108,11 +108,14 @@ export async function GET(req: NextRequest) {
                 dispensesQty: number;
             }>();
 
-            // Initialize last 7 days
+            // Initialize last 7 days (Thai Timezone UTC+7)
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
-                date.setDate(date.getDate() - i);
-                const dateStr = date.toISOString().split('T')[0];
+                // Adjust to Thai time (Add 7 hours) before splitting
+                const thaiDate = new Date(date.getTime() + (7 * 60 * 60 * 1000));
+                thaiDate.setDate(thaiDate.getDate() - i);
+                const dateStr = thaiDate.toISOString().split('T')[0];
+
                 movementsByDate.set(dateStr, {
                     receives: 0,
                     receivesQty: 0,
@@ -124,7 +127,10 @@ export async function GET(req: NextRequest) {
             }
 
             movements.forEach(movement => {
-                const dateStr = movement.createdAt.toISOString().split('T')[0];
+                // Adjust movement date to Thai time (Add 7 hours)
+                const thaiMovementDate = new Date(movement.createdAt.getTime() + (7 * 60 * 60 * 1000));
+                const dateStr = thaiMovementDate.toISOString().split('T')[0];
+
                 const existing = movementsByDate.get(dateStr) || {
                     receives: 0,
                     receivesQty: 0,
@@ -134,7 +140,7 @@ export async function GET(req: NextRequest) {
                     dispensesQty: 0
                 };
 
-                console.log(`\n--- Movement on ${dateStr} ---`);
+                console.log(`\n--- Movement on ${dateStr} (Thai Time) ---`);
                 console.log(`Type: ${movement.movementType}`);
                 console.log(`From: ${movement.from.type} (ID: ${movement.from.id})`);
                 console.log(`To: ${movement.to.type} (ID: ${movement.to.id})`);

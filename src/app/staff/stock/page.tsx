@@ -401,7 +401,7 @@ export default function StaffStockDashboard() {
                                 padding: '2px 4px',
                                 borderRadius: '4px'
                               }}>
-                                {movement.receives}
+                                {movement.receivesQty}
                               </div>
                             )}
                           </div>
@@ -438,7 +438,7 @@ export default function StaffStockDashboard() {
                                 padding: '2px 4px',
                                 borderRadius: '4px'
                               }}>
-                                {movement.transfersFromProvincial}
+                                {movement.transfersFromProvincialQty}
                               </div>
                             )}
                           </div>
@@ -475,7 +475,7 @@ export default function StaffStockDashboard() {
                                 padding: '2px 4px',
                                 borderRadius: '4px'
                               }}>
-                                {movement.dispenses}
+                                {movement.dispensesQty}
                               </div>
                             )}
                           </div>
@@ -499,7 +499,7 @@ export default function StaffStockDashboard() {
                             })}
                           </div>
 
-                          {(movement.receivesQty > 0 || movement.transfersFromProvincialQty > 0 || movement.dispensesQty > 0) && (
+                          {(movement.receives > 0 || movement.transfersFromProvincial > 0 || movement.dispenses > 0) && (
                             <div style={{
                               display: 'flex',
                               gap: '6px',
@@ -508,37 +508,43 @@ export default function StaffStockDashboard() {
                               fontSize: '0.75rem',
                               flexWrap: 'wrap'
                             }}>
-                              {movement.receivesQty > 0 && (
+                              {movement.receives > 0 && (
                                 <div style={{
                                   color: '#10b981',
                                   fontWeight: 600,
                                   background: 'rgba(16, 185, 129, 0.1)',
                                   padding: '2px 6px',
                                   borderRadius: '4px'
-                                }}>
-                                  +{movement.receivesQty}
+                                }}
+                                  title="จำนวนครั้งที่รับเข้า"
+                                >
+                                  {movement.receives} ครั้ง
                                 </div>
                               )}
-                              {movement.transfersFromProvincialQty > 0 && (
+                              {movement.transfersFromProvincial > 0 && (
                                 <div style={{
                                   color: '#3b82f6',
                                   fontWeight: 600,
                                   background: 'rgba(59, 130, 246, 0.1)',
                                   padding: '2px 6px',
                                   borderRadius: '4px'
-                                }}>
-                                  +{movement.transfersFromProvincialQty}
+                                }}
+                                  title="จำนวนครั้งที่รับโอน"
+                                >
+                                  {movement.transfersFromProvincial} ครั้ง
                                 </div>
                               )}
-                              {movement.dispensesQty > 0 && (
+                              {movement.dispenses > 0 && (
                                 <div style={{
                                   color: '#f97316',
                                   fontWeight: 600,
                                   background: 'rgba(249, 115, 22, 0.1)',
                                   padding: '2px 6px',
                                   borderRadius: '4px'
-                                }}>
-                                  -{movement.dispensesQty}
+                                }}
+                                  title="จำนวนครั้งที่เบิกออก"
+                                >
+                                  {movement.dispenses} ครั้ง
                                 </div>
                               )}
                             </div>
