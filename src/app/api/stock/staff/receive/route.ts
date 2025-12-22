@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
           },
           to: {
             type: 'shelter',
+            id: new mongoose.Types.ObjectId(shelterId),
             name: user.assignedShelterName || 'ศูนย์พักพิง'
           },
           performedBy: new mongoose.Types.ObjectId(user.userId),

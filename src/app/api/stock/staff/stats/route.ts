@@ -72,11 +72,25 @@ export async function GET(req: NextRequest) {
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+            // Get staff user IDs for this shelter  
+            const User = (await import('@/lib/db/models/User')).default;
+            const staffUsers = await User.find({ assignedShelterId: shelterId }).select('_id');
+            const staffUserIds = staffUsers.map(u => u._id);
+
             const movements = await StockMovement.find({
                 createdAt: { $gte: sevenDaysAgo },
                 $or: [
+                    // กรณีมี ID (ข้อมูลใหม่)
                     { 'to.type': 'shelter', 'to.id': shelterId },
-                    { 'from.type': 'shelter', 'from.id': shelterId }
+                    { 'from.type': 'shelter', 'from.id': shelterId },
+                    // กรณีไม่มี ID แต่ทำโดยพนักงานของศูนย์นี้ (ข้อมูลเก่า)
+                    {
+                        performedBy: { $in: staffUserIds },
+                        $or: [
+                            { 'to.type': 'shelter' },
+                            { 'from.type': 'shelter' }
+                        ]
+                    }
                 ]
             }).sort({ createdAt: 1 });
 
@@ -88,6 +102,8 @@ export async function GET(req: NextRequest) {
             const movementsByDate = new Map<string, {
                 receives: number;
                 receivesQty: number;
+                transfersFromProvincial: number;
+                transfersFromProvincialQty: number;
                 dispenses: number;
                 dispensesQty: number;
             }>();
@@ -97,42 +113,72 @@ export async function GET(req: NextRequest) {
                 const date = new Date();
                 date.setDate(date.getDate() - i);
                 const dateStr = date.toISOString().split('T')[0];
-                movementsByDate.set(dateStr, { receives: 0, receivesQty: 0, dispenses: 0, dispensesQty: 0 });
+                movementsByDate.set(dateStr, {
+                    receives: 0,
+                    receivesQty: 0,
+                    transfersFromProvincial: 0,
+                    transfersFromProvincialQty: 0,
+                    dispenses: 0,
+                    dispensesQty: 0
+                });
             }
 
             movements.forEach(movement => {
                 const dateStr = movement.createdAt.toISOString().split('T')[0];
-                const existing = movementsByDate.get(dateStr) || { receives: 0, receivesQty: 0, dispenses: 0, dispensesQty: 0 };
+                const existing = movementsByDate.get(dateStr) || {
+                    receives: 0,
+                    receivesQty: 0,
+                    transfersFromProvincial: 0,
+                    transfersFromProvincialQty: 0,
+                    dispenses: 0,
+                    dispensesQty: 0
+                };
 
                 console.log(`\n--- Movement on ${dateStr} ---`);
                 console.log(`Type: ${movement.movementType}`);
                 console.log(`From: ${movement.from.type} (ID: ${movement.from.id})`);
                 console.log(`To: ${movement.to.type} (ID: ${movement.to.id})`);
                 console.log(`Qty: ${movement.quantity}`);
+                console.log(`PerformedBy: ${movement.performedBy}`);
 
                 // Check if movement is coming TO this shelter (รับเข้า)
-                const isReceivingToShelter = movement.to.type === 'shelter' &&
-                    movement.to.id?.toString() === shelterId.toString();
+                // กรณีมี to.id ให้เช็คตรงๆ, ถ้าไม่มีให้เช็คว่าทำโดยพนักงานของศูนย์นี้และ to.type เป็น shelter
+                const isReceivingToShelter = movement.to.type === 'shelter' && (
+                    movement.to.id?.toString() === shelterId.toString() ||
+                    (!movement.to.id && staffUserIds.some(id => id.toString() === movement.performedBy?.toString()))
+                );
 
                 // Check if movement is going FROM this shelter (จ่ายออก)
-                const isDispenseFromShelter = movement.from.type === 'shelter' &&
-                    movement.from.id?.toString() === shelterId.toString();
+                // กรณีมี from.id ให้เช็คตรงๆ, ถ้าไม่มีให้เช็คว่าทำโดยพนักงานของศูนย์นี้และ from.type เป็น shelter
+                const isDispenseFromShelter = movement.from.type === 'shelter' && (
+                    movement.from.id?.toString() === shelterId.toString() ||
+                    (!movement.from.id && staffUserIds.some(id => id.toString() === movement.performedBy?.toString()))
+                );
+
+                // Check if transfer is from provincial
+                const isFromProvincial = movement.from.type === 'provincial';
 
                 console.log(`isReceivingToShelter: ${isReceivingToShelter}`);
                 console.log(`isDispenseFromShelter: ${isDispenseFromShelter}`);
+                console.log(`isFromProvincial: ${isFromProvincial}`);
 
-                // Count as 'receives' (รับเข้า) if:
-                // 1. movementType is 'receive' and coming to this shelter
-                // 2. movementType is 'transfer' and coming to this shelter from provincial
-                if (isReceivingToShelter && (movement.movementType === 'receive' || movement.movementType === 'transfer')) {
+                // Count as 'receives' (รับเข้า) if movementType is 'receive' and coming to this shelter
+                if (isReceivingToShelter && movement.movementType === 'receive') {
                     existing.receives++;
                     existing.receivesQty += movement.quantity;
-                    console.log(`Receive: ${movement.movementType} on ${dateStr}, qty: ${movement.quantity}`);
+                    console.log(`Direct Receive on ${dateStr}, qty: ${movement.quantity}`);
+                }
+
+                // Count as 'transfersFromProvincial' (รับโอนจากกองกลาง) if transfer from provincial to this shelter
+                if (isReceivingToShelter && movement.movementType === 'transfer' && isFromProvincial) {
+                    existing.transfersFromProvincial++;
+                    existing.transfersFromProvincialQty += movement.quantity;
+                    console.log(`Transfer from Provincial on ${dateStr}, qty: ${movement.quantity}`);
                 }
 
                 // Count as 'dispenses' (จ่ายออก) if:
                 // 1. movementType is 'dispense' and going out from this shelter
-                // 2. movementType is 'transfer' and going out from this shelter
+                // 2. movementType is 'transfer' and going out from this shelter (but NOT to provincial)
                 if (isDispenseFromShelter && (movement.movementType === 'dispense' || movement.movementType === 'transfer')) {
                     existing.dispenses++;
                     existing.dispensesQty += movement.quantity;
@@ -147,6 +193,8 @@ export async function GET(req: NextRequest) {
                 date,
                 receives: data.receives,
                 receivesQty: data.receivesQty,
+                transfersFromProvincial: data.transfersFromProvincial,
+                transfersFromProvincialQty: data.transfersFromProvincialQty,
                 dispenses: data.dispenses,
                 dispensesQty: data.dispensesQty
             }));

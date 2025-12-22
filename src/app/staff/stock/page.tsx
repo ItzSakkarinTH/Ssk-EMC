@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import {
@@ -31,6 +31,8 @@ interface StockStats {
     date: string;
     receives: number;
     receivesQty: number;
+    transfersFromProvincial: number;
+    transfersFromProvincialQty: number;
     dispenses: number;
     dispensesQty: number;
   }[];
@@ -41,11 +43,8 @@ export default function StaffStockDashboard() {
   const [stats, setStats] = useState<StockStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    void fetchStats();
-  }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const token = localStorage.getItem('accessToken');
       const res = await fetch('/api/stock/staff/stats', {
@@ -64,7 +63,11 @@ export default function StaffStockDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    void fetchStats();
+  }, [fetchStats]);
 
   if (loading) {
     return (
@@ -339,9 +342,10 @@ export default function StaffStockDashboard() {
                 }}>
                   {stats?.recentMovements.slice(0, 7).map((movement) => {
                     const maxValue = Math.max(
-                      ...stats.recentMovements.map(m => Math.max(m.receives, m.dispenses))
+                      ...stats.recentMovements.map(m => Math.max(m.receives, m.transfersFromProvincial, m.dispenses))
                     );
                     const receiveHeight = maxValue > 0 ? (movement.receives / maxValue) * 100 : 0;
+                    const transferHeight = maxValue > 0 ? (movement.transfersFromProvincial / maxValue) * 100 : 0;
                     const dispenseHeight = maxValue > 0 ? (movement.dispenses / maxValue) * 100 : 0;
 
                     return (
@@ -352,7 +356,7 @@ export default function StaffStockDashboard() {
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '0.75rem',
-                          minWidth: '80px',
+                          minWidth: '100px',
                           flex: 1
                         }}
                       >
@@ -361,14 +365,14 @@ export default function StaffStockDashboard() {
                           display: 'flex',
                           alignItems: 'flex-end',
                           justifyContent: 'center',
-                          gap: '8px',
+                          gap: '6px',
                           height: '100%',
                           padding: '0 8px'
                         }}>
-                          {/* Receive Bar */}
+                          {/* Receive Bar (สีเขียว) */}
                           <div style={{
                             flex: 1,
-                            maxWidth: '40px',
+                            maxWidth: '28px',
                             height: `${receiveHeight}%`,
                             background: 'linear-gradient(180deg, #10b981 0%, #059669 100%)',
                             borderRadius: '6px 6px 0 0',
@@ -388,13 +392,13 @@ export default function StaffStockDashboard() {
                                 top: '-26px',
                                 left: '50%',
                                 transform: 'translateX(-50%)',
-                                fontSize: '0.875rem',
+                                fontSize: '0.75rem',
                                 fontWeight: 700,
                                 color: '#10b981',
                                 whiteSpace: 'nowrap',
                                 textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                                 background: 'rgba(16, 185, 129, 0.1)',
-                                padding: '2px 6px',
+                                padding: '2px 4px',
                                 borderRadius: '4px'
                               }}>
                                 {movement.receives}
@@ -402,10 +406,47 @@ export default function StaffStockDashboard() {
                             )}
                           </div>
 
-                          {/* Dispense Bar */}
+                          {/* Transfer from Provincial Bar (สีฟ้า) */}
                           <div style={{
                             flex: 1,
-                            maxWidth: '40px',
+                            maxWidth: '28px',
+                            height: `${transferHeight}%`,
+                            background: 'linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)',
+                            borderRadius: '6px 6px 0 0',
+                            minHeight: movement.transfersFromProvincial > 0 ? '15px' : '2px',
+                            position: 'relative',
+                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: movement.transfersFromProvincial > 0
+                              ? '0 -4px 16px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)'
+                              : 'none',
+                            opacity: movement.transfersFromProvincial > 0 ? 1 : 0.3
+                          }}
+                            title={`รับโอนจากกองกลาง: ${movement.transfersFromProvincial} ครั้ง (${movement.transfersFromProvincialQty} ชิ้น)`}
+                          >
+                            {movement.transfersFromProvincial > 0 && (
+                              <div style={{
+                                position: 'absolute',
+                                top: '-26px',
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                color: '#3b82f6',
+                                whiteSpace: 'nowrap',
+                                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                padding: '2px 4px',
+                                borderRadius: '4px'
+                              }}>
+                                {movement.transfersFromProvincial}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Dispense Bar (สีส้ม) */}
+                          <div style={{
+                            flex: 1,
+                            maxWidth: '28px',
                             height: `${dispenseHeight}%`,
                             background: 'linear-gradient(180deg, #f97316 0%, #ea580c 100%)',
                             borderRadius: '6px 6px 0 0',
@@ -425,13 +466,13 @@ export default function StaffStockDashboard() {
                                 top: '-26px',
                                 left: '50%',
                                 transform: 'translateX(-50%)',
-                                fontSize: '0.875rem',
+                                fontSize: '0.75rem',
                                 fontWeight: 700,
                                 color: '#f97316',
                                 whiteSpace: 'nowrap',
                                 textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                                 background: 'rgba(249, 115, 22, 0.1)',
-                                padding: '2px 6px',
+                                padding: '2px 4px',
                                 borderRadius: '4px'
                               }}>
                                 {movement.dispenses}
@@ -458,13 +499,14 @@ export default function StaffStockDashboard() {
                             })}
                           </div>
 
-                          {(movement.receivesQty > 0 || movement.dispensesQty > 0) && (
+                          {(movement.receivesQty > 0 || movement.transfersFromProvincialQty > 0 || movement.dispensesQty > 0) && (
                             <div style={{
                               display: 'flex',
                               gap: '6px',
                               justifyContent: 'center',
                               alignItems: 'center',
-                              fontSize: '0.75rem'
+                              fontSize: '0.75rem',
+                              flexWrap: 'wrap'
                             }}>
                               {movement.receivesQty > 0 && (
                                 <div style={{
@@ -475,6 +517,17 @@ export default function StaffStockDashboard() {
                                   borderRadius: '4px'
                                 }}>
                                   +{movement.receivesQty}
+                                </div>
+                              )}
+                              {movement.transfersFromProvincialQty > 0 && (
+                                <div style={{
+                                  color: '#3b82f6',
+                                  fontWeight: 600,
+                                  background: 'rgba(59, 130, 246, 0.1)',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px'
+                                }}>
+                                  +{movement.transfersFromProvincialQty}
                                 </div>
                               )}
                               {movement.dispensesQty > 0 && (
@@ -522,6 +575,20 @@ export default function StaffStockDashboard() {
                         boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)'
                       }}></div>
                       <span style={{ color: '#cbd5e1', fontWeight: 500 }}>รับเข้า</span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.625rem'
+                    }}>
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                        borderRadius: '4px',
+                        boxShadow: '0 2px 6px rgba(59, 130, 246, 0.3)'
+                      }}></div>
+                      <span style={{ color: '#cbd5e1', fontWeight: 500 }}>รับโอนจากกองกลาง</span>
                     </div>
                     <div style={{
                       display: 'flex',
@@ -756,7 +823,7 @@ export default function StaffStockDashboard() {
                       />
 
                       {/* Category segments */}
-                      {segments.map((segment, index) => (
+                      {segments.map((segment) => (
                         segment.percent > 0 && (
                           <circle
                             key={segment.name}
