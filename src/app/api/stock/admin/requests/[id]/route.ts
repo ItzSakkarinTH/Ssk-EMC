@@ -134,7 +134,6 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
             // Deduct from provincial
             const beforeProvincial = provincialStock.provincialStock;
             provincialStock.provincialStock -= item.requestedQuantity;
-            await provincialStock.save();
 
             // Add to shelter
             const shelterId = (stockRequest.shelterId as unknown as { _id: mongoose.Types.ObjectId; name: string })._id;
@@ -143,8 +142,11 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
                     s.shelterId.toString() === shelterId.toString()
             );
 
+            const beforeShelter = shelterStock ? shelterStock.quantity : 0;
+
             if (shelterStock) {
                 shelterStock.quantity += item.requestedQuantity;
+                shelterStock.lastUpdated = new Date();
             } else {
                 provincialStock.shelterStock.push({
                     shelterId: shelterId,
@@ -153,9 +155,11 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
                 });
             }
 
+            // Save once after all updates
             await provincialStock.save();
 
             // Create movement log
+            const afterShelter = shelterStock ? shelterStock.quantity : item.requestedQuantity;
             const movement = await StockMovement.create({
                 stockId: provincialStock._id,
                 movementType: 'transfer',
@@ -170,7 +174,7 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
                     name: (stockRequest.shelterId as unknown as { name: string }).name
                 },
                 performedBy: new mongoose.Types.ObjectId(decoded.userId),
-                notes: `อนุมัติคำขอ ${stockRequest.requestNumber}${adminNotes ? ': ' + adminNotes : ''}`,
+                notes: `อนุมัติคำขอ ${stockRequest.requestNumber}${adminNotes ? ': ' + adminNotes : ''}. จังหวัด: ${beforeProvincial} → ${provincialStock.provincialStock}, ศูนย์: ${beforeShelter} → ${afterShelter}`,
                 referenceId: stockRequest.requestNumber,
                 itemName: item.itemName,
                 snapshot: {

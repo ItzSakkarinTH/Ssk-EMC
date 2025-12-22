@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Package, RefreshCw, AlertCircle, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
 
 interface StockItem {
+  _id: string;
   stockId: string;
   itemName: string;
   category: string;
@@ -258,7 +259,7 @@ export default function MyShelterStock() {
                     const statusConfig = getStatusConfig(item.status);
                     const StatusIcon = statusConfig.icon;
                     return (
-                      <tr key={item.stockId}>
+                      <tr key={item._id || item.stockId}>
                         <td>
                           <div style={{ fontWeight: 500, color: '#f1f5f9' }}>
                             {item.itemName}

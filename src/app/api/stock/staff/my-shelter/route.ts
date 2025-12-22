@@ -1,23 +1,20 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import Stock from '@/lib/db/models/Stock';
 import Shelter from '@/lib/db/models/Shelter';
-import dbConnect from '@/lib/db/mongodb';
+import { connectDB } from '@/lib/db/mongodb';
 import { withStaffAuth } from '@/lib/auth/rbac';
+import { errorTracker } from '@/lib/error-tracker';
 
 export async function GET(req: NextRequest) {
-  return withStaffAuth(req, async (req, user) => {
+  return withStaffAuth(req, async (_req, user) => {
     try {
-      await dbConnect();
-
-      console.log('Staff user:', { userId: user.userId, role: user.role, assignedShelterId: user.assignedShelterId });
+      await connectDB();
 
       const shelterId = user.assignedShelterId as string;
 
       if (!shelterId) {
-        console.error('No shelterId for user:', user.userId);
         return NextResponse.json(
-          { error: 'No shelter assigned to your account' },
+          { error: 'ไม่พบข้อมูลศูนย์พักพิง' },
           { status: 400 }
         );
       }
@@ -26,35 +23,35 @@ export async function GET(req: NextRequest) {
       const shelter = await Shelter.findById(shelterId);
       if (!shelter) {
         return NextResponse.json(
-          { error: 'Shelter not found' },
+          { error: 'ไม่พบศูนย์พักพิง' },
           { status: 404 }
         );
       }
 
-      // ดึงสต๊อกทั้งหมดที่มีในศูนย์นี้
-      const stocks = await Stock.find({
-        'shelterStock.shelterId': shelterId
-      });
+      // ดึงสต็อกทั้งหมดในระบบ (provincial stock)
+      const allStocks = await Stock.find({ shelterRef: null });
 
-      const stockList = stocks.map((stock: { _id: { toString: () => string }; getShelterStock: (id: string) => { quantity: number; lastUpdated: Date } | null; itemName: string; category: string; unit: string; criticalLevel: number; minStockLevel: number }) => {
-        const shelterStock = stock.getShelterStock(shelterId);
+      const stockList = allStocks.map(stock => {
+        const shelterStock = stock.shelterStock.find(
+          (s: { shelterId: { toString: () => string } }) =>
+            s.shelterId.toString() === shelterId.toString()
+        );
 
         return {
-          stockId: stock._id.toString(),
+          _id: stock._id.toString(),
           itemName: stock.itemName,
           category: stock.category,
-          quantity: shelterStock?.quantity || 0,
           unit: stock.unit,
+          currentQuantity: shelterStock?.quantity || 0,
+          provincialStock: stock.provincialStock,
           status: shelterStock
             ? (shelterStock.quantity <= stock.criticalLevel ? 'critical'
               : shelterStock.quantity <= stock.minStockLevel ? 'low'
                 : 'sufficient')
             : 'unavailable',
-          lastUpdated: shelterStock?.lastUpdated || null,
-          minStockLevel: stock.minStockLevel,
-          criticalLevel: stock.criticalLevel
+          lastUpdated: shelterStock?.lastUpdated || null
         };
-      }).filter((s: { quantity: number }) => s.quantity > 0); // แสดงเฉพาะของที่มีอยู่
+      });
 
       return NextResponse.json({
         shelterId,
@@ -64,10 +61,9 @@ export async function GET(req: NextRequest) {
       });
 
     } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Staff shelter stock error:', err);
+      errorTracker.logError(error, { endpoint: '/api/stock/staff/my-shelter' });
       return NextResponse.json(
-        { error: 'Failed to fetch shelter stock' },
+        { error: 'ไม่สามารถโหลดข้อมูลสต็อกได้' },
         { status: 500 }
       );
     }

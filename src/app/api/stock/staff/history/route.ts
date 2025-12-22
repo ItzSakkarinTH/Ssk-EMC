@@ -1,77 +1,62 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db/mongodb';
+import { connectDB } from '@/lib/db/mongodb';
 import { withStaffAuth } from '@/lib/auth/rbac';
 import StockMovement from '@/lib/db/models/StockMovement';
+import { errorTracker } from '@/lib/error-tracker';
 
 export async function GET(req: NextRequest) {
-  return withStaffAuth(req, async (req, user) => {
+  return withStaffAuth(req, async (_req, user) => {
     try {
-      await dbConnect();
+      await connectDB();
 
       const shelterId = user.assignedShelterId as string;
-      const searchParams = req.nextUrl.searchParams;
 
-      const movementType = searchParams.get('type'); // receive, dispense, transfer
-      const limit = parseInt(searchParams.get('limit') || '50');
-      const skip = parseInt(searchParams.get('skip') || '0');
-
-      // สร้าง query
-      const query: {
-        $or: Array<{ 'from.id'?: string; 'to.id'?: string }>;
-        movementType?: string;
-      } = {
-        $or: [
-          { 'from.id': shelterId },
-          { 'to.id': shelterId }
-        ]
-      };
-
-      if (movementType && ['receive', 'dispense', 'transfer'].includes(movementType)) {
-        query.movementType = movementType;
+      if (!shelterId) {
+        return NextResponse.json(
+          { error: 'ไม่พบข้อมูลศูนย์พักพิง' },
+          { status: 400 }
+        );
       }
 
-      // ดึงข้อมูล
-      const movements = await StockMovement.find(query)
-        .sort({ performedAt: -1 })
-        .limit(limit)
-        .skip(skip)
-        .populate('stockId', 'itemName category')
-        .populate('performedBy', 'name');
+      // Get all movements related to this shelter
+      const movements = await StockMovement.find({
+        $or: [
+          { 'to.type': 'shelter' },
+          { 'from.type': 'shelter' }
+        ]
+      })
+        .sort({ createdAt: -1 })
+        .populate('performedBy', 'username')
+        .lean();
 
-      const total = await StockMovement.countDocuments(query);
-
-      // จัดรูปแบบข้อมูล
-      const history = movements.map((m: { _id: unknown; stockId: unknown; movementType: string; quantity: number; unit: string; from: unknown; to: unknown; performedBy: unknown; performedAt: Date; notes: string; referenceId: string; snapshot: unknown }) => ({
-        id: m._id,
-        stockId: m.stockId,
+      // Format movements
+      const formattedMovements = movements.map(m => ({
+        _id: m._id.toString(),
+        itemName: m.itemName,
+        stockId: {
+          itemName: m.itemName
+        },
         movementType: m.movementType,
         quantity: m.quantity,
         unit: m.unit,
         from: m.from,
         to: m.to,
         performedBy: m.performedBy,
-        performedAt: m.performedAt,
-        notes: m.notes,
+        createdAt: m.createdAt,
         referenceId: m.referenceId,
-        snapshot: m.snapshot
+        notes: m.notes
       }));
 
       return NextResponse.json({
-        history,
-        pagination: {
-          total,
-          limit,
-          skip,
-          hasMore: skip + limit < total
-        }
+        movements: formattedMovements,
+        total: formattedMovements.length
       });
 
     } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Get history error:', err);
+      errorTracker.logError(error, { endpoint: '/api/stock/staff/history' });
       return NextResponse.json(
-        { error: 'Failed to fetch history' },
+        { error: 'ไม่สามารถโหลดประวัติได้' },
         { status: 500 }
       );
     }
