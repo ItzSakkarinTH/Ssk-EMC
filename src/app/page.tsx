@@ -26,12 +26,16 @@ interface StockOverview {
     active: number;
     inactive: number;
     full: number;
+    crisis: number;
+    warning: number;
   };
   byCategory: {
-    food: { items: number; quantity: number };
-    medicine: { items: number; quantity: number };
-    clothing: { items: number; quantity: number };
-    other: { items: number; quantity: number };
+    water: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
+    food: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
+    medicine: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
+    bedding: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
+    clothing: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
+    other: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
   };
 }
 
@@ -50,6 +54,7 @@ export default function HomePage() {
   // State
   const [overview, setOverview] = useState<StockOverview | null>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [trends, setTrends] = useState<{ labels: string[], data: any }>({ labels: [], data: {} });
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
@@ -73,6 +78,13 @@ export default function HomePage() {
           setAlerts(data.alerts || []);
         }
 
+        // Fetch trends
+        const trendsRes = await fetch('/api/stock/public/trends');
+        if (trendsRes.ok) {
+          const data = await trendsRes.json();
+          setTrends(data);
+        }
+
         setLastUpdate(new Date());
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -91,23 +103,63 @@ export default function HomePage() {
   // Calculate stats
   const totalShelters = overview?.shelters?.total || 0;
   const activeShelters = overview?.shelters?.active || 0;
-  const urgentAlerts = alerts.filter(a => a.status === 'critical').length;
 
-  // Category data for chart
+
+  // ฟังก์ชันกำหนดสีตามสถานะวิกฤติ
+  // เกณฑ์: แดง (< 50), ส้ม (< 200), เขียว (>= 200)
+  const getColorByStatus = (status?: 'sufficient' | 'low' | 'critical'): string => {
+    if (status === 'critical') return '#ef4444'; // แดง - วิกฤติ (< 50)
+    if (status === 'low') return '#f59e0b'; // ส้ม - เฝ้าระวัง (< 200)
+    return '#10b981'; // เขียว - ปกติ (>= 200)
+  };
+
+  // Category data for chart - แยกข้อมูลน้ำดื่มและอาหารจากฐานข้อมูลจริง พร้อมสีตามระดับวิกฤติ
   const categoryData = [
-    { name: 'น้ำดื่ม', category: 'food', quantity: overview?.byCategory?.food?.quantity || 0, color: '#10b981' },
-    { name: 'อาหาร', category: 'food', quantity: overview?.byCategory?.food?.quantity || 0, color: '#3b82f6' },
-    { name: 'ยา', category: 'medicine', quantity: overview?.byCategory?.medicine?.quantity || 0, color: '#f59e0b' },
-    { name: 'ที่นอน', category: 'other', quantity: overview?.byCategory?.other?.quantity || 0, color: '#ef4444' },
+    {
+      name: 'น้ำดื่ม',
+      category: 'water',
+      quantity: overview?.byCategory?.water?.quantity || 0,
+      status: overview?.byCategory?.water?.status,
+      color: getColorByStatus(overview?.byCategory?.water?.status)
+    },
+    {
+      name: 'อาหาร',
+      category: 'food',
+      quantity: overview?.byCategory?.food?.quantity || 0,
+      status: overview?.byCategory?.food?.status,
+      color: getColorByStatus(overview?.byCategory?.food?.status)
+    },
+    {
+      name: 'ยา',
+      category: 'medicine',
+      quantity: overview?.byCategory?.medicine?.quantity || 0,
+      status: overview?.byCategory?.medicine?.status,
+      color: getColorByStatus(overview?.byCategory?.medicine?.status)
+    },
+    {
+      name: 'ที่นอน',
+      category: 'bedding',
+      quantity: overview?.byCategory?.bedding?.quantity || 0,
+      status: overview?.byCategory?.bedding?.status,
+      color: getColorByStatus(overview?.byCategory?.bedding?.status)
+    },
   ];
 
   // Calculate max for chart scale
   const maxQuantity = Math.max(...categoryData.map(d => d.quantity), 1);
 
-  // Mock trend data (in real app, this would come from API)
-  const trendDays = ['-6 วัน', '-5 วัน', '-4 วัน', '-3 วัน', '-2 วัน', '-1 วัน', 'วันนี้'];
-  const waterTrend = [1200, 1500, 1800, 2100, 1900, 2200, 2400];
-  const foodTrend = [800, 1000, 1200, 1400, 1600, 1800, 2000];
+  // Trend data from API
+  const trendDays = trends.labels.length > 0 ? trends.labels : ['...', '...', '...', '...', '...', '...', '...'];
+  const waterTrend = trends.data.water || [0, 0, 0, 0, 0, 0, 0];
+  const foodTrend = trends.data.food || [0, 0, 0, 0, 0, 0, 0];
+  const medicineTrend = trends.data.medicine || [0, 0, 0, 0, 0, 0, 0];
+  const beddingTrend = trends.data.bedding || [0, 0, 0, 0, 0, 0, 0];
+
+  // Calculate max for trend chart scale
+  const allTrendValues = [...waterTrend, ...foodTrend, ...medicineTrend, ...beddingTrend];
+  const maxTrendValue = Math.max(...allTrendValues, 100); // Minimum 100 for scale
+  const chartScale = Math.ceil(maxTrendValue / 100) * 100;
+  const gridSteps = [0, chartScale * 0.25, chartScale * 0.5, chartScale * 0.75, chartScale].map(v => Math.round(v));
 
   // Format date
   const formatDate = (date: Date) => {
@@ -120,13 +172,7 @@ export default function HomePage() {
     }).format(date);
   };
 
-  // Calculate percentage for progress bars มาดูว่าเป็นไงงงงง
-  const getStatusColor = (quantity: number, max: number) => {
-    const percent = (quantity / max) * 100;
-    if (percent > 70) return '#10b981'; // Green - ปกติ
-    if (percent > 30) return '#f59e0b'; // Orange - เฝ้าระวัง
-    return '#ef4444'; // Red - น้อย
-  };
+
 
   return (
     <div className={styles.dashboardContainer}>
@@ -155,19 +201,41 @@ export default function HomePage() {
         <AnnouncementBanner />
 
         {/* Alert Banner */}
-        <div className={`${styles.alertBannerNew} ${urgentAlerts > 0 ? styles.alertDanger : styles.alertNormal}`}>
-          <div className={styles.alertIconNew}>
-            <AlertCircle size={40} />
-          </div>
-          <div className={styles.alertContentNew}>
-            <h2 className={styles.alertTitleNew}>ระดับปกติ</h2>
-            <p className={styles.alertTextNew}>
-              {loading ? 'กำลังโหลดข้อมูล...' :
-                urgentAlerts > 0 ? `มีรายการเร่งด่วน ${urgentAlerts} รายการ` : 'ไม่มีรายการเร่งด่วนในขณะนี้'}
-            </p>
-            <p className={styles.alertDateNew}>วันที่ปัจจุบัน: {formatDate(lastUpdate)}</p>
-          </div>
-        </div>
+        {(() => {
+          const hasCritical = categoryData.some(c => c.status === 'critical');
+          const hasLow = categoryData.some(c => c.status === 'low');
+
+          let bannerClass = styles.alertSuccess;
+          let bannerTitle = 'ระดับปกติ';
+          let bannerText = 'ทรัพยากรส่วนใหญ่อยู่ในระดับปกติ';
+
+          if (hasCritical) {
+            bannerClass = styles.alertDanger;
+            bannerTitle = 'ระดับวิกฤติ';
+            bannerText = 'มีทรัพยากรบางรายการอยู่ในระดับวิกฤติ (น้อยกว่า 50) โปรดตรวจสอบด่วน';
+          } else if (hasLow) {
+            bannerClass = styles.alertNormal;
+            bannerTitle = 'ระดับเฝ้าระวัง';
+            bannerText = 'มีทรัพยากรบางรายการเริ่มขาดแคลน (น้อยกว่า 200) โปรดเตรียมการเติมสต็อก';
+          }
+
+          if (loading) {
+            bannerText = 'กำลังโหลดข้อมูลล่าสุด...';
+          }
+
+          return (
+            <div className={`${styles.alertBannerNew} ${bannerClass}`}>
+              <div className={styles.alertIconNew}>
+                <AlertCircle size={40} />
+              </div>
+              <div className={styles.alertContentNew}>
+                <h2 className={styles.alertTitleNew}>{bannerTitle}</h2>
+                <p className={styles.alertTextNew}>{bannerText}</p>
+                <p className={styles.alertDateNew}>ข้อมูลล่าสุด ณ วันที่: {formatDate(lastUpdate)}</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Stats Cards */}
         <div className={styles.statsRow}>
@@ -202,9 +270,9 @@ export default function HomePage() {
               <AlertTriangle size={28} />
             </div>
             <div className={styles.statsContentNew}>
-              <h3 className={styles.statsLabelNew}>ศูนย์เฝ้าระวัง</h3>
+              <h3 className={styles.statsLabelNew}>ศูนย์วิกฤติ (ต้องช่วยด่วน)</h3>
               <div className={styles.statsValueNew}>
-                <span className={styles.statsNumberNew}>{loading ? '...' : urgentAlerts}</span>
+                <span className={styles.statsNumberNew}>{loading ? '...' : overview?.shelters?.crisis || 0}</span>
                 <span className={styles.statsUnitNew}>แห่ง วิกฤต</span>
               </div>
             </div>
@@ -246,7 +314,7 @@ export default function HomePage() {
                         className={styles.barFill}
                         style={{
                           width: `${(item.quantity / maxQuantity) * 100}%`,
-                          background: getStatusColor(item.quantity, maxQuantity)
+                          background: item.color
                         }}
                       ></div>
                     </div>
@@ -261,17 +329,6 @@ export default function HomePage() {
           <div className={styles.chartCard}>
             <h3 className={styles.chartTitle}>แนวโน้มการใช้ทรัพยากรย้อนหลัง 7 วัน</h3>
 
-            <div className={styles.chartLegend}>
-              <span className={styles.legendItem}>
-                <span className={styles.legendDot} style={{ background: '#3b82f6' }}></span>
-                น้ำดื่ม
-              </span>
-              <span className={styles.legendItem}>
-                <span className={styles.legendDot} style={{ background: '#f59e0b' }}></span>
-                อาหาร
-              </span>
-            </div>
-
             <div className={styles.lineChart}>
               {loading ? (
                 <div className={styles.chartLoading}>กำลังโหลดข้อมูล...</div>
@@ -279,19 +336,19 @@ export default function HomePage() {
                 <div className={styles.lineChartContainer}>
                   <svg width="100%" height="200" viewBox="0 0 600 200">
                     {/* Grid lines */}
-                    {[0, 1000, 2000, 3000].map((y, i) => (
+                    {gridSteps.map((y: number, i: number) => (
                       <g key={i}>
                         <line
                           x1="50"
-                          y1={180 - (y / 3000) * 160}
+                          y1={180 - (y / chartScale) * 160}
                           x2="580"
-                          y2={180 - (y / 3000) * 160}
+                          y2={180 - (y / chartScale) * 160}
                           stroke="rgba(255,255,255,0.1)"
                           strokeWidth="1"
                         />
                         <text
                           x="10"
-                          y={180 - (y / 3000) * 160 + 5}
+                          y={180 - (y / chartScale) * 160 + 5}
                           fill="#94a3b8"
                           fontSize="10"
                         >
@@ -302,18 +359,18 @@ export default function HomePage() {
 
                     {/* Water line */}
                     <polyline
-                      points={waterTrend.map((val, i) =>
-                        `${50 + (i * 80)},${180 - (val / 3000) * 160}`
+                      points={waterTrend.map((val: number, i: number) =>
+                        `${50 + (i * 80)},${180 - (val / chartScale) * 160}`
                       ).join(' ')}
                       fill="none"
                       stroke="#3b82f6"
                       strokeWidth="2"
                     />
-                    {waterTrend.map((val, i) => (
+                    {waterTrend.map((val: number, i: number) => (
                       <circle
                         key={i}
                         cx={50 + (i * 80)}
-                        cy={180 - (val / 3000) * 160}
+                        cy={180 - (val / chartScale) * 160}
                         r="3"
                         fill="#3b82f6"
                       />
@@ -321,25 +378,63 @@ export default function HomePage() {
 
                     {/* Food line */}
                     <polyline
-                      points={foodTrend.map((val, i) =>
-                        `${50 + (i * 80)},${180 - (val / 3000) * 160}`
+                      points={foodTrend.map((val: number, i: number) =>
+                        `${50 + (i * 80)},${180 - (val / chartScale) * 160}`
                       ).join(' ')}
                       fill="none"
                       stroke="#f59e0b"
                       strokeWidth="2"
                     />
-                    {foodTrend.map((val, i) => (
+                    {foodTrend.map((val: number, i: number) => (
                       <circle
                         key={i}
                         cx={50 + (i * 80)}
-                        cy={180 - (val / 3000) * 160}
+                        cy={180 - (val / chartScale) * 160}
                         r="3"
                         fill="#f59e0b"
                       />
                     ))}
 
+                    {/* Medicine line */}
+                    <polyline
+                      points={medicineTrend.map((val: number, i: number) =>
+                        `${50 + (i * 80)},${180 - (val / chartScale) * 160}`
+                      ).join(' ')}
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="2"
+                    />
+                    {medicineTrend.map((val: number, i: number) => (
+                      <circle
+                        key={i}
+                        cx={50 + (i * 80)}
+                        cy={180 - (val / chartScale) * 160}
+                        r="3"
+                        fill="#ef4444"
+                      />
+                    ))}
+
+                    {/* Bedding line */}
+                    <polyline
+                      points={beddingTrend.map((val: number, i: number) =>
+                        `${50 + (i * 80)},${180 - (val / chartScale) * 160}`
+                      ).join(' ')}
+                      fill="none"
+                      stroke="#a855f7"
+                      strokeWidth="2"
+                    />
+                    {beddingTrend.map((val: number, i: number) => (
+                      <circle
+                        key={i}
+                        cx={50 + (i * 80)}
+                        cy={180 - (val / chartScale) * 160}
+                        r="3"
+                        fill="#a855f7"
+                      />
+                    ))}
+
                     {/* X-axis labels */}
-                    {trendDays.map((day, i) => (
+                    {trendDays.map((day: string, i: number) => (
                       <text
                         key={i}
                         x={50 + (i * 80)}
@@ -354,6 +449,13 @@ export default function HomePage() {
                   </svg>
                 </div>
               )}
+              {/* Legend */}
+              <div className={styles.chartLegend}>
+                <div className={styles.legendItem}><span style={{ background: '#3b82f6' }}></span>น้ำดื่ม</div>
+                <div className={styles.legendItem}><span style={{ background: '#f59e0b' }}></span>อาหาร</div>
+                <div className={styles.legendItem}><span style={{ background: '#ef4444' }}></span>ยา/เวชภัณฑ์</div>
+                <div className={styles.legendItem}><span style={{ background: '#a855f7' }}></span>เครื่องนอน</div>
+              </div>
             </div>
           </div>
         </div>
@@ -369,9 +471,15 @@ export default function HomePage() {
               <div className={styles.emptyMessage}>ไม่มีรายการขาดแคลนในขณะนี้</div>
             ) : (
               <div className={styles.shortageList}>
-                {alerts.slice(0, 4).map((alert, index) => (
+                {alerts.slice(0, 6).map((alert, index) => (
                   <div key={index} className={styles.shortageItemNew}>
-                    <span className={styles.shortageNameNew}>{alert.itemName}</span>
+                    <div className={styles.shortageItemLeft}>
+                      <span
+                        className={styles.statusDot}
+                        style={{ background: alert.status === 'critical' ? '#ef4444' : '#f59e0b' }}
+                      ></span>
+                      <span className={styles.shortageNameNew}>{alert.itemName}</span>
+                    </div>
                     <span className={styles.shortageQuantityNew}>{alert.currentStock} {alert.unit}</span>
                   </div>
                 ))}
@@ -400,7 +508,7 @@ export default function HomePage() {
                 </div>
                 <div className={styles.shelterStatTextNew}>
                   <span className={styles.shelterStatLabelNew}>เฝ้าระวัง</span>
-                  <span className={styles.shelterStatNumberNew}>{loading ? '...' : Math.min(urgentAlerts, totalShelters - activeShelters)}</span>
+                  <span className={styles.shelterStatNumberNew}>{loading ? '...' : overview?.shelters?.warning || 0}</span>
                   <span className={styles.shelterStatUnitNew}>ศูนย์</span>
                 </div>
               </div>
@@ -411,14 +519,14 @@ export default function HomePage() {
                 </div>
                 <div className={styles.shelterStatTextNew}>
                   <span className={styles.shelterStatLabelNew}>วิกฤติ</span>
-                  <span className={styles.shelterStatNumberNew}>{loading ? '...' : 0}</span>
+                  <span className={styles.shelterStatNumberNew}>{loading ? '...' : overview?.shelters?.crisis || 0}</span>
                   <span className={styles.shelterStatUnitNew}>ศูนย์</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   );
 }

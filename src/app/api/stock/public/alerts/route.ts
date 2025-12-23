@@ -1,31 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import Stock from '@/lib/db/models/Stock';
 import dbConnect from '@/lib/db/mongodb';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     await dbConnect();
 
-    // ดึงรายการที่มีปัญหา
-    const allStocks = await Stock.find({}).select(
-      'itemName category totalQuantity minStockLevel criticalLevel unit'
-    );
+    // ดึงรายการที่มีปัญหา (น้อยกว่า 200)
+    const allStocks = await Stock.find({ totalQuantity: { $lt: 200 } })
+      .select('itemName category totalQuantity unit')
+      .sort({ totalQuantity: 1 }) // เรียงจากน้อยไปมาก
+      .limit(10); // ดึงมาแค่ 10 รายการพอ
 
-    const alerts = allStocks
-      .map((stock: { getStatus: () => string; itemName: string; category: string; totalQuantity: number; minStockLevel: number; unit: string }) => {
-        const status = stock.getStatus();
-        if (status === 'sufficient') return null;
+    const alerts = allStocks.map(stock => {
+      const q = stock.totalQuantity;
+      let status: 'critical' | 'low' = 'low';
+      if (q < 50) status = 'critical';
 
-        return {
-          itemName: stock.itemName,
-          category: stock.category,
-          currentStock: stock.totalQuantity,
-          minLevel: stock.minStockLevel,
-          unit: stock.unit,
-          status
-        };
-      })
-      .filter(Boolean);
+      return {
+        itemName: stock.itemName,
+        category: stock.category,
+        currentStock: q,
+        unit: stock.unit,
+        status: status
+      };
+    });
 
     return NextResponse.json({ alerts });
 

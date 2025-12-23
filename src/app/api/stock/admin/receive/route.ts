@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
 
         await StockMovement.create({
             stockId: stock._id,
+            itemName: stock.itemName,
             movementType: 'receive',
             quantity: validatedData.quantity,
             unit: stock.unit,
