@@ -362,6 +362,8 @@ export default function ItemsPage() {
                                             <option value="ชิ้น">ชิ้น</option>
                                             <option value="กล่อง">กล่อง</option>
                                             <option value="แผ่น">แผ่น</option>
+                                            <option value="ผืน">ผืน</option>
+                                            <option value="ใบ">ใบ</option>
                                             <option value="ขวด">ขวด</option>
                                             <option value="ถุง">ถุง</option>
                                             <option value="ห่อ">ห่อ</option>
@@ -373,6 +375,12 @@ export default function ItemsPage() {
                                             <option value="เม็ด">เม็ด</option>
                                             <option value="หลอด">หลอด</option>
                                             <option value="ซอง">ซอง</option>
+                                            <option value="โหล">โหล</option>
+                                            <option value="กระป๋อง">กระป๋อง</option>
+                                            <option value="ถัง">ถัง</option>
+                                            <option value="เส้น">เส้น</option>
+                                            <option value="กิโลกรัม">กิโลกรัม</option>
+                                            <option value="ลิตร">ลิตร</option>
                                         </select>
                                     </div>
 

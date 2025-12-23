@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Package, TrendingUp, X, Search } from 'lucide-react';
+import { Package, TrendingUp, X, Search, ClipboardList, Plus } from 'lucide-react';
 import styles from './simple.module.css';
 
 interface StockItem {
@@ -223,8 +224,20 @@ export default function SimpleStockPage() {
             title="จัดการสต็อกแบบง่าย"
             subtitle="เพิ่มและรับสินค้าในหน้าเดียว"
         >
-            <div className="dash-alert dash-alert-info" style={{ marginBottom: '2rem' }}>
+            <div className="dash-alert dash-alert-info" style={{ marginBottom: '1.5rem' }}>
                 <strong>💡 วิธีใช้:</strong> กดปุ่มที่สินค้าที่ต้องการ - ถ้ายังไม่มีในสต็อกจะเพิ่มใหม่ / ถ้ามีแล้วจะรับเข้าเพิ่ม
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <Link href="/admin/items" className="dash-btn dash-btn-secondary" style={{ textDecoration: 'none' }}>
+                    <ClipboardList size={18} />
+                    จัดการรายการสินค้า
+                </Link>
+                <Link href="/admin/items" className="dash-btn dash-btn-primary" style={{ textDecoration: 'none' }}>
+                    <Plus size={18} />
+                    เพิ่มสินค้าใหม่
+                </Link>
             </div>
 
             {/* Search */}
