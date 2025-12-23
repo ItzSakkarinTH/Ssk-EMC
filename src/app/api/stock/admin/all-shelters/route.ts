@@ -27,6 +27,9 @@ export async function GET(req: NextRequest) {
         let lowStockCount = 0;
         let criticalCount = 0;
 
+        // Track category breakdown
+        const categoryMap: Record<string, { itemCount: number; totalQuantity: number }> = {};
+
         allStocks.forEach((stock) => {
           if (!stock.shelterStock) return;
 
@@ -47,8 +50,25 @@ export async function GET(req: NextRequest) {
             } else if (shelterStock.quantity <= min) {
               lowStockCount++;
             }
+
+            // Add to category breakdown
+            const category = stock.category || 'other';
+            if (!categoryMap[category]) {
+              categoryMap[category] = { itemCount: 0, totalQuantity: 0 };
+            }
+            categoryMap[category].itemCount++;
+            categoryMap[category].totalQuantity += shelterStock.quantity;
           }
         });
+
+        // Convert category map to array
+        const categoryBreakdown = Object.entries(categoryMap)
+          .map(([category, data]) => ({
+            category,
+            itemCount: data.itemCount,
+            totalQuantity: data.totalQuantity
+          }))
+          .sort((a, b) => b.totalQuantity - a.totalQuantity);
 
         // กำหนดสถานะ
         let status: 'normal' | 'tight' | 'critical' = 'normal';
@@ -73,8 +93,8 @@ export async function GET(req: NextRequest) {
             total: lowStockCount + criticalCount
           },
           status,
-          capacity: shelter.capacity || 0,
-          currentOccupancy: shelter.currentOccupancy || 0
+          categoryBreakdown,
+          contactPerson: shelter.contactPerson || { name: '', phone: '' }
         };
       });
 
