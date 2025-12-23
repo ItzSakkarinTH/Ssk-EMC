@@ -19,6 +19,8 @@ const CATEGORIES = {
   other: 'อื่นๆ'
 };
 
+import { ArrowLeft } from 'lucide-react';
+
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
@@ -40,7 +42,7 @@ export default function CategoryPage() {
           const json = await res.json();
           setData(json);
         }
-      } catch (err) {
+      } catch {
         console.error('Failed to fetch');
       } finally {
         setLoading(false);
@@ -50,7 +52,7 @@ export default function CategoryPage() {
     fetchData();
   }, [category, router]);
 
-  if (loading) return <div className={styles.loading}>กำลังโหลด...</div>;
+  if (loading) return <div className={styles.loading}>กำลังวิเคราะห์หมวดหมู่...</div>;
   if (!data) return <div className={styles.error}>ไม่พบข้อมูล</div>;
 
   const statusColors: Record<string, string> = {
@@ -61,20 +63,21 @@ export default function CategoryPage() {
   };
 
   const statusLabels: Record<string, string> = {
-    sufficient: 'เพียงพอ',
-    low: 'ใกล้หมด',
+    sufficient: 'ทรัพยากรปกติ',
+    low: 'เฝ้าระวัง',
     critical: 'วิกฤต',
-    outOfStock: 'หมด'
+    outOfStock: 'สินค้าหมด'
   };
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
+    <div className={styles.categoryContainer}>
+      <header className={styles.header}>
         <button onClick={() => router.back()} className={styles.backBtn}>
-          ← กลับ
+          <ArrowLeft size={18} />
+          <span>ศูนย์กลาง</span>
         </button>
-        <h1>หมวด{CATEGORIES[category as keyof typeof CATEGORIES]}</h1>
-      </div>
+        <h1>Resource: {CATEGORIES[category as keyof typeof CATEGORIES]}</h1>
+      </header>
 
       <div className={styles.summary}>
         <span>จำนวนรายการทั้งหมด: {data.items.length}</span>

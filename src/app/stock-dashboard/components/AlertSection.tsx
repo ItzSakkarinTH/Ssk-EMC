@@ -1,7 +1,11 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  AlertOctagon,
+  AlertCircle,
+  ChevronRight
+} from 'lucide-react';
 import styles from './AlertSection.module.css';
 
 interface Alert {
@@ -24,7 +28,7 @@ export default function AlertSection() {
           const data = await res.json();
           setAlerts(data.alerts);
         }
-      } catch (err) {
+      } catch {
         console.error('Failed to fetch alerts');
       } finally {
         setLoading(false);
@@ -37,66 +41,58 @@ export default function AlertSection() {
   }, []);
 
   if (loading) return null;
-  if (alerts.length === 0) return null;
+
+  if (alerts.length === 0) return (
+    <div className={styles.emptyState}>
+      <div className={styles.checkIcon}>✓</div>
+      <p>ระบบปกติ - ไม่มีการแจ้งเตือน</p>
+    </div>
+  );
 
   const categoryLabels: Record<string, string> = {
-    food: 'อาหาร',
-    medicine: 'ยา',
-    clothing: 'เสื้อผ้า',
-    other: 'อื่นๆ'
+    food: 'อาหาร/น้ำ',
+    medicine: 'เวชภัณฑ์',
+    clothing: 'เครื่องนุ่งห่ม',
+    other: 'เครื่องใช้อื่นๆ'
   };
 
-  const criticalAlerts = alerts.filter(a => a.status === 'critical' || a.status === 'outOfStock');
-  const lowAlerts = alerts.filter(a => a.status === 'low');
-
   return (
-    <div className={styles.container}>
-      <h2>🔔 แจ้งเตือน</h2>
+    <div className={styles.alertListContainer}>
+      <div className={styles.alertScrollArea}>
+        {alerts.map((alert, idx) => (
+          <div
+            key={idx}
+            className={`${styles.alertItem} ${styles[alert.status]}`}
+          >
+            <div className={styles.alertIconBox}>
+              {alert.status === 'outOfStock' ? <AlertOctagon size={18} /> : <AlertCircle size={18} />}
+            </div>
 
-      {criticalAlerts.length > 0 && (
-        <div className={styles.section}>
-          <h3 className={styles.criticalTitle}>⚠️ วิกฤต/หมดแล้ว ({criticalAlerts.length})</h3>
-          <div className={styles.alertList}>
-            {criticalAlerts.map((alert, idx) => (
-              <div key={idx} className={styles.criticalAlert}>
-                <div className={styles.alertName}>
-                  {alert.itemName}
-                  <span className={styles.category}>
-                    ({categoryLabels[alert.category]})
-                  </span>
-                </div>
-                <div className={styles.alertStock}>
-                  {alert.status === 'outOfStock'
-                    ? 'หมดแล้ว'
-                    : `เหลือ ${alert.currentStock} (ต่ำกว่า ${alert.minLevel})`
-                  }
-                </div>
+            <div className={styles.alertInfo}>
+              <div className={styles.itemName}>
+                {alert.itemName}
+                <span className={styles.categoryTag}>{categoryLabels[alert.category]}</span>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+              <div className={styles.statusDescription}>
+                {alert.status === 'outOfStock'
+                  ? 'สินค้าหมดคลัง (OUT OF STOCK)'
+                  : alert.status === 'critical'
+                    ? `ระดับวิกฤต: เหลือเพียง ${alert.currentStock} ชิ้น (เกณฑ์ ${alert.minLevel})`
+                    : `ระดับต่ำ: เหลือ ${alert.currentStock} ชิ้น (เกณฑ์ ${alert.minLevel})`
+                }
+              </div>
+            </div>
 
-      {lowAlerts.length > 0 && (
-        <div className={styles.section}>
-          <h3 className={styles.lowTitle}>⚠️ ใกล้หมด ({lowAlerts.length})</h3>
-          <div className={styles.alertList}>
-            {lowAlerts.map((alert, idx) => (
-              <div key={idx} className={styles.lowAlert}>
-                <div className={styles.alertName}>
-                  {alert.itemName}
-                  <span className={styles.category}>
-                    ({categoryLabels[alert.category]})
-                  </span>
-                </div>
-                <div className={styles.alertStock}>
-                  เหลือ {alert.currentStock} (ควรมี {alert.minLevel})
-                </div>
-              </div>
-            ))}
+            <div className={styles.actionArea}>
+              <ChevronRight size={16} className={styles.chevron} />
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
+
+      <div className={styles.alertFooter}>
+        <p>แสดงรายการที่มีสถานะต่ำกว่าเกณฑ์มาตรฐาน</p>
+      </div>
     </div>
   );
 }
