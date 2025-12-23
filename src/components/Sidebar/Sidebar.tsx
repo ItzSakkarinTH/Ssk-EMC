@@ -21,13 +21,19 @@ import {
     Wrench,
     History,
     Sun,
-    Moon
+    Moon,
+    X
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import styles from './Sidebar.module.css';
 
-export default function Sidebar() {
+interface SidebarProps {
+    isOpen?: boolean;
+    onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
     const { user, isAuthenticated, logout } = useAuth();
     const { toggleTheme, isDark } = useTheme();
@@ -122,7 +128,7 @@ export default function Sidebar() {
     const navItems = getNavItems();
 
     return (
-        <aside className={styles.sidebar}>
+        <aside className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}>
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.logoContainer}>
@@ -139,6 +145,11 @@ export default function Sidebar() {
                     <div className={styles.logoTitle}>Sisaket EMS</div>
                     <div className={styles.logoSubtitle}>Stock Management</div>
                 </div>
+
+                {/* Mobile Close Button */}
+                <button className={styles.closeBtn} onClick={onClose}>
+                    <X size={24} />
+                </button>
             </div>
 
             {/* Navigation */}
@@ -161,6 +172,7 @@ export default function Sidebar() {
                                             key={sIdx}
                                             href={sub.path}
                                             className={`${styles.navLink} ${styles.subLink} ${isActive ? styles.active : ''}`}
+                                            onClick={() => onClose?.()}
                                         >
                                             {SubIcon && <SubIcon size={18} strokeWidth={2} />}
                                             <span>{sub.title}</span>
@@ -172,6 +184,7 @@ export default function Sidebar() {
                             <Link
                                 href={item.path || '#'}
                                 className={`${styles.navLink} ${pathname === item.path ? styles.active : ''}`}
+                                onClick={() => onClose?.()}
                             >
                                 <item.icon size={20} strokeWidth={2} />
                                 <span>{item.title}</span>

@@ -254,3 +254,13 @@
 [data-theme="light"] .loadingState {
   color: #94a3b8;
 }
+
+[data-theme="light"] .criticalAlert {
+  background: #fff1f2;
+  border-color: #fca5a5;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.05);
+}
+
+[data-theme="light"] .criticalAlert .metricValue {
+  color: #ef4444;
+}

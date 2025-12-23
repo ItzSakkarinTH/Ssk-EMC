@@ -1,6 +1,19 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import {
+  TrendingUp,
+  TrendingDown,
+  RefreshCcw,
+  Clock,
+  Calendar,
+  Package,
+  BarChart3,
+  PieChart,
+  Lightbulb,
+  Scale,
+  Target
+} from 'lucide-react';
 import styles from './StockAnalytics.module.css';
 
 interface AnalyticsData {
@@ -20,7 +33,12 @@ const CATEGORY_CONFIG: Record<string, { label: string; emoji: string; color: str
   food: { label: 'อาหาร', emoji: '🍚', color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.15)' },
   medicine: { label: 'ยาและเวชภัณฑ์', emoji: '💊', color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.15)' },
   clothing: { label: 'เครื่องนุ่งห่ม', emoji: '👕', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)' },
-  other: { label: 'อื่นๆ', emoji: '📦', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.15)' }
+  shelter: { label: 'ที่พักอาศัย', emoji: '🏠', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.15)' },
+  hygiene: { label: 'สุขอนามัย', emoji: '🧴', color: '#06b6d4', bgColor: 'rgba(6, 182, 212, 0.15)' },
+  education: { label: 'การศึกษา', emoji: '📚', color: '#ec4899', bgColor: 'rgba(236, 72, 153, 0.15)' },
+  tools: { label: 'เครื่องมือ', emoji: '🔧', color: '#f97316', bgColor: 'rgba(249, 115, 22, 0.15)' },
+  electronics: { label: 'อิเล็กทรอนิกส์', emoji: '📱', color: '#eab308', bgColor: 'rgba(234, 179, 8, 0.15)' },
+  other: { label: 'อื่นๆ', emoji: '📦', color: '#64748b', bgColor: 'rgba(100, 116, 139, 0.15)' }
 };
 
 export default function StockAnalytics() {
@@ -91,7 +109,7 @@ export default function StockAnalytics() {
     return (
       <div className={styles.container}>
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>📊</div>
+          <div className={styles.emptyIcon}><BarChart3 size={64} /></div>
           <h3>ไม่มีข้อมูลการวิเคราะห์</h3>
           <p>ยังไม่มีข้อมูลการเคลื่อนไหวของสต๊อกในช่วงเวลานี้</p>
         </div>
@@ -104,7 +122,7 @@ export default function StockAnalytics() {
       {/* Period Selector Header */}
       <div className={styles.headerSection}>
         <div className={styles.periodInfo}>
-          <span className={styles.periodIcon}>📅</span>
+          <Calendar size={20} style={{ color: 'var(--dash-primary)' }} />
           <span className={styles.periodLabel}>ช่วงเวลาวิเคราะห์:</span>
           <span className={styles.periodValue}>{getPeriodLabel()}ล่าสุด</span>
         </div>
@@ -125,7 +143,7 @@ export default function StockAnalytics() {
       <div className={styles.summaryGrid}>
         <div className={`${styles.summaryCard} ${styles.summaryCardReceive}`}>
           <div className={styles.summaryIconWrapper}>
-            <span className={styles.summaryIcon}>📥</span>
+            <TrendingUp size={28} style={{ color: '#10b981' }} />
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryValue}>
@@ -138,7 +156,7 @@ export default function StockAnalytics() {
 
         <div className={`${styles.summaryCard} ${styles.summaryCardDispense}`}>
           <div className={styles.summaryIconWrapper}>
-            <span className={styles.summaryIcon}>📤</span>
+            <TrendingDown size={28} style={{ color: '#f59e0b' }} />
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryValue}>
@@ -151,7 +169,7 @@ export default function StockAnalytics() {
 
         <div className={`${styles.summaryCard} ${styles.summaryCardTurnover}`}>
           <div className={styles.summaryIconWrapper}>
-            <span className={styles.summaryIcon}>🔄</span>
+            <RefreshCcw size={28} style={{ color: '#3b82f6' }} />
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryValue}>
@@ -164,7 +182,7 @@ export default function StockAnalytics() {
 
         <div className={`${styles.summaryCard} ${styles.summaryCardDays}`}>
           <div className={styles.summaryIconWrapper}>
-            <span className={styles.summaryIcon}>⏱️</span>
+            <Clock size={28} style={{ color: '#8b5cf6' }} />
           </div>
           <div className={styles.summaryContent}>
             <div className={styles.summaryValue}>
@@ -180,7 +198,7 @@ export default function StockAnalytics() {
       <div className={styles.categorySection}>
         <div className={styles.sectionHeader}>
           <div className={styles.sectionTitleWrapper}>
-            <span className={styles.sectionIcon}>📊</span>
+            <PieChart size={24} style={{ color: 'var(--dash-primary)' }} />
             <h3 className={styles.sectionTitle}>การกระจายตามหมวดหมู่</h3>
           </div>
           <div className={styles.sectionSubtitle}>
@@ -192,6 +210,8 @@ export default function StockAnalytics() {
           {Object.entries(CATEGORY_CONFIG).map(([key, config]) => {
             const value = data.categoryDistribution?.[key] || 0;
             const percentage = getCategoryPercentage(value);
+
+            if (value === 0) return null;
 
             return (
               <div key={key} className={styles.categoryCard} style={{ '--category-color': config.color } as React.CSSProperties}>
@@ -231,7 +251,7 @@ export default function StockAnalytics() {
           <div className={styles.topItemsHeader}>
             <div className={styles.topItemsTitleWrapper}>
               <div className={styles.topItemsIconBox} style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
-                <span>📥</span>
+                <TrendingUp size={20} color="white" />
               </div>
               <div>
                 <h3 className={styles.topItemsTitle}>รับเข้ามากที่สุด</h3>
@@ -242,7 +262,7 @@ export default function StockAnalytics() {
           <div className={styles.topItemsList}>
             {data.topReceived.length === 0 ? (
               <div className={styles.noDataMessage}>
-                <span>📭</span>
+                <Package size={32} style={{ opacity: 0.4 }} />
                 <p>ไม่มีข้อมูลในช่วงนี้</p>
               </div>
             ) : (
@@ -281,7 +301,7 @@ export default function StockAnalytics() {
           <div className={styles.topItemsHeader}>
             <div className={styles.topItemsTitleWrapper}>
               <div className={styles.topItemsIconBox} style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' }}>
-                <span>📤</span>
+                <TrendingDown size={20} color="white" />
               </div>
               <div>
                 <h3 className={styles.topItemsTitle}>เบิกจ่ายมากที่สุด</h3>
@@ -292,7 +312,7 @@ export default function StockAnalytics() {
           <div className={styles.topItemsList}>
             {data.topDispensed.length === 0 ? (
               <div className={styles.noDataMessage}>
-                <span>📭</span>
+                <Package size={32} style={{ opacity: 0.4 }} />
                 <p>ไม่มีข้อมูลในช่วงนี้</p>
               </div>
             ) : (
@@ -331,13 +351,15 @@ export default function StockAnalytics() {
       <div className={styles.insightsSection}>
         <div className={styles.sectionHeader}>
           <div className={styles.sectionTitleWrapper}>
-            <span className={styles.sectionIcon}>💡</span>
+            <Lightbulb size={24} style={{ color: '#fbbf24' }} />
             <h3 className={styles.sectionTitle}>สรุปข้อมูลเชิงลึก</h3>
           </div>
         </div>
         <div className={styles.insightsGrid}>
           <div className={styles.insightCard}>
-            <div className={styles.insightIcon}>📈</div>
+            <div className={styles.insightIcon}>
+              <BarChart3 size={32} style={{ color: '#3b82f6' }} />
+            </div>
             <div className={styles.insightContent}>
               <div className={styles.insightTitle}>ประสิทธิภาพการหมุนเวียน</div>
               <div className={styles.insightText}>
@@ -350,7 +372,9 @@ export default function StockAnalytics() {
             </div>
           </div>
           <div className={styles.insightCard}>
-            <div className={styles.insightIcon}>⚖️</div>
+            <div className={styles.insightIcon}>
+              <Scale size={32} style={{ color: '#10b981' }} />
+            </div>
             <div className={styles.insightContent}>
               <div className={styles.insightTitle}>ความสมดุล รับ-จ่าย</div>
               <div className={styles.insightText}>
@@ -363,7 +387,9 @@ export default function StockAnalytics() {
             </div>
           </div>
           <div className={styles.insightCard}>
-            <div className={styles.insightIcon}>🎯</div>
+            <div className={styles.insightIcon}>
+              <Target size={32} style={{ color: '#8b5cf6' }} />
+            </div>
             <div className={styles.insightContent}>
               <div className={styles.insightTitle}>หมวดหมู่ที่ต้องให้ความสนใจ</div>
               <div className={styles.insightText}>

@@ -7,16 +7,14 @@ import {
   Package,
   TrendingUp,
   TrendingDown,
-  ArrowRight,
+  ArrowLeftRight,
   Calendar,
   Search,
   Filter,
   ChevronLeft,
-  ChevronRight,
-  ArrowLeft
+  ChevronRight
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import styles from './page.module.css';
+import styles from './history.module.css';
 
 interface Movement {
   _id: string;
@@ -46,7 +44,6 @@ interface Movement {
 
 export default function StaffHistoryPage() {
   const toast = useToast();
-  const router = useRouter();
   const [movements, setMovements] = useState<Movement[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -166,26 +163,26 @@ export default function StaffHistoryPage() {
   const getMovementIcon = (type: string) => {
     switch (type) {
       case 'receive':
-        return <TrendingDown size={16} />;
+        return <TrendingUp size={18} />;
       case 'dispense':
-        return <TrendingUp size={16} />;
+        return <TrendingDown size={18} />;
       case 'transfer':
-        return <ArrowRight size={16} />;
+        return <ArrowLeftRight size={18} />;
       default:
-        return <Package size={16} />;
+        return <Package size={18} />;
     }
   };
 
   const getMovementColor = (type: string) => {
     switch (type) {
       case 'receive':
-        return '#22c55e';
+        return 'var(--dash-success)';
       case 'dispense':
-        return '#ef4444';
+        return 'var(--dash-danger)';
       case 'transfer':
-        return '#3b82f6';
+        return 'var(--dash-primary)';
       default:
-        return '#64748b';
+        return 'var(--dash-text-muted)';
     }
   };
 
@@ -215,21 +212,9 @@ export default function StaffHistoryPage() {
 
   return (
     <DashboardLayout
-      title="ประวัติการเคลื่อนไหว"
+      title="ประวัติการเคลื่อนไหวสินค้า"
       subtitle="ตรวจสอบรายการรับเข้า จ่ายออก และโอนสินค้าของศูนย์"
     >
-      {/* Back Button */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <button
-          onClick={() => router.back()}
-          className="dash-btn"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <ArrowLeft size={18} />
-          ย้อนกลับ
-        </button>
-      </div>
-
       {/* Summary Stats */}
       <div className={styles.summary}>
         <div className={styles.summaryCard}>
@@ -239,29 +224,29 @@ export default function StaffHistoryPage() {
             <div className={styles.summaryValue}>{filteredMovements.length}</div>
           </div>
         </div>
-        <div className={styles.summaryCard} style={{ borderColor: 'rgba(34, 197, 94, 0.3)' }}>
-          <TrendingDown size={32} style={{ color: '#22c55e' }} />
+        <div className={styles.summaryCard}>
+          <TrendingUp size={32} />
           <div>
             <div className={styles.summaryLabel}>รับเข้า</div>
-            <div className={styles.summaryValue} style={{ color: '#22c55e' }}>
+            <div className={styles.summaryValue}>
               {filteredMovements.filter(m => m.movementType === 'receive').length}
             </div>
           </div>
         </div>
-        <div className={styles.summaryCard} style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}>
-          <TrendingUp size={32} style={{ color: '#ef4444' }} />
+        <div className={styles.summaryCard}>
+          <TrendingDown size={32} />
           <div>
             <div className={styles.summaryLabel}>จ่ายออก</div>
-            <div className={styles.summaryValue} style={{ color: '#ef4444' }}>
+            <div className={styles.summaryValue}>
               {filteredMovements.filter(m => m.movementType === 'dispense').length}
             </div>
           </div>
         </div>
-        <div className={styles.summaryCard} style={{ borderColor: 'rgba(59, 130, 246, 0.3)' }}>
-          <ArrowRight size={32} style={{ color: '#3b82f6' }} />
+        <div className={styles.summaryCard}>
+          <ArrowLeftRight size={32} />
           <div>
             <div className={styles.summaryLabel}>โอน</div>
-            <div className={styles.summaryValue} style={{ color: '#3b82f6' }}>
+            <div className={styles.summaryValue}>
               {filteredMovements.filter(m => m.movementType === 'transfer').length}
             </div>
           </div>
@@ -282,7 +267,7 @@ export default function StaffHistoryPage() {
           <input
             type="text"
             className="dash-input"
-            placeholder="ค้นหาสินค้า, ผู้รับ, เอกสาร..."
+            placeholder="ค้นหาสินค้า, ผู้ส่ง/รับ, เอกสาร..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ paddingLeft: '3rem' }}
@@ -337,11 +322,11 @@ export default function StaffHistoryPage() {
       {/* Results Info & Per Page Selector */}
       <div className={styles.tableHeader}>
         <div className={styles.resultsInfo}>
-          แสดง {startIndex + 1}-{Math.min(endIndex, filteredMovements.length)} จาก {filteredMovements.length} รายการ
+          แสดง {filteredMovements.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredMovements.length)} จาก {filteredMovements.length} รายการ
         </div>
         <div className={styles.perPageSelector}>
           <span>แสดง:</span>
-          {[5, 10, 25, 50, 100].map(num => (
+          {[5, 10, 25, 50].map(num => (
             <button
               key={num}
               className={`${styles.perPageBtn} ${itemsPerPage === num ? styles.active : ''}`}
@@ -373,15 +358,14 @@ export default function StaffHistoryPage() {
               <tbody>
                 {paginatedMovements.map((movement) => {
                   const itemName = movement.itemName || movement.stockId?.itemName || 'N/A';
-                  const color = getMovementColor(movement.movementType);
                   return (
                     <tr key={movement._id}>
                       <td>
                         <span
                           className={styles.typeBadge}
                           style={{
-                            background: `${color}20`,
-                            color: color
+                            background: `${getMovementColor(movement.movementType)}20`,
+                            color: getMovementColor(movement.movementType)
                           }}
                         >
                           {getMovementIcon(movement.movementType)}
@@ -394,10 +378,9 @@ export default function StaffHistoryPage() {
                       <td>
                         <span
                           className={styles.quantity}
-                          style={{ color }}
+                          style={{ color: getMovementColor(movement.movementType) }}
                         >
-                          {movement.movementType === 'receive' ? '+' : movement.movementType === 'dispense' ? '-' : ''}
-                          {movement.quantity.toLocaleString()} {movement.unit}
+                          {movement.movementType === 'receive' ? '+' : movement.movementType === 'dispense' ? '-' : ''}{movement.quantity.toLocaleString()} {movement.unit}
                         </span>
                       </td>
                       <td>{movement.from?.name || '-'}</td>
@@ -435,11 +418,13 @@ export default function StaffHistoryPage() {
               <div className={styles.pageNumbers}>
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
                   .filter(page => {
+                    // Show first, last, current, and adjacent pages
                     return page === 1 ||
                       page === totalPages ||
                       Math.abs(page - currentPage) <= 1;
                   })
                   .map((page, index, array) => {
+                    // Add ellipsis
                     const prevPage = array[index - 1];
                     const showEllipsis = prevPage && page - prevPage > 1;
 

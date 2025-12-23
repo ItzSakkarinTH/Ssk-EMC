@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import {
   Package,
@@ -11,7 +12,8 @@ import {
   RefreshCw,
   ArrowLeftRight,
   Boxes,
-  Activity
+  Activity,
+  ClipboardList
 } from 'lucide-react';
 import styles from './adminStock.module.css';
 
@@ -143,6 +145,10 @@ export default function AdminStockPage() {
             <RefreshCw size={16} />
             รีเฟรช
           </button>
+          <Link href="/admin/items" className={styles.refreshBtn} style={{ textDecoration: 'none' }}>
+            <ClipboardList size={16} />
+            จัดการรายการสินค้า
+          </Link>
         </div>
       </div>
 

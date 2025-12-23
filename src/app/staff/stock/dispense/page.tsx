@@ -14,7 +14,6 @@ import {
   ArrowLeft,
   Search,
   Filter,
-  User,
   AlertTriangle
 } from 'lucide-react';
 
@@ -239,7 +238,7 @@ export default function DispensePage() {
       <div style={{ marginBottom: '1.5rem' }}>
         <button
           onClick={() => router.back()}
-          className="dash-btn"
+          className="dash-btn dash-btn-secondary"
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
           <ArrowLeft size={18} />
@@ -247,12 +246,12 @@ export default function DispensePage() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: showList ? '1fr 420px' : '1fr', gap: '1.5rem' }}>
+      <div className="dash-grid" style={{ gridTemplateColumns: showList ? '1fr 420px' : '1fr', alignItems: 'start' }}>
         {/* Product List */}
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {/* Search & Filter */}
-          <div className="dash-card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          <div className="dash-card">
+            <div className="dash-grid dash-grid-2">
               <div className="dash-form-group">
                 <label className="dash-label">
                   <Search size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
@@ -272,7 +271,7 @@ export default function DispensePage() {
                   หมวดหมู่
                 </label>
                 <select
-                  className="dash-input"
+                  className="dash-select"
                   value={filterCategory}
                   onChange={(e) => setFilterCategory(e.target.value)}
                 >
@@ -288,94 +287,51 @@ export default function DispensePage() {
           </div>
 
           {/* Product Grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '1.5rem'
-          }}>
+          <div className="dash-grid dash-grid-auto">
             {filteredItems.map(item => {
               const inList = dispenseList.some(c => c.stockId === item.stockId);
               const categoryColor = getCategoryColor(item.category);
               const statusBadge = getStatusBadge(item.status, item.quantity);
 
               return (
-                <div key={item.stockId} className="dash-card" style={{ padding: '1.5rem', position: 'relative' }}>
-                  {statusBadge && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '1rem',
-                      right: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '6px',
-                      background: `${statusBadge.color}20`,
-                      color: statusBadge.color,
-                      fontSize: '0.75rem',
-                      fontWeight: 600
-                    }}>
-                      <AlertTriangle size={12} />
-                      {statusBadge.label}
-                    </div>
-                  )}
-
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div style={{
-                      display: 'inline-block',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '8px',
-                      background: `${categoryColor}20`,
-                      color: categoryColor,
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      marginBottom: '0.75rem'
-                    }}>
-                      {getCategoryEmoji(item.category)} {getCategoryLabel(item.category)}
-                    </div>
-                    <h3 style={{
-                      fontSize: '1.125rem',
-                      fontWeight: 600,
-                      color: '#f1f5f9',
-                      margin: '0 0 0.75rem 0'
-                    }}>
-                      {item.itemName}
-                    </h3>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'baseline',
-                      gap: '0.5rem'
-                    }}>
-                      <span style={{
-                        fontSize: '1.5rem',
+                <div key={item.stockId} className="dash-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                      <div style={{
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '20px',
+                        background: `${categoryColor}20`,
+                        color: categoryColor,
+                        fontSize: '0.75rem',
                         fontWeight: 700,
-                        color: item.quantity <= 10 ? '#ef4444' : '#10b981'
+                        border: `1px solid ${categoryColor}40`
                       }}>
-                        {item.quantity}
+                        {getCategoryEmoji(item.category)} {getCategoryLabel(item.category)}
+                      </div>
+                      {statusBadge && (
+                        <div className={`dash-badge dash-badge-${statusBadge.color === '#ef4444' ? 'critical' : 'urgent'}`} style={{ fontSize: '0.7rem' }}>
+                          <statusBadge.icon size={12} />
+                          {statusBadge.label}
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>{item.itemName}</h3>
+
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                      <span style={{ fontSize: '1.75rem', fontWeight: 800, color: item.quantity <= 10 ? 'var(--dash-danger)' : 'var(--dash-success)' }}>
+                        {item.quantity.toLocaleString()}
                       </span>
-                      <span style={{ color: '#94a3b8' }}>{item.unit}</span>
-                      <span style={{ color: '#64748b', fontSize: '0.875rem' }}>คงเหลือ</span>
+                      <span className="dash-text-muted">{item.unit}</span>
                     </div>
                   </div>
+
                   <button
                     onClick={() => addToList(item)}
                     className={`dash-btn ${inList ? 'dash-btn-secondary' : 'dash-btn-primary'} dash-btn-block`}
                     disabled={inList}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem'
-                    }}
                   >
-                    {inList ? (
-                      <>✓ อยู่ในรายการแล้ว</>
-                    ) : (
-                      <>
-                        <Plus size={18} />
-                        เพิ่มในรายการเบิก
-                      </>
-                    )}
+                    {inList ? '✓ ในรายการ' : <><Plus size={18} /> เพิ่มรายการ</>}
                   </button>
                 </div>
               );
@@ -383,9 +339,9 @@ export default function DispensePage() {
           </div>
 
           {filteredItems.length === 0 && (
-            <div className="dash-card" style={{ padding: '3rem', textAlign: 'center' }}>
-              <Package size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-              <p style={{ color: '#94a3b8' }}>ไม่พบสินค้าในสต๊อก</p>
+            <div className="dash-card" style={{ padding: '4rem', textAlign: 'center' }}>
+              <Package size={64} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
+              <p className="dash-text-muted">ไม่พบรหัสสินค้าที่ต้องการ</p>
             </div>
           )}
         </div>
@@ -400,247 +356,128 @@ export default function DispensePage() {
               bottom: '2rem',
               right: '2rem',
               borderRadius: '50%',
-              width: '60px',
-              height: '60px',
+              width: '64px',
+              height: '64px',
               padding: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-              zIndex: 1000
+              boxShadow: '0 8px 32px rgba(59, 130, 246, 0.4)',
+              zIndex: 100
             }}
           >
-            <ClipboardList size={24} />
+            <ClipboardList size={28} />
             <span style={{
               position: 'absolute',
-              top: '-5px',
-              right: '-5px',
-              background: '#ef4444',
+              top: '-4px',
+              right: '-4px',
+              background: 'var(--dash-danger)',
               color: 'white',
               borderRadius: '50%',
               width: '24px',
               height: '24px',
               fontSize: '0.75rem',
-              fontWeight: 600,
+              fontWeight: 800,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              border: '2px solid var(--dash-bg-primary)'
             }}>
               {dispenseList.length}
             </span>
           </button>
         )}
 
-        {/* Dispense List Sidebar */}
-        {showList && dispenseList.length > 0 && (
-          <div className="dash-card" style={{
-            padding: '1.5rem',
-            position: 'sticky',
-            top: '1rem',
-            maxHeight: 'calc(100vh - 2rem)',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '1.5rem'
-            }}>
-              <h3 className="dash-card-title" style={{ margin: 0 }}>
-                <ClipboardList size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                รายการเบิก ({dispenseList.length})
+        {/* Sidebar/List Section */}
+        {showList && (
+          <div className="dash-card" style={{ position: 'sticky', top: '2rem', maxHeight: 'calc(100vh - 4rem)', display: 'flex', flexDirection: 'column', padding: '0' }}>
+            <div className="dash-card-header" style={{ padding: '1.5rem', marginBottom: 0 }}>
+              <h3 className="dash-card-title">
+                <ClipboardList size={20} style={{ marginRight: '0.5rem' }} />
+                รายการเบิกจ่าย
               </h3>
-              <button
-                onClick={() => setShowList(false)}
-                className="dash-btn-icon"
-                style={{ fontSize: '1.25rem' }}
-              >
-                ✕
-              </button>
+              <button onClick={() => setShowList(false)} className="dash-btn dash-btn-secondary" style={{ padding: '0.4rem', minWidth: 'auto' }}>✕</button>
             </div>
 
-            <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
-              {/* List Items */}
-              {dispenseList.map(item => {
-                const categoryColor = getCategoryColor(item.category);
-                return (
-                  <div key={item.stockId} className="dash-card" style={{
-                    padding: '1rem',
-                    marginBottom: '1rem',
-                    background: 'rgba(15, 23, 42, 0.5)'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'flex-start',
-                      marginBottom: '0.75rem'
-                    }}>
-                      <div style={{ flex: 1 }}>
-                        <h4 style={{
-                          fontSize: '0.9375rem',
-                          fontWeight: 600,
-                          color: '#f1f5f9',
-                          margin: '0 0 0.25rem 0'
-                        }}>
-                          {getCategoryEmoji(item.category)} {item.itemName}
-                        </h4>
-                        <span style={{
-                          fontSize: '0.8125rem',
-                          color: item.quantity <= 10 ? '#ef4444' : '#94a3b8'
-                        }}>
-                          คงเหลือ: {item.quantity} {item.unit}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => removeFromList(item.stockId)}
-                        className="dash-btn-icon"
-                        style={{ color: '#ef4444' }}
-                      >
+            <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {dispenseList.map(item => (
+                  <div key={item.stockId} style={{ background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', padding: '1rem', border: '1px solid var(--dash-border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                      <div style={{ fontWeight: 600 }}>{getCategoryEmoji(item.category)} {item.itemName}</div>
+                      <button onClick={() => removeFromList(item.stockId)} style={{ color: 'var(--dash-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>
                         <Trash2 size={16} />
                       </button>
                     </div>
 
-                    <div className="dash-form-group">
-                      <label className="dash-label" style={{ fontSize: '0.875rem' }}>จำนวนที่เบิก</label>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.stockId, item.dispenseQty - 1)}
-                          className="dash-btn dash-btn-sm"
-                          disabled={item.dispenseQty <= 1}
-                        >
-                          <Minus size={14} />
-                        </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', background: 'var(--dash-bg-primary)', borderRadius: '8px', padding: '0.25rem' }}>
+                        <button onClick={() => updateQuantity(item.stockId, item.dispenseQty - 1)} disabled={item.dispenseQty <= 1} style={{ padding: '0.5rem', borderRadius: '6px', border: 'none', background: 'none', color: 'var(--dash-text-primary)' }}><Minus size={14} /></button>
                         <input
                           type="number"
-                          className="dash-input"
-                          style={{ width: '80px', textAlign: 'center' }}
                           value={item.dispenseQty}
                           onChange={(e) => updateQuantity(item.stockId, parseInt(e.target.value) || 1)}
-                          min={1}
-                          max={item.quantity}
+                          style={{ width: '50px', textAlign: 'center', background: 'none', border: 'none', color: 'var(--dash-text-primary)', fontWeight: 700 }}
                         />
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.stockId, item.dispenseQty + 1)}
-                          className="dash-btn dash-btn-sm"
-                          disabled={item.dispenseQty >= item.quantity}
-                        >
-                          <Plus size={14} />
-                        </button>
-                        <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{item.unit}</span>
+                        <button onClick={() => updateQuantity(item.stockId, item.dispenseQty + 1)} disabled={item.dispenseQty >= item.quantity} style={{ padding: '0.5rem', borderRadius: '6px', border: 'none', background: 'none', color: 'var(--dash-text-primary)' }}><Plus size={14} /></button>
                       </div>
+                      <span className="dash-text-muted">{item.unit}</span>
                     </div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
 
-              {/* Recipient Information */}
-              <div className="dash-card" style={{
-                padding: '1rem',
-                marginBottom: '1rem',
-                background: 'rgba(16, 185, 129, 0.1)',
-                borderLeft: '3px solid #10b981'
-              }}>
-                <h4 style={{
-                  fontSize: '0.9375rem',
-                  fontWeight: 600,
-                  color: '#f1f5f9',
-                  margin: '0 0 1rem 0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <User size={18} />
-                  ข้อมูลผู้รับสินค้า
-                </h4>
-
-                <div className="dash-form-group" style={{ marginBottom: '0.75rem' }}>
-                  <label className="dash-label" style={{ fontSize: '0.875rem' }}>
-                    ผู้รับ / ครอบครัว <span className="dash-required">*</span>
-                  </label>
+              <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="dash-form-group">
+                  <label className="dash-label">ผู้รับสินค้า / ครอบครัว <span style={{ color: 'var(--dash-danger)' }}>*</span></label>
                   <input
                     type="text"
                     className="dash-input"
-                    placeholder="ชื่อผู้รับ หรือ หมายเลขครอบครัว"
+                    placeholder="ระบุชื่อหรือรหัสครอบครัว"
                     value={recipient}
                     onChange={(e) => setRecipient(e.target.value)}
-                    style={{ fontSize: '0.875rem' }}
                   />
                 </div>
-
                 <div className="dash-form-group">
-                  <label className="dash-label" style={{ fontSize: '0.875rem' }}>
-                    หมายเหตุ
-                  </label>
+                  <label className="dash-label">หมายเหตุ</label>
                   <textarea
-                    className="dash-input"
+                    className="dash-textarea"
                     rows={2}
-                    placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"
+                    placeholder="รายละเอียดเพิ่มเติม..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    style={{ fontSize: '0.875rem' }}
                   />
-                </div>
-              </div>
-
-              {/* Summary */}
-              <div style={{
-                padding: '1rem',
-                background: 'rgba(59, 130, 246, 0.1)',
-                borderRadius: '12px',
-                marginBottom: '1rem'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  color: '#cbd5e1'
-                }}>
-                  <span>รายการทั้งหมด</span>
-                  <span style={{ fontWeight: 700 }}>{dispenseList.length} รายการ</span>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  color: '#f1f5f9',
-                  marginTop: '0.5rem'
-                }}>
-                  <span style={{ fontWeight: 600 }}>จำนวนเบิกรวม</span>
-                  <span style={{
-                    fontWeight: 800,
-                    fontSize: '1.25rem',
-                    color: '#3b82f6'
-                  }}>{totalDispense} ชิ้น</span>
                 </div>
               </div>
             </div>
 
-            <button
-              onClick={() => void handleSubmit()}
-              className="dash-btn dash-btn-success dash-btn-lg dash-btn-block"
-              disabled={loading || !recipient.trim()}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              {loading ? (
-                <>🔄 กำลังเบิกจ่าย...</>
-              ) : (
-                <>
-                  <Send size={20} />
-                  ยืนยันเบิกจ่าย
-                </>
-              )}
-            </button>
+            <div style={{ padding: '1.5rem', background: 'rgba(15, 23, 42, 0.6)', borderTop: '1px solid var(--dash-border)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontWeight: 700 }}>
+                <span>รวมทั้งหมด</span>
+                <span style={{ color: 'var(--dash-primary)' }}>{totalDispense} {dispenseList[0]?.unit || 'ชิ้น'}</span>
+              </div>
+              <button
+                onClick={() => void handleSubmit()}
+                className="dash-btn dash-btn-success dash-btn-block dash-btn-lg"
+                disabled={loading || !recipient.trim() || dispenseList.length === 0}
+              >
+                {loading ? '🔄 กำลังบันทึก...' : <><Send size={18} /> ยืนยันการเบิกจ่าย</>}
+              </button>
+            </div>
           </div>
         )}
       </div>
+
+      <style jsx global>{`
+        @media (max-width: 1024px) {
+          .dash-grid[style*="repeat(auto-fit, minmax(280px, 1fr))"] {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          }
+        }
+        @media (max-width: 900px) {
+          .dash-grid[style*="420px"] {
+            grid-template-columns: 1fr !important;
+          }
+          /* On mobile, make the list section fixed bottom or full width */
+        }
+      `}</style>
     </DashboardLayout>
   );
 }
