@@ -513,7 +513,7 @@ export default function SheltersPage() {
                                             className="dash-input"
                                             value={formData.province}
                                             disabled
-                                            style={{ backgroundColor: '#1e293b', color: '#94a3b8' }}
+                                            style={{ backgroundColor: 'var(--dash-bg-tertiary)', color: 'var(--dash-text-muted)' }}
                                         />
                                         <small style={{ color: '#94a3b8' }}>จังหวัดคงที่: ศรีสะเกษ</small>
                                     </div>

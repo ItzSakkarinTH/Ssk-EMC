@@ -661,6 +661,14 @@
     color: #1e293b;
 }
 
+[data-theme="light"] .stepSubtitle {
+    color: #475569;
+}
+
+[data-theme="light"] .stepLine {
+    background: #e2e8f0;
+}
+
 [data-theme="light"] .searchInput,
 [data-theme="light"] .input,
 [data-theme="light"] .select,
@@ -710,4 +718,18 @@
 
 [data-theme="light"] .btnSecondary:hover:not(:disabled) {
     background: #f1f5f9;
+}
+
+/* Fix active steps and badges in light mode */
+[data-theme="light"] .stepActive .stepNumber {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff !important;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+[data-theme="light"] .unitBadge {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border-color: rgba(59, 130, 246, 0.2);
 }

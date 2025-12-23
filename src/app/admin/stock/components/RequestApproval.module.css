@@ -355,3 +355,11 @@
 [data-theme="light"] .filterButton:hover {
     background: #f1f5f9;
 }
+
+/* Fix active state in light mode */
+[data-theme="light"] .filterButton.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff !important;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}

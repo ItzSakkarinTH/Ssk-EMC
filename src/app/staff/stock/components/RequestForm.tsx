@@ -234,7 +234,7 @@ export default function RequestForm({ onSuccess }: Props) {
                   <h3 style={{
                     fontSize: '1.125rem',
                     fontWeight: 600,
-                    color: '#f1f5f9',
+                    color: 'var(--dash-text-primary)',
                     margin: '0 0 0.5rem 0'
                   }}>
                     {item.itemName}
@@ -363,7 +363,7 @@ export default function RequestForm({ onSuccess }: Props) {
               <div key={item._id} className="dash-card" style={{
                 padding: '1rem',
                 marginBottom: '1rem',
-                background: 'rgba(15, 23, 42, 0.5)'
+                background: 'var(--dash-bg-tertiary)'
               }}>
                 <div style={{
                   display: 'flex',
@@ -375,7 +375,7 @@ export default function RequestForm({ onSuccess }: Props) {
                     <h4 style={{
                       fontSize: '0.9375rem',
                       fontWeight: 600,
-                      color: '#f1f5f9',
+                      color: 'var(--dash-text-primary)',
                       margin: '0 0 0.25rem 0'
                     }}>
                       {item.itemName}

@@ -448,3 +448,13 @@
 [data-theme="light"] .refCode {
     background: #f1f5f9;
 }
+
+/* Fix active states in light mode */
+[data-theme="light"] .filterBtn.active,
+[data-theme="light"] .perPageBtn.active,
+[data-theme="light"] .pageNumBtn.active {
+    background: #3b82f6;
+    color: #ffffff !important;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import { Package, Clock, User, MapPin, CheckCircle2, XCircle, AlertTriangle, FileText } from 'lucide-react';
 
@@ -41,11 +41,7 @@ export default function RequestApproval() {
   const [adminNotes, setAdminNotes] = useState('');
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    void fetchRequests();
-  }, []);
-
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       const token = localStorage.getItem('accessToken');
       const res = await fetch('/api/stock/admin/requests?status=pending', {
@@ -60,7 +56,11 @@ export default function RequestApproval() {
       console.error('Failed to fetch requests', err);
       showError('ไม่สามารถโหลดรายการคำขอได้');
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    void fetchRequests();
+  }, [fetchRequests]);
 
   const viewRequest = async (requestId: string) => {
     try {
@@ -173,7 +173,7 @@ export default function RequestApproval() {
     return (
       <div className="dash-card" style={{ padding: '4rem', textAlign: 'center' }}>
         <Package size={80} style={{ opacity: 0.3, marginBottom: '1.5rem' }} />
-        <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: '#f1f5f9', marginBottom: '0.5rem' }}>
+        <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--dash-text-primary)', marginBottom: '0.5rem' }}>
           ไม่มีคำขอรอพิจารณา
         </h3>
         <p style={{ color: '#94a3b8' }}>
@@ -226,7 +226,7 @@ export default function RequestApproval() {
                   <h3 style={{
                     fontSize: '1.125rem',
                     fontWeight: 600,
-                    color: '#f1f5f9',
+                    color: 'var(--dash-text-primary)',
                     marginBottom: '0.25rem'
                   }}>
                     {req.requestNumber}
@@ -262,19 +262,19 @@ export default function RequestApproval() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                   <MapPin size={16} style={{ color: '#3b82f6', flexShrink: 0 }} />
-                  <span style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                  <span style={{ color: 'var(--dash-text-secondary)', fontSize: '0.9375rem' }}>
                     {req.shelter.name}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                   <User size={16} style={{ color: '#8b5cf6', flexShrink: 0 }} />
-                  <span style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                  <span style={{ color: 'var(--dash-text-secondary)', fontSize: '0.9375rem' }}>
                     {req.requestedBy.name}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                   <Package size={16} style={{ color: '#22c55e', flexShrink: 0 }} />
-                  <span style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                  <span style={{ color: 'var(--dash-text-secondary)', fontSize: '0.9375rem' }}>
                     {req.itemCount} รายการ
                   </span>
                 </div>
@@ -396,7 +396,7 @@ export default function RequestApproval() {
                     className="dash-card"
                     style={{
                       padding: '1.25rem',
-                      background: 'rgba(15, 23, 42, 0.5)'
+                      background: 'var(--dash-bg-tertiary)'
                     }}
                   >
                     <div style={{
@@ -408,7 +408,7 @@ export default function RequestApproval() {
                       <h4 style={{
                         fontSize: '1rem',
                         fontWeight: 600,
-                        color: '#f1f5f9',
+                        color: 'var(--dash-text-primary)',
                         margin: 0
                       }}>
                         {item.itemName}
@@ -434,7 +434,7 @@ export default function RequestApproval() {
                       }}>
                         เหตุผล:
                       </div>
-                      <div style={{ color: '#cbd5e1', fontSize: '0.9375rem' }}>
+                      <div style={{ color: 'var(--dash-text-secondary)', fontSize: '0.9375rem' }}>
                         {item.reason}
                       </div>
                     </div>

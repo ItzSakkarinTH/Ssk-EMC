@@ -691,6 +691,24 @@
     background: #f1f5f9;
 }
 
+[data-theme="light"] .topStockQty strong {
+    color: #1e293b;
+}
+
+[data-theme="light"] .alertCritical {
+    background: #fef2f2;
+    border-color: #fee2e2;
+    color: #991b1b;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .alertWarning {
+    background: #fffbeb;
+    border-color: #fef3c7;
+    color: #92400e;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
 [data-theme="light"] .topStockQty span {
     color: #64748b;
 }

@@ -686,3 +686,27 @@
 [data-theme="light"] .stockName {
     color: #1e293b;
 }
+
+[data-theme="light"] .alertCritical {
+    background: #fef2f2;
+    border-color: #fee2e2;
+    color: #991b1b;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+[data-theme="light"] .alertWarning {
+    background: #fffbeb;
+    border-color: #fef3c7;
+    color: #92400e;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+[data-theme="light"] .cardLabel {
+    color: #64748b;
+}
+
+[data-theme="light"] .stockQuantity {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
