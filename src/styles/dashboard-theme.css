@@ -528,6 +528,11 @@
     background: linear-gradient(135deg, var(--dash-danger) 0%, #dc2626 100%);
 }
 
+.dash-stat-icon-info {
+    background: linear-gradient(135deg, var(--dash-info) 0%, #2563eb 100%);
+}
+
+
 .dash-stat-content {
     flex: 1;
 }

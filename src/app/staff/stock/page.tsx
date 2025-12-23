@@ -91,7 +91,7 @@ export default function StaffStockDashboard() {
 
   return (
     <DashboardLayout
-      title="📊 แดชบอร์ด"
+      title="สต็อกข้อมูล"
       subtitle={stats?.shelterName ? `ศูนย์พักพิง: ${stats.shelterName}` : "ศูนย์พักพิงของคุณ"}
     >
       {/* Main Grid Layout */}

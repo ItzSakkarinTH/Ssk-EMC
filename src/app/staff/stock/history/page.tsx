@@ -7,13 +7,16 @@ import {
   Package,
   TrendingUp,
   TrendingDown,
-  ArrowRight,
+  ArrowLeftRight,
   Calendar,
   Search,
   Filter,
   ChevronLeft,
   ChevronRight,
-  ArrowLeft
+  ArrowLeft,
+  User,
+  FileText,
+  Clock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -165,26 +168,26 @@ export default function StaffHistoryPage() {
   const getMovementIcon = (type: string) => {
     switch (type) {
       case 'receive':
-        return <TrendingDown size={16} />;
-      case 'dispense':
         return <TrendingUp size={16} />;
+      case 'dispense':
+        return <TrendingDown size={16} />;
       case 'transfer':
-        return <ArrowRight size={16} />;
+        return <ArrowLeftRight size={16} />;
       default:
         return <Package size={16} />;
     }
   };
 
-  const getMovementColor = (type: string) => {
+  const getMovementBadgeClass = (type: string) => {
     switch (type) {
       case 'receive':
-        return '#22c55e';
+        return 'dash-badge-success';
       case 'dispense':
-        return '#ef4444';
+        return 'dash-badge-danger';
       case 'transfer':
-        return '#3b82f6';
+        return 'dash-badge-info';
       default:
-        return '#64748b';
+        return '';
     }
   };
 
@@ -241,7 +244,7 @@ export default function StaffHistoryPage() {
         </div>
         <div className="dash-stat-card">
           <div className="dash-stat-icon dash-stat-icon-success">
-            <TrendingDown size={24} />
+            <TrendingUp size={24} />
           </div>
           <div className="dash-stat-content">
             <div className="dash-stat-value">
@@ -252,7 +255,7 @@ export default function StaffHistoryPage() {
         </div>
         <div className="dash-stat-card">
           <div className="dash-stat-icon dash-stat-icon-danger">
-            <TrendingUp size={24} />
+            <TrendingDown size={24} />
           </div>
           <div className="dash-stat-content">
             <div className="dash-stat-value">
@@ -263,7 +266,7 @@ export default function StaffHistoryPage() {
         </div>
         <div className="dash-stat-card">
           <div className="dash-stat-icon dash-stat-icon-info">
-            <ArrowRight size={24} />
+            <ArrowLeftRight size={24} />
           </div>
           <div className="dash-stat-content">
             <div className="dash-stat-value">
@@ -274,55 +277,76 @@ export default function StaffHistoryPage() {
         </div>
       </div>
 
-      {/* Search & Filters */}
-      <div className="dash-card">
-        <div className="dash-grid dash-grid-3">
-          <div className="dash-form-group">
-            <label className="dash-label">
-              <Search size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              ค้นหาประวัติ
-            </label>
+      <div className="dash-card" style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Search */}
+          <div style={{ position: 'relative' }}>
+            <Search size={20} style={{
+              position: 'absolute',
+              left: '1rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--dash-text-muted)',
+              zIndex: 1
+            }} />
             <input
               type="text"
               className="dash-input"
-              placeholder="สินค้า, ผู้รับ, เอกสาร..."
+              placeholder="ค้นหาสินค้า, ผู้ส่ง/รับ, เลขที่เอกสาร..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ paddingLeft: '3rem' }}
             />
           </div>
 
-          <div className="dash-form-group">
-            <label className="dash-label">
-              <Filter size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              ประเภทรายการ
-            </label>
-            <select
-              className="dash-select"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as 'all' | 'receive' | 'transfer' | 'dispense')}
-            >
-              <option value="all">ทั้งหมด</option>
-              <option value="receive">📥 รับเข้า</option>
-              <option value="dispense">📤 จ่ายออก</option>
-              <option value="transfer">🔄 โอน</option>
-            </select>
-          </div>
+          <div className="dash-grid dash-grid-2">
+            {/* Type Filter */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="dash-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Filter size={16} /> ประเภทรายการ
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {[
+                  { value: 'all', label: 'ทั้งหมด' },
+                  { value: 'receive', label: '📥 รับเข้า' },
+                  { value: 'dispense', label: '📤 จ่ายออก' },
+                  { value: 'transfer', label: '🔄 โอน' }
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setTypeFilter(opt.value as 'all' | 'receive' | 'transfer' | 'dispense')}
+                    className={`dash-btn ${typeFilter === opt.value ? 'dash-btn-primary' : 'dash-btn-secondary'}`}
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8125rem' }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          <div className="dash-form-group">
-            <label className="dash-label">
-              <Calendar size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              ช่วงเวลา
-            </label>
-            <select
-              className="dash-select"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as 'all' | 'today' | 'week' | 'month')}
-            >
-              <option value="all">ทั้งหมด</option>
-              <option value="today">วันนี้</option>
-              <option value="week">7 วันที่ผ่านมา</option>
-              <option value="month">30 วันที่ผ่านมา</option>
-            </select>
+            {/* Date Filter */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div className="dash-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Calendar size={16} /> ช่วงเวลา
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {[
+                  { value: 'all', label: 'ทั้งหมด' },
+                  { value: 'today', label: 'วันนี้' },
+                  { value: 'week', label: '7 วัน' },
+                  { value: 'month', label: '30 วัน' }
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setDateFilter(opt.value as 'all' | 'today' | 'week' | 'month')}
+                    className={`dash-btn ${dateFilter === opt.value ? 'dash-btn-primary' : 'dash-btn-secondary'}`}
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8125rem' }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -346,72 +370,81 @@ export default function StaffHistoryPage() {
           </div>
         </div>
 
-        <div style={{ overflowX: 'auto' }}>
-          <table className="dash-table">
-            <thead>
-              <tr>
-                <th>ประเภท</th>
-                <th>สินค้า</th>
-                <th>จำนวน</th>
-                <th>จาก</th>
-                <th>ไปยัง</th>
-                <th>ผู้บันทึก</th>
-                <th>วันเวลา</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedMovements.map((movement) => {
-                const itemName = movement.itemName || movement.stockId?.itemName || 'N/A';
-                const color = getMovementColor(movement.movementType);
-                const label = getMovementLabel(movement.movementType);
+        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {paginatedMovements.map((movement) => {
+            const itemName = movement.itemName || movement.stockId?.itemName || 'N/A';
+            const badgeClass = getMovementBadgeClass(movement.movementType);
+            const label = getMovementLabel(movement.movementType);
 
-                return (
-                  <tr key={movement._id}>
-                    <td>
-                      <div className="dash-badge" style={{
-                        background: `${color}20`,
-                        color: color,
-                        border: `1px solid ${color}40`,
-                        gap: '0.4rem',
-                        fontWeight: 700
-                      }}>
-                        {getMovementIcon(movement.movementType)}
-                        {label}
+            return (
+              <div key={movement._id} style={{
+                background: 'rgba(30, 41, 59, 0.4)',
+                border: '1px solid var(--dash-border)',
+                borderRadius: '12px',
+                padding: '1.25rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                transition: 'all 0.2s ease',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div className={`dash-badge ${badgeClass}`} style={{ padding: '0.4rem 0.8rem' }}>
+                      {getMovementIcon(movement.movementType)}
+                      {label}
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--dash-text-primary)' }}>{itemName}</div>
+                      <div className="dash-text-muted" style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <Clock size={12} /> {getRelativeTime(movement.createdAt)} ({formatDate(movement.createdAt)})
                       </div>
-                    </td>
-                    <td style={{ fontWeight: 600 }}>{itemName}</td>
-                    <td>
-                      <span style={{
-                        fontWeight: 800,
-                        color: movement.movementType === 'receive' ? 'var(--dash-success)' : movement.movementType === 'dispense' ? 'var(--dash-danger)' : 'var(--dash-primary)'
-                      }}>
-                        {movement.movementType === 'receive' ? '+' : movement.movementType === 'dispense' ? '-' : ''}
-                        {movement.quantity.toLocaleString()}
-                      </span>
-                      <span className="dash-text-muted" style={{ marginLeft: '0.4rem', fontSize: '0.8rem' }}>{movement.unit}</span>
-                    </td>
-                    <td><span className="dash-text-secondary">{movement.from?.name || '-'}</span></td>
-                    <td><span className="dash-text-secondary">{movement.to?.name || '-'}</span></td>
-                    <td><span className="dash-text-secondary">{movement.performedBy?.name || movement.performedBy?.username || 'N/A'}</span></td>
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 600 }}>{getRelativeTime(movement.createdAt)}</span>
-                        <span className="dash-text-muted" style={{ fontSize: '0.75rem' }}>{formatDate(movement.createdAt)}</span>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {paginatedMovements.length === 0 && (
-                <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '4rem' }}>
-                    <Package size={48} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
-                    <p className="dash-text-muted">ไม่พบประวัติการเคลื่อนไหว</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{
+                      fontSize: '1.25rem',
+                      fontWeight: 900,
+                      color: movement.movementType === 'receive' ? 'var(--dash-success)' : movement.movementType === 'dispense' ? 'var(--dash-danger)' : 'var(--dash-primary)'
+                    }}>
+                      {movement.movementType === 'receive' ? '+' : movement.movementType === 'dispense' ? '-' : ''}
+                      {movement.quantity.toLocaleString()}
+                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dash-text-muted)', marginLeft: '0.25rem' }}>{movement.unit}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="dash-grid dash-grid-4" style={{ gap: '0.75rem' }}>
+                  <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="dash-text-muted">จาก:</span> <strong>{movement.from?.name || '-'}</strong>
+                  </div>
+                  <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span className="dash-text-muted">ไปยัง:</span> <strong>{movement.to?.name || '-'}</strong>
+                  </div>
+                  <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <User size={14} className="dash-text-muted" /> <strong>{movement.performedBy?.name || movement.performedBy?.username || 'N/A'}</strong>
+                  </div>
+                  {movement.referenceId && (
+                    <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <FileText size={14} className="dash-text-muted" /> <span>เอกสาร: {movement.referenceId}</span>
+                    </div>
+                  )}
+                </div>
+
+                {movement.notes && (
+                  <div style={{ fontSize: '0.8125rem', padding: '0.75rem', background: 'rgba(30, 41, 59, 0.6)', borderRadius: '8px', color: 'var(--dash-text-secondary)', borderLeft: '3px solid var(--dash-primary)' }}>
+                    <strong>หมายเหตุ:</strong> {movement.notes}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {paginatedMovements.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '4rem' }}>
+              <Package size={48} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
+              <p className="dash-text-muted">ไม่พบประวัติการเคลื่อนไหว</p>
+            </div>
+          )}
         </div>
 
         {/* Pagination */}
