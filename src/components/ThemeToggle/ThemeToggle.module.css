@@ -1,0 +1,66 @@
+.toggleButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.toggleButton:hover {
+    background: var(--color-primary-light);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon {
+    transition: transform 0.3s ease;
+}
+
+.toggleButton:hover .icon {
+    transform: rotate(15deg);
+}
+
+.label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+/* Expanded version for sidebar */
+.toggleButtonExpanded {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    justify-content: flex-start;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+}
+
+.toggleButtonExpanded:hover {
+    background: var(--sidebar-hover);
+    border: none;
+    color: var(--sidebar-text);
+}
+
+/* Compact version for header */
+.compact {
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: transparent;
+    border: none;
+}
+
+.compact:hover {
+    background: var(--color-primary-light);
+}

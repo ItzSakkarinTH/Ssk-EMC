@@ -174,3 +174,42 @@
         font-size: 0.8125rem;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .announcement-banner-title {
+    color: #1e293b;
+}
+
+[data-theme="light"] .announcement-banner-message {
+    color: #475569;
+}
+
+[data-theme="light"] .announcement-banner-close {
+    background: rgba(0, 0, 0, 0.05);
+    color: #64748b;
+}
+
+[data-theme="light"] .announcement-banner-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+}
+
+[data-theme="light"] .announcement-banner-dots {
+    border-top-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .announcement-banner-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.05) 100%);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="light"] .announcement-banner-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.05) 100%);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+[data-theme="light"] .announcement-banner-urgent {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%);
+    border-color: rgba(239, 68, 68, 0.2);
+}

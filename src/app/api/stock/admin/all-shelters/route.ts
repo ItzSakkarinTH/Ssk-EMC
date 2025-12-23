@@ -3,7 +3,16 @@ import dbConnect from '@/lib/db/mongodb';
 import { withAdminAuth } from '@/lib/auth/rbac';
 import Stock, { IStock, IShelterStock } from '@/lib/db/models/Stock';
 import Shelter, { IShelter } from '@/lib/db/models/Shelter';
+import User from '@/lib/db/models/User';
 import { Types } from 'mongoose';
+
+interface StaffInfo {
+  _id: Types.ObjectId;
+  name: string;
+  username: string;
+  email: string;
+  assignedShelterId: Types.ObjectId;
+}
 
 export async function GET(req: NextRequest) {
   return withAdminAuth(req, async () => {
@@ -15,6 +24,25 @@ export async function GET(req: NextRequest) {
 
       // ดึงสต๊อกทั้งหมด
       const allStocks = await Stock.find({}).lean() as unknown as (IStock & { _id: Types.ObjectId })[];
+
+      // ดึง staff ทั้งหมดที่ถูก assign ให้ศูนย์พักพิง
+      const staffUsers = await User.find({
+        role: 'staff',
+        assignedShelterId: { $ne: null },
+        isActive: true
+      }).select('name username email assignedShelterId').lean() as unknown as StaffInfo[];
+
+      // สร้าง map ของ shelterId -> staff info
+      const shelterStaffMap = new Map<string, StaffInfo[]>();
+      staffUsers.forEach(staff => {
+        const shelterId = staff.assignedShelterId?.toString();
+        if (shelterId) {
+          if (!shelterStaffMap.has(shelterId)) {
+            shelterStaffMap.set(shelterId, []);
+          }
+          shelterStaffMap.get(shelterId)!.push(staff);
+        }
+      });
 
       if (!shelters) {
         return NextResponse.json({ shelters: [], summary: null });
@@ -94,7 +122,8 @@ export async function GET(req: NextRequest) {
           },
           status,
           categoryBreakdown,
-          contactPerson: shelter.contactPerson || { name: '', phone: '' }
+          contactPerson: shelter.contactPerson || { name: '', phone: '' },
+          assignedStaff: shelterStaffMap.get(shelter._id.toString()) || []
         };
       });
 

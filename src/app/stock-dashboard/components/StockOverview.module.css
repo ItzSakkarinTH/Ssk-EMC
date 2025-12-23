@@ -224,3 +224,33 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .mainValue {
+  color: #1e293b;
+}
+
+[data-theme="light"] .progressTrack {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .metricCard {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .metricValue {
+  color: #1e293b;
+}
+
+[data-theme="light"] .loadingState {
+  color: #94a3b8;
+}

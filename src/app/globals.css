@@ -1,27 +1,141 @@
+/* ===== Theme Variables ===== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Color Palette - Light Mode */
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: rgba(59, 130, 246, 0.15);
+  --color-secondary: #8b5cf6;
+  --color-secondary-light: rgba(139, 92, 246, 0.15);
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-success-light: rgba(16, 185, 129, 0.15);
+  --color-warning: #f59e0b;
+  --color-warning-light: rgba(245, 158, 11, 0.15);
+  --color-danger: #ef4444;
+  --color-danger-light: rgba(239, 68, 68, 0.15);
+  --color-info: #06b6d4;
+  --color-info-light: rgba(6, 182, 212, 0.15);
+
+  /* Font */
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ===== Light Theme ===== */
+[data-theme="light"] {
+  /* Background */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-input: #f8fafc;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Border */
+  --border-color: #e2e8f0;
+  --border-light: rgba(0, 0, 0, 0.1);
+  --border-focus: #3b82f6;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+
+  /* Sidebar */
+  --sidebar-bg: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  --sidebar-text: #e2e8f0;
+  --sidebar-text-muted: #94a3b8;
+  --sidebar-hover: rgba(59, 130, 246, 0.1);
+  --sidebar-active: rgba(59, 130, 246, 0.2);
+
+  /* Dashboard specific */
+  --dash-bg: #f1f5f9;
+  --dash-card-bg: #ffffff;
+  --dash-card-border: #e2e8f0;
+  --dash-header-bg: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+
+  /* Accent backgrounds */
+  --accent-blue: rgba(59, 130, 246, 0.1);
+  --accent-purple: rgba(139, 92, 246, 0.1);
+  --accent-green: rgba(16, 185, 129, 0.1);
+  --accent-orange: rgba(245, 158, 11, 0.1);
+  --accent-red: rgba(239, 68, 68, 0.1);
 }
 
+/* ===== Dark Theme (Default) ===== */
+[data-theme="dark"] {
+  /* Background */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --bg-card: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  --bg-card-hover: linear-gradient(135deg, rgba(30, 41, 59, 1) 0%, rgba(20, 30, 50, 1) 100%);
+  --bg-input: rgba(15, 23, 42, 0.8);
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #0f172a;
+
+  /* Border */
+  --border-color: rgba(148, 163, 184, 0.15);
+  --border-light: rgba(148, 163, 184, 0.1);
+  --border-focus: #3b82f6;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.5);
+
+  /* Sidebar */
+  --sidebar-bg: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+  --sidebar-text: #e2e8f0;
+  --sidebar-text-muted: #64748b;
+  --sidebar-hover: rgba(59, 130, 246, 0.15);
+  --sidebar-active: rgba(59, 130, 246, 0.25);
+
+  /* Dashboard specific */
+  --dash-bg: #0f172a;
+  --dash-card-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  --dash-card-border: rgba(148, 163, 184, 0.15);
+  --dash-header-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+
+  /* Accent backgrounds */
+  --accent-blue: rgba(59, 130, 246, 0.15);
+  --accent-purple: rgba(139, 92, 246, 0.15);
+  --accent-green: rgba(16, 185, 129, 0.15);
+  --accent-orange: rgba(245, 158, 11, 0.15);
+  --accent-red: rgba(239, 68, 68, 0.15);
+}
+
+/* ===== Base Styles ===== */
 html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 * {
@@ -35,8 +149,133 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* ===== Scrollbar Styles ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* ===== Common Utility Classes ===== */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Theme transition for smooth switching */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Disable transitions on page load to prevent flash */
+.no-transition * {
+  transition: none !important;
+}
+
+/* ===== Form Elements ===== */
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* ===== Focus States ===== */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ===== Selection ===== */
+::selection {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* ===== Animation Keyframes ===== */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }

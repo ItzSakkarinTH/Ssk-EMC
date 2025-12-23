@@ -498,3 +498,137 @@
     gap: 1rem;
   }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .dashboardContainer {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+[data-theme="light"] .topBar {
+  border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .topBarTitle {
+  color: #1e293b;
+}
+
+[data-theme="light"] .topBarSubtitle {
+  color: #64748b;
+}
+
+[data-theme="light"] .topBarButton {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #3b82f6;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .topBarButton:hover {
+  background: #f8fafc;
+  border-color: #3b82f6;
+  color: #2563eb;
+}
+
+[data-theme="light"] .statsCardNew {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .statsLabelNew {
+  color: #64748b;
+}
+
+[data-theme="light"] .statsNumberNew {
+  color: #1e293b;
+}
+
+[data-theme="light"] .statsUnitNew {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .chartCard {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .chartTitle {
+  color: #1e293b;
+}
+
+[data-theme="light"] .legendItem {
+  color: #64748b;
+}
+
+[data-theme="light"] .barLabel {
+  color: #475569;
+}
+
+[data-theme="light"] .barContainer {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .barValue {
+  color: #1e293b;
+}
+
+[data-theme="light"] .shortageCard {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .sectionTitleNew {
+  color: #1e293b;
+}
+
+[data-theme="light"] .shortageItemNew {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .shortageNameNew {
+  color: #1e293b;
+}
+
+[data-theme="light"] .shortageQuantityNew {
+  color: #64748b;
+}
+
+[data-theme="light"] .shelterStatusCard {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .shelterStatItem {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .shelterStatLabelNew {
+  color: #64748b;
+}
+
+[data-theme="light"] .shelterStatNumberNew {
+  color: #1e293b;
+}
+
+[data-theme="light"] .shelterStatUnitNew {
+  color: #94a3b8;
+}
+
+[data-theme="light"] .statsCardPurple {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(99, 102, 241, 0.05) 100%);
+}
+
+[data-theme="light"] .statsCardBrown {
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.08) 0%, rgba(92, 41, 12, 0.05) 100%);
+}
+
+[data-theme="light"] .statsCardRed {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%);
+}

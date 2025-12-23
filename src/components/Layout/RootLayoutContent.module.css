@@ -9,8 +9,13 @@
     flex: 1;
     margin-left: 280px;
     /* Sidebar width */
-    background-color: #0f172a;
+    background-color: var(--dash-bg-primary, #0f172a);
     min-height: 100vh;
+    transition: background-color 0.3s ease;
+}
+
+[data-theme="light"] .mainContent {
+    background-color: #f1f5f9;
 }
 
 @media (max-width: 768px) {

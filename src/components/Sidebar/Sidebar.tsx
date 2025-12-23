@@ -19,14 +19,18 @@ import {
     BarChart3,
     Megaphone,
     Wrench,
-    History
+    History,
+    Sun,
+    Moon
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
     const pathname = usePathname();
     const { user, isAuthenticated, logout } = useAuth();
+    const { toggleTheme, isDark } = useTheme();
 
     // กำหนด nav items ตาม role
     const getNavItems = () => {
@@ -176,6 +180,18 @@ export default function Sidebar() {
                     </div>
                 ))}
             </nav>
+
+            {/* Theme Toggle */}
+            <div className={styles.themeToggle}>
+                <button
+                    onClick={toggleTheme}
+                    className={styles.themeBtn}
+                    title={isDark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด'}
+                >
+                    {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    <span>{isDark ? 'โหมดสว่าง' : 'โหมดมืด'}</span>
+                </button>
+            </div>
 
             {/* Footer */}
             <div className={styles.footer}>

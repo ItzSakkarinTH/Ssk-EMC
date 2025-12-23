@@ -154,3 +154,24 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(59, 130, 246, 0.3);
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .shelterCard {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .sName {
+  color: #1e293b;
+}
+
+[data-theme="light"] .restrictedBoard {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .restrictedTitle {
+  color: #1e293b;
+}
