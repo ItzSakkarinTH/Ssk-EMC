@@ -274,3 +274,42 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .filterSection {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .filterHeader {
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .filterStats {
+    border-top-color: #e2e8f0;
+}
+
+[data-theme="light"] .shelterCard {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .shelterCard:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .capacitySection {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .progressBar {
+    background: #f1f5f9;
+}
+
+[data-theme="light"] .contactInfo {
+    background: #f1f5f9;
+}

@@ -369,3 +369,74 @@
         order: -1;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .summaryCard {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .summaryCard:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .filterSection {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .filterBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .filterBtn:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .perPageBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .perPageBtn:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .tableWrapper {
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .table {
+    background: #ffffff;
+}
+
+[data-theme="light"] .table thead {
+    background: #f8fafc;
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .table td {
+    border-bottom-color: #f1f5f9;
+}
+
+[data-theme="light"] .table tbody tr:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .pageBtn,
+[data-theme="light"] .pageNumBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .pageBtn:hover:not(:disabled),
+[data-theme="light"] .pageNumBtn:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .refCode {
+    background: #f1f5f9;
+}

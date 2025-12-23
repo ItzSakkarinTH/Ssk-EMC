@@ -294,3 +294,63 @@
         flex-direction: column;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .container {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .header h2 {
+    color: #1e293b;
+}
+
+[data-theme="light"] .shelterName {
+    color: #64748b;
+}
+
+[data-theme="light"] .refreshBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #3b82f6;
+}
+
+[data-theme="light"] .refreshBtn:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .summaryCard {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .summaryValue {
+    color: #1e293b;
+}
+
+[data-theme="light"] .filters {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .filters select {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+
+[data-theme="light"] .stockItem {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .stockItem:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .itemName,
+[data-theme="light"] .quantity {
+    color: #1e293b;
+}

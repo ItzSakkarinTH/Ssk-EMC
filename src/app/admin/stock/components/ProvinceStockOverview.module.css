@@ -619,3 +619,70 @@
         font-size: 1.5rem;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .header {
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .card {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .card:hover {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .cardValue {
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+[data-theme="light"] .section {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .section h2 {
+    color: #1e293b;
+}
+
+[data-theme="light"] .categoryCard {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .categoryName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .categoryStats strong {
+    color: #1e293b;
+}
+
+[data-theme="light"] .activityCard {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .activityQty {
+    color: #64748b;
+}
+
+[data-theme="light"] .stockRow {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .stockRow:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .stockName {
+    color: #1e293b;
+}

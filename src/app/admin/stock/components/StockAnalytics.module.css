@@ -713,3 +713,83 @@
         padding: 0.875rem;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .headerSection {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .periodValue {
+    background: linear-gradient(135deg, #1e293b 0%, #475569 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+[data-theme="light"] .periodSelector {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .summaryCard {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .summaryCard:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .summaryIconWrapper {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .summaryValue {
+    color: #1e293b;
+}
+
+[data-theme="light"] .categorySection,
+[data-theme="light"] .topItemsCard,
+[data-theme="light"] .insightsSection {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .sectionTitle,
+[data-theme="light"] .topItemsTitle,
+[data-theme="light"] .insightTitle {
+    color: #1e293b;
+}
+
+[data-theme="light"] .categoryCard,
+[data-theme="light"] .topItemRow,
+[data-theme="light"] .insightCard {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .categoryProgressBg,
+[data-theme="light"] .topItemProgress {
+    background: #e2e8f0;
+}
+
+[data-theme="light"] .categoryStats strong,
+[data-theme="light"] .topItemQty,
+[data-theme="light"] .topItemName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .topItemsHeader {
+    background: #f8fafc;
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .rankSilver {
+    background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+}
+
+[data-theme="light"] .rankDefault {
+    background: #e2e8f0;
+}

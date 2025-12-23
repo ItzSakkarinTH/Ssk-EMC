@@ -1138,3 +1138,72 @@
 [data-theme="light"] .container::-webkit-scrollbar-thumb:hover {
   background: rgba(59, 130, 246, 0.4);
 }
+
+/* ==================== Extra Light Mode Overrides ==================== */
+
+[data-theme="light"] .topActionBar,
+[data-theme="light"] .filterSection {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .pageTitle {
+  color: #1e293b;
+}
+
+[data-theme="light"] .updateTime {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .searchBox,
+[data-theme="light"] .filterBtn {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .searchBox input {
+  color: #1e293b;
+}
+
+[data-theme="light"] .statItem {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .statValue {
+  color: #1e293b;
+}
+
+[data-theme="light"] .card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .shelterName {
+  color: #2563eb;
+}
+
+[data-theme="light"] .stockValue,
+[data-theme="light"] .resourceValue,
+[data-theme="light"] .resourceName {
+  color: #1e293b;
+}
+
+[data-theme="light"] .resourceSection {
+  background: #f8fafc;
+  border-top-color: #e2e8f0;
+  border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .capacityBar,
+[data-theme="light"] .resourceBarBg,
+[data-theme="light"] .progressBar {
+  background: #e2e8f0;
+}
+
+[data-theme="light"] .reportBtn {
+  border-color: #e2e8f0;
+  color: #64748b;
+}
