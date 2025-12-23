@@ -104,6 +104,7 @@ export async function POST(request: NextRequest) {
     // 3. สร้างบันทึกความเคลื่อนไหว (StockMovement)
     const movement = await StockMovement.create({
       stockId: stock._id,
+      itemName: stock.itemName,
       movementType: 'transfer',
       quantity: validatedData.quantity,
       unit: stock.unit,

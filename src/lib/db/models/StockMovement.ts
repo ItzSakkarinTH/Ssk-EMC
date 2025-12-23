@@ -2,7 +2,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 interface ILocation {
-  type: 'provincial' | 'shelter' | 'external' | 'beneficiary';
+  type: 'provincial' | 'shelter' | 'external' | 'beneficiary' | 'adjustment' | 'initial';
   id: mongoose.Types.ObjectId | null;
   name: string;
 }
@@ -15,7 +15,7 @@ interface ISnapshot {
 export interface IStockMovement extends Document {
   stockId: mongoose.Types.ObjectId;
   itemName: string;
-  movementType: 'receive' | 'transfer' | 'dispense';
+  movementType: 'receive' | 'transfer' | 'dispense' | 'adjust' | 'initial';
   quantity: number;
   unit: string;
   from: ILocation;
@@ -32,7 +32,7 @@ export interface IStockMovement extends Document {
 const LocationSchema = new Schema({
   type: {
     type: String,
-    enum: ['provincial', 'shelter', 'external', 'beneficiary'],
+    enum: ['provincial', 'shelter', 'external', 'beneficiary', 'adjustment', 'initial'],
     required: true
   },
   id: { type: Schema.Types.ObjectId, default: null },
@@ -49,7 +49,7 @@ const StockMovementSchema = new Schema<IStockMovement>({
   itemName: { type: String, required: true },
   movementType: {
     type: String,
-    enum: ['receive', 'transfer', 'dispense'],
+    enum: ['receive', 'transfer', 'dispense', 'adjust', 'initial'],
     required: true
   },
   quantity: { type: Number, required: true },
@@ -73,7 +73,7 @@ StockMovementSchema.index({ referenceId: 1 });
 // Static method: สร้าง Movement Log
 StockMovementSchema.statics.logMovement = async function (data: {
   stockId: string;
-  type: 'receive' | 'transfer' | 'dispense';
+  type: 'receive' | 'transfer' | 'dispense' | 'adjust' | 'initial';
   quantity: number;
   unit: string;
   from: ILocation;

@@ -236,20 +236,23 @@ export async function PATCH(request: NextRequest, context: RouteParams) {
         if (quantityDiff !== 0) {
             await StockMovement.create({
                 stockId: stock._id,
-                movementType: 'adjust',
+                itemName: stock.itemName,
+                movementType: 'adjust', // Now supported by improved schema
                 quantity: Math.abs(quantityDiff),
                 unit: stock.unit,
                 from: {
-                    type: quantityDiff > 0 ? 'adjustment' : 'shelter',
+                    type: (quantityDiff > 0 ? 'adjustment' : 'shelter') as 'adjustment' | 'shelter',
                     name: quantityDiff > 0 ? 'ปรับเพิ่ม' : shelter.name
                 },
                 to: {
-                    type: quantityDiff > 0 ? 'shelter' : 'adjustment',
+                    type: (quantityDiff > 0 ? 'shelter' : 'adjustment') as 'shelter' | 'adjustment',
                     id: quantityDiff > 0 ? new mongoose.Types.ObjectId(id) : null,
                     name: quantityDiff > 0 ? shelter.name : 'ปรับลด'
                 },
-                beforeQty: oldQuantity,
-                afterQty: newQuantity,
+                snapshot: {
+                    before: oldQuantity,
+                    after: newQuantity
+                },
                 performedBy: new mongoose.Types.ObjectId(decoded.userId),
                 performedAt: new Date(),
                 notes: notes || `ปรับสต๊อก ${quantityDiff > 0 ? 'เพิ่ม' : 'ลด'} ${Math.abs(quantityDiff)} ${stock.unit}`
