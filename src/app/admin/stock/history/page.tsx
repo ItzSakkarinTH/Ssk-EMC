@@ -21,7 +21,7 @@ interface Movement {
     stockId?: {
         itemName: string;
     };
-    movementType: 'receive' | 'transfer' | 'adjust';
+    movementType: 'receive' | 'transfer';
     quantity: number;
     unit: string;
     from: {
@@ -177,7 +177,7 @@ export default function HistoryPage() {
             case 'transfer':
                 return 'var(--dash-primary)';
             default:
-                return 'var(--dash-warning)';
+                return 'var(--dash-text-muted)';
         }
     };
 
@@ -188,7 +188,7 @@ export default function HistoryPage() {
             case 'transfer':
                 return 'โอน';
             default:
-                return 'ปรับปรุง';
+                return type;
         }
     };
 

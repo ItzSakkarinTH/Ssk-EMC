@@ -19,8 +19,10 @@ export async function GET(request: NextRequest) {
 
         await connectDB();
 
-        // Fetch all movements (receive and transfer), sorted by date descending
-        const movements = await StockMovement.find()
+        // Fetch only receive and transfer movements (exclude adjust)
+        const movements = await StockMovement.find({
+            movementType: { $in: ['receive', 'transfer'] }
+        })
             .populate('stockId', 'itemName')
             .populate('performedBy', 'username name')
             .sort({ performedAt: -1 })
