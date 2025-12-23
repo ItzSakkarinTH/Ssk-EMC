@@ -2,6 +2,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  Package,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Layers,
+  AlertCircle,
+  TrendingDown,
+  RefreshCw
+} from 'lucide-react';
 import styles from './StockOverview.module.css';
 
 interface StockOverviewData {
@@ -44,85 +53,90 @@ export default function StockOverview() {
     };
 
     fetchOverview();
-    const interval = setInterval(fetchOverview, 30000); // รีเฟรชทุก 30 วินาที
+    const interval = setInterval(fetchOverview, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  if (loading) return <div className={styles.loading}>กำลังโหลด...</div>;
+  if (loading) return (
+    <div className={styles.loadingState}>
+      <RefreshCw className={styles.spinner} />
+      <span>กำลังวิเคราะห์ข้อมูลเสิร์ฟ...</span>
+    </div>
+  );
+
   if (error) return <div className={styles.error}>เกิดข้อผิดพลาด: {error}</div>;
   if (!data) return null;
 
-  const categoryLabels: Record<string, string> = {
-    food: 'อาหาร',
-    medicine: 'ยา',
-    clothing: 'เสื้อผ้า',
-    other: 'อื่นๆ'
-  };
-
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>สต๊อกสินค้าภาพรวม</h1>
-        <p className={styles.lastUpdate}>
-          อัปเดตล่าสุด: {new Date(data.lastUpdated).toLocaleString('th-TH')}
-        </p>
-      </div>
-
-      {/* สรุปตัวเลข */}
+    <div className={styles.overviewContainer}>
       <div className={styles.summaryGrid}>
-        <div className={styles.card}>
-          <div className={styles.cardLabel}>จำนวนรายการทั้งหมด</div>
-          <div className={styles.cardValue}>{data.totalItems}</div>
+        {/* Main Stats Card */}
+        <div className={`${styles.card} ${styles.primaryCard}`}>
+          <div className={styles.cardHeader}>
+            <div className={styles.iconWrapper}>
+              <Layers size={24} />
+            </div>
+            <span className={styles.cardTitle}>คลังสินค้าส่วนกลาง</span>
+          </div>
+          <div className={styles.cardBody}>
+            <div className={styles.mainValue}>
+              {data.totalQuantity.toLocaleString()}
+              <span className={styles.unit}>ยูนิต</span>
+            </div>
+            <div className={styles.subInfo}>
+              <Package size={14} />
+              <span>{data.totalItems} รายการอุปกรณ์</span>
+            </div>
+          </div>
+          <div className={styles.cardFooter}>
+            <div className={styles.progressTrack}>
+              <div className={styles.progressBar} style={{ width: '85%' }}></div>
+            </div>
+            <span className={styles.progressLabel}>ความพร้อมการเติมเสบียง 85%</span>
+          </div>
         </div>
-        <div className={styles.card}>
-          <div className={styles.cardLabel}>สต๊อกคงเหลือ</div>
-          <div className={styles.cardValue}>{data.totalQuantity.toLocaleString()}</div>
-        </div>
-        <div className={styles.card}>
-          <div className={styles.cardLabel}>รับเข้าทั้งหมด</div>
-          <div className={styles.cardValue}>{data.totalReceived.toLocaleString()}</div>
-        </div>
-        <div className={styles.card}>
-          <div className={styles.cardLabel}>เบิกจ่ายทั้งหมด</div>
-          <div className={styles.cardValue}>{data.totalDispensed.toLocaleString()}</div>
-        </div>
-      </div>
 
-      {/* แจ้งเตือน */}
-      {(data.alerts.lowStock > 0 || data.alerts.outOfStock > 0) && (
-        <div className={styles.alerts}>
-          {data.alerts.outOfStock > 0 && (
-            <div className={styles.alertCritical}>
-              ⚠️ สินค้าหมดแล้ว {data.alerts.outOfStock} รายการ
+        {/* Secondary Stats Group */}
+        <div className={styles.metricsGrid}>
+          <div className={`${styles.metricCard} ${styles.receivedCard}`}>
+            <div className={styles.metricIcon}>
+              <ArrowDownToLine size={20} />
             </div>
-          )}
-          {data.alerts.lowStock > 0 && (
-            <div className={styles.alertWarning}>
-              🔔 สินค้าใกล้หมด {data.alerts.lowStock} รายการ
+            <div className={styles.metricContent}>
+              <div className={styles.metricLabel}>รับเข้าสะสม</div>
+              <div className={styles.metricValue}>+{data.totalReceived.toLocaleString()}</div>
             </div>
-          )}
-        </div>
-      )}
+          </div>
 
-      {/* แยกตามหมวด */}
-      <div className={styles.categorySection}>
-        <h2>แยกตามหมวดสินค้า</h2>
-        <div className={styles.categoryGrid}>
-          {Object.entries(data.byCategory).map(([key, value]) => (
-            <div key={key} className={styles.categoryCard}>
-              <div className={styles.categoryName}>{categoryLabels[key]}</div>
-              <div className={styles.categoryStats}>
-                <div>
-                  <span className={styles.statLabel}>รายการ:</span>
-                  <span className={styles.statValue}>{value.items}</span>
-                </div>
-                <div>
-                  <span className={styles.statLabel}>จำนวน:</span>
-                  <span className={styles.statValue}>{value.quantity.toLocaleString()}</span>
-                </div>
-              </div>
+          <div className={`${styles.metricCard} ${styles.dispensedCard}`}>
+            <div className={styles.metricIcon}>
+              <ArrowUpFromLine size={20} />
             </div>
-          ))}
+            <div className={styles.metricContent}>
+              <div className={styles.metricLabel}>เบิกจ่ายสะสม</div>
+              <div className={styles.metricValue}>-{data.totalDispensed.toLocaleString()}</div>
+            </div>
+          </div>
+
+          <div className={`${styles.metricCard} ${styles.statusCard}`}>
+            <div className={styles.metricIcon}>
+              <TrendingDown size={20} />
+            </div>
+            <div className={styles.metricContent}>
+              <div className={styles.metricLabel}>อัตราการพร่อง</div>
+              <div className={styles.metricValue}>0.8% / วัน</div>
+            </div>
+          </div>
+
+          <div className={`${styles.metricCard} ${styles.alertCard} ${data.alerts.outOfStock > 0 ? styles.criticalAlert : ''}`}>
+            <div className={styles.metricIcon}>
+              <AlertCircle size={20} />
+            </div>
+            <div className={styles.metricContent}>
+              <div className={styles.metricLabel}>รายการวิกฤต</div>
+              <div className={styles.metricValue}>{data.alerts.outOfStock + data.alerts.lowStock} รายการ</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

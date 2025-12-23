@@ -184,11 +184,11 @@ export default function Sidebar() {
                         <div className={styles.userInfo}>
                             <div className={styles.userAvatar}>
                                 <span className={styles.userInitial}>
-                                    {user.username?.charAt(0).toUpperCase() || 'U'}
+                                    {(user.fullName || user.username)?.charAt(0).toUpperCase() || 'U'}
                                 </span>
                             </div>
                             <div className={styles.userDetails}>
-                                <span className={styles.userName}>{user.username}</span>
+                                <span className={styles.userName}>{user.fullName || user.username}</span>
                                 <span className={styles.userRole}>
                                     {user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'เจ้าหน้าที่ศูนย์'}
                                 </span>

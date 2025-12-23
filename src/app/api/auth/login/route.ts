@@ -52,6 +52,7 @@ export async function POST(request: Request) {
         const accessToken = await JWTService.generateAccessToken({
             userId: user._id.toString(),
             username: user.username,
+            fullName: user.name, // Map 'name' field to 'fullName'
             email: user.email,
             role: user.role,
             assignedShelterId: user.assignedShelterId?.toString(),
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
             user: {
                 id: user._id,
                 username: user.username,
+                fullName: user.name, // Map 'name' field to 'fullName'
                 email: user.email,
                 role: user.role,
                 assignedShelterId: user.assignedShelterId

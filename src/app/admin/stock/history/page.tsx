@@ -21,7 +21,7 @@ interface Movement {
     stockId?: {
         itemName: string;
     };
-    movementType: 'receive' | 'transfer' | 'adjust';
+    movementType: 'receive' | 'transfer';
     quantity: number;
     unit: string;
     from: {
@@ -34,6 +34,7 @@ interface Movement {
     };
     performedBy: {
         username: string;
+        name?: string;
     };
     performedAt: string;
     referenceId: string;
@@ -176,7 +177,7 @@ export default function HistoryPage() {
             case 'transfer':
                 return 'var(--dash-primary)';
             default:
-                return 'var(--dash-warning)';
+                return 'var(--dash-text-muted)';
         }
     };
 
@@ -187,7 +188,7 @@ export default function HistoryPage() {
             case 'transfer':
                 return 'โอน';
             default:
-                return 'ปรับปรุง';
+                return type;
         }
     };
 
@@ -333,7 +334,6 @@ export default function HistoryPage() {
                                     <th>จำนวน</th>
                                     <th>จาก</th>
                                     <th>ไปยัง</th>
-                                    <th>เอกสาร</th>
                                     <th>ผู้บันทึก</th>
                                     <th>วันเวลา</th>
                                 </tr>
@@ -368,10 +368,7 @@ export default function HistoryPage() {
                                             </td>
                                             <td>{movement.from?.name || '-'}</td>
                                             <td>{movement.to?.name || '-'}</td>
-                                            <td>
-                                                <code className={styles.refCode}>{movement.referenceId || '-'}</code>
-                                            </td>
-                                            <td>{movement.performedBy?.username || 'N/A'}</td>
+                                            <td>{movement.performedBy?.name || movement.performedBy?.username || 'N/A'}</td>
                                             <td>
                                                 <div className={styles.dateCell}>
                                                     <div className={styles.relativeTime}>

@@ -23,6 +23,7 @@ const base64UrlDecode = (str: string): string => {
 export interface TokenPayload {
   userId: string;
   username: string;
+  fullName?: string;
   email: string;
   role: 'admin' | 'staff' | 'viewer';
   assignedShelterId?: string;

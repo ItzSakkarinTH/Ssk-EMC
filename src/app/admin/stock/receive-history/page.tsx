@@ -16,6 +16,7 @@ interface Movement {
     };
     performedBy: {
         username: string;
+        name?: string;
     };
     performedAt: string;
     referenceId: string;
@@ -212,7 +213,7 @@ export default function ReceiveHistoryPage() {
                                 )}
                                 <div className={styles.historyDetail}>
                                     <User size={16} />
-                                    <span>บันทึกโดย: {movement.performedBy?.username || 'N/A'}</span>
+                                    <span>บันทึกโดย: {movement.performedBy?.name || movement.performedBy?.username || 'N/A'}</span>
                                 </div>
                             </div>
 

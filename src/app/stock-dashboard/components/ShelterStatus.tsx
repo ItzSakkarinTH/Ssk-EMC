@@ -1,7 +1,13 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  ShieldAlert,
+  CheckCircle2,
+  Navigation,
+  Lock,
+  Zap
+} from 'lucide-react';
 import styles from './ShelterStatus.module.css';
 
 interface ShelterSummary {
@@ -17,15 +23,15 @@ export default function ShelterStatus() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // ใช้ public API ที่ไม่เปิดเผยรายละเอียด แค่แสดงสถานะทั่วไป
         const res = await fetch('/api/stock/public/overview');
         if (res.ok) {
-          // ในระบบจริงควรมี API แยกสำหรับ public shelter status
-          // ที่ไม่เปิดเผยข้อมูลละเอียด
+          // Public overview doesn't include shelter names usually, 
+          // so we keep it as empty to show the premium placeholder 
+          // or we can fetch a specific public list if available.
           setShelters([]);
         }
-      } catch (err) {
-        console.error('Failed to fetch');
+      } catch {
+        console.error('Failed to fetch alerts');
       } finally {
         setLoading(false);
       }
@@ -35,71 +41,70 @@ export default function ShelterStatus() {
   }, []);
 
   if (loading) return null;
+
   if (shelters.length === 0) {
     return (
-      <div className={styles.container}>
-        <h2>สถานะศูนย์พักพิง</h2>
-        <div className={styles.placeholder}>
-          <p>ข้อมูลสถานะศูนย์พักพิงจะแสดงเฉพาะผู้มีสิทธิ์</p>
-          <p className={styles.note}>
-            เข้าสู่ระบบเพื่อดูรายละเอียด
-          </p>
+      <div className={styles.restrictedBoard}>
+        <div className={styles.lockIcon}>
+          <Lock size={32} />
         </div>
+        <h3 className={styles.restrictedTitle}>ข้อมูลระดับความมั่นคง</h3>
+        <p className={styles.restrictedText}>
+          รายละเอียดความเคลื่อนไหวภายในศูนย์พักพิง
+          สงวนสิทธิ์เฉพาะหน่วยงานบริหารและเจ้าหน้าที่จังหวัด
+        </p>
+        <button className={styles.loginHint}>เข้าสู่ระบบเพื่อตรวจสอบสถานะรายศูนย์</button>
       </div>
     );
   }
 
-  const statusColors: Record<string, string> = {
-    normal: styles.normal,
-    tight: styles.tight,
-    critical: styles.critical
+  const statusIcons: Record<string, React.ElementType> = {
+    normal: CheckCircle2,
+    tight: Zap,
+    critical: ShieldAlert
   };
 
   const statusLabels: Record<string, string> = {
-    normal: 'ปกติ',
-    tight: 'เริ่มตึง',
-    critical: 'วิกฤต'
+    normal: 'ทรัพยากรปกติ',
+    tight: 'เริ่มขาดแคลน',
+    critical: 'วิกฤตเร่งด่วน'
   };
 
   return (
-    <div className={styles.container}>
-      <h2>สถานะศูนย์พักพิง</h2>
-
-      <div className={styles.summary}>
-        <div className={styles.summaryItem}>
-          <span className={styles.count}>
-            {shelters.filter(s => s.status === 'normal').length}
-          </span>
-          <span className={styles.label}>ปกติ</span>
+    <div className={styles.statusBoardContainer}>
+      <div className={styles.summaryStats}>
+        <div className={styles.sumBox}>
+          <span className={styles.sumVal}>{shelters.filter(s => s.status === 'normal').length}</span>
+          <span className={styles.sumLab}>ปกติ</span>
         </div>
-        <div className={styles.summaryItem}>
-          <span className={styles.count}>
-            {shelters.filter(s => s.status === 'tight').length}
-          </span>
-          <span className={styles.label}>เริ่มตึง</span>
+        <div className={`${styles.sumBox} ${styles.warn}`}>
+          <span className={styles.sumVal}>{shelters.filter(s => s.status === 'tight').length}</span>
+          <span className={styles.sumLab}>เฝ้าระวัง</span>
         </div>
-        <div className={styles.summaryItem}>
-          <span className={styles.count}>
-            {shelters.filter(s => s.status === 'critical').length}
-          </span>
-          <span className={styles.label}>วิกฤต</span>
+        <div className={`${styles.sumBox} ${styles.crit}`}>
+          <span className={styles.sumVal}>{shelters.filter(s => s.status === 'critical').length}</span>
+          <span className={styles.sumLab}>วิกฤต</span>
         </div>
       </div>
 
-      <div className={styles.shelterList}>
-        {shelters.map((shelter, idx) => (
-          <div key={idx} className={styles.shelterCard}>
-            <div className={styles.shelterName}>{shelter.shelterName}</div>
-            <div className={`${styles.status} ${statusColors[shelter.status]}`}>
-              {statusLabels[shelter.status]}
-            </div>
-            {shelter.alerts > 0 && (
-              <div className={styles.alertBadge}>
-                {shelter.alerts} รายการต้องการความช่วยเหลือ
+      <div className={styles.shelterGrid}>
+        {shelters.map((shelter, idx) => {
+          const Icon = statusIcons[shelter.status];
+          return (
+            <div key={idx} className={`${styles.shelterCard} ${styles[shelter.status]}`}>
+              <div className={styles.cardInfo}>
+                <div className={styles.sName}>{shelter.shelterName}</div>
+                <div className={styles.sStatus}>
+                  <Icon size={14} />
+                  <span>{statusLabels[shelter.status]}</span>
+                </div>
               </div>
-            )}
-          </div>
-        ))}
+              <div className={styles.sNav}>
+                <Navigation size={18} />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
