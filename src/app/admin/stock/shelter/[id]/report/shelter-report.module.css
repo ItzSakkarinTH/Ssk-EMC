@@ -1,0 +1,521 @@
+/* ===== Shelter Report Page Styles ===== */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ===== Loading & Error States ===== */
+.loadingContainer,
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+    color: var(--dash-text-muted, #94a3b8);
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(139, 92, 246, 0.2);
+    border-top-color: #8b5cf6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== Top Actions ===== */
+.topActions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.backLink {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--dash-text-secondary, #cbd5e1);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.backLink:hover {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--dash-text-primary, #f1f5f9);
+}
+
+.exportBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.exportBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+/* ===== Report Header ===== */
+.reportHeader {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.reportTitle h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--dash-text-primary, #f1f5f9);
+    margin: 0 0 0.25rem;
+}
+
+.reportTitle p {
+    color: var(--dash-text-secondary, #cbd5e1);
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.reportDate {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--dash-text-muted, #94a3b8);
+    font-size: 0.8125rem;
+}
+
+/* ===== Health Card ===== */
+.healthCard {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.healthScore {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(var(--score-color, #10b981) calc(var(--score-color, 100) * 1%),
+            rgba(148, 163, 184, 0.2) 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.healthScore::before {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: 50%;
+}
+
+.scoreValue {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--dash-text-primary, #f1f5f9);
+    position: relative;
+    z-index: 1;
+}
+
+.scoreLabel {
+    font-size: 0.6875rem;
+    color: var(--dash-text-muted, #94a3b8);
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.healthInfo {
+    flex: 1;
+}
+
+.healthStatus {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.healthDesc {
+    color: var(--dash-text-secondary, #cbd5e1);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ===== Stats Grid ===== */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.statCard {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.statIcon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.statContent {
+    flex: 1;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--dash-text-primary, #f1f5f9);
+}
+
+.statLabel {
+    font-size: 0.75rem;
+    color: var(--dash-text-muted, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ===== Movement Summary ===== */
+.movementSummary {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 20px;
+    padding: 1.75rem;
+}
+
+.movementSummary h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dash-text-primary, #f1f5f9);
+    margin: 0 0 1.25rem;
+}
+
+.movementCards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.movementCard {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.movementCard.received {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.movementCard.dispensed {
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.movementEmoji {
+    font-size: 1.75rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.movementValue {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--dash-text-primary, #f1f5f9);
+}
+
+.movementLabel {
+    font-size: 0.8125rem;
+    color: var(--dash-text-muted, #94a3b8);
+    margin-top: 0.25rem;
+}
+
+/* ===== Category Section ===== */
+.categorySection {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 20px;
+    padding: 1.75rem;
+}
+
+.categorySection h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dash-text-primary, #f1f5f9);
+    margin: 0 0 1.25rem;
+}
+
+.categoryList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.categoryItem {
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.categoryHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 0.75rem;
+}
+
+.categoryIcon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.categoryInfo {
+    flex: 1;
+}
+
+.categoryName {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--dash-text-primary, #f1f5f9);
+}
+
+.categoryStats {
+    font-size: 0.75rem;
+    color: var(--dash-text-muted, #94a3b8);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.warningTag {
+    color: #fcd34d;
+}
+
+.criticalTag {
+    color: #f87171;
+}
+
+.categoryValue {
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.categoryProgress {
+    height: 8px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.categoryBar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== Stock Section ===== */
+.stockSection {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 20px;
+    padding: 1.75rem;
+}
+
+.stockSection h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--dash-text-primary, #f1f5f9);
+    margin: 0 0 1.25rem;
+}
+
+.tableContainer {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.stockTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.stockTable th {
+    padding: 0.875rem 1rem;
+    text-align: left;
+    background: rgba(15, 23, 42, 0.8);
+    color: var(--dash-text-secondary, #cbd5e1);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.stockTable td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+    color: var(--dash-text-primary, #f1f5f9);
+    font-size: 0.875rem;
+}
+
+.stockTable tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.itemName {
+    font-weight: 500;
+}
+
+.categoryTag {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.quantity {
+    font-weight: 600;
+}
+
+.statusTag {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    border-radius: 6px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.sufficient {
+    background: rgba(16, 185, 129, 0.15);
+    color: #6ee7b7;
+}
+
+.low {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+}
+
+.critical {
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+}
+
+.outOfStock {
+    background: rgba(239, 68, 68, 0.25);
+    color: #f87171;
+}
+
+/* ===== Report Footer ===== */
+.reportFooter {
+    text-align: center;
+    padding: 1.5rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.15);
+    color: var(--dash-text-muted, #94a3b8);
+    font-size: 0.75rem;
+}
+
+.reportFooter p {
+    margin: 0.25rem 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .movementCards {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .healthCard {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .movementCards {
+        grid-template-columns: 1fr;
+    }
+
+    .topActions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .reportHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
