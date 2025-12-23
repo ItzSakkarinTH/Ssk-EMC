@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Package, Plus, Minus, Trash2, ClipboardList, Send, AlertCircle, Search, Filter } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Package, Plus, Minus, Trash2, ClipboardList, Send, Search, Filter } from 'lucide-react';
 import { useToast } from '@/contexts/ToastContext';
 
 interface StockItem {
@@ -31,11 +31,8 @@ export default function RequestForm({ onSuccess }: Props) {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [showList, setShowList] = useState(false);
 
-  useEffect(() => {
-    void fetchAvailableStock();
-  }, []);
 
-  const fetchAvailableStock = async () => {
+  const fetchAvailableStock = useCallback(async () => {
     try {
       const token = localStorage.getItem('accessToken');
       const res = await fetch('/api/stock/provincial', {
@@ -52,7 +49,11 @@ export default function RequestForm({ onSuccess }: Props) {
     } finally {
       setLoadingStock(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    void fetchAvailableStock();
+  }, [fetchAvailableStock]);
 
   const addToList = (item: StockItem) => {
     const existing = requestList.find(c => c._id === item._id);
@@ -158,29 +159,51 @@ export default function RequestForm({ onSuccess }: Props) {
     filteredItems = filteredItems.filter(item => item.category === filterCategory);
   }
 
-  const categoryConfig: Record<string, { emoji: string; label: string; color: string }> = {
-    food: { emoji: '🍚', label: 'อาหาร', color: '#22c55e' },
-    medicine: { emoji: '💊', label: 'ยา', color: '#3b82f6' },
-    clothing: { emoji: '👕', label: 'เสื้อผ้า', color: '#f59e0b' },
-    other: { emoji: '📦', label: 'อื่นๆ', color: '#8b5cf6' }
+  const getCategoryEmoji = (category: string) => {
+    const emojis: Record<string, string> = {
+      food: '🍚', medicine: '💊', clothing: '👕',
+      shelter: '🏠', hygiene: '🧼', education: '📚',
+      tool: '🔧', electronic: '💻', other: '📦'
+    };
+    return emojis[category.toLowerCase()] || '📦';
   };
 
+  const getCategoryLabel = (category: string) => {
+    const labels: Record<string, string> = {
+      food: 'อาหาร', medicine: 'ยา/เวชภัณฑ์', clothing: 'เครื่องนุ่งห่ม',
+      shelter: 'ที่พักพิง', hygiene: 'สุขอนามัย', education: 'การศึกษา',
+      tool: 'เครื่องมือ', electronic: 'อุปกรณ์ไฟฟ้า', other: 'อื่นๆ'
+    };
+    return labels[category.toLowerCase()] || 'อื่นๆ';
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      food: '#22c55e', medicine: '#ef4444', clothing: '#3b82f6',
+      shelter: '#f59e0b', hygiene: '#8b5cf6', education: '#ec4899',
+      tool: '#14b8a6', electronic: '#f97316', other: '#64748b'
+    };
+    return colors[category.toLowerCase()] || '#64748b';
+  };
+
+  const categories = Array.from(new Set(availableStock.map(i => i.category)));
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: showList ? '1fr 400px' : '1fr', gap: '1.5rem' }}>
-      {/* Product List */}
-      <div>
+    <div className="dash-grid" style={{ gridTemplateColumns: showList ? '1fr 400px' : '1fr', alignItems: 'start' }}>
+      {/* Source Product List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {/* Search & Filter */}
-        <div className="dash-card" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div className="dash-card">
+          <div className="dash-grid dash-grid-2">
             <div className="dash-form-group">
               <label className="dash-label">
                 <Search size={16} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                ค้นหาสินค้า
+                ค้นหาสินค้าจากกองกลาง
               </label>
               <input
                 type="text"
                 className="dash-input"
-                placeholder="ชื่อสินค้า..."
+                placeholder="ชื่อสินค้าที่ต้องการ..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -191,14 +214,14 @@ export default function RequestForm({ onSuccess }: Props) {
                 หมวดหมู่
               </label>
               <select
-                className="dash-input"
+                className="dash-select"
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
               >
                 <option value="all">ทั้งหมด</option>
-                {Object.entries(categoryConfig).map(([key, config]) => (
-                  <option key={key} value={key}>
-                    {config.emoji} {config.label}
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {getCategoryEmoji(cat)} {getCategoryLabel(cat)}
                   </option>
                 ))}
               </select>
@@ -207,73 +230,48 @@ export default function RequestForm({ onSuccess }: Props) {
         </div>
 
         {/* Product Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '1.5rem'
-        }}>
+        <div className="dash-grid dash-grid-auto">
           {filteredItems.map(item => {
-            const config = categoryConfig[item.category];
             const inList = requestList.some(c => c._id === item._id);
+            const categoryColor = getCategoryColor(item.category);
 
             return (
-              <div key={item._id} className="dash-card" style={{ padding: '1.5rem' }}>
-                <div style={{ marginBottom: '1rem' }}>
-                  <div style={{
-                    display: 'inline-block',
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '8px',
-                    background: `${config.color}20`,
-                    color: config.color,
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    marginBottom: '0.75rem'
-                  }}>
-                    {config.emoji} {config.label}
-                  </div>
-                  <h3 style={{
-                    fontSize: '1.125rem',
-                    fontWeight: 600,
-                    color: 'var(--dash-text-primary)',
-                    margin: '0 0 0.5rem 0'
-                  }}>
-                    {item.itemName}
-                  </h3>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'baseline',
-                    gap: '0.5rem'
-                  }}>
-                    <span style={{
-                      fontSize: '1.5rem',
+              <div key={item._id} className="dash-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
+                    <div style={{
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '20px',
+                      background: `${categoryColor}20`,
+                      color: categoryColor,
+                      fontSize: '0.75rem',
                       fontWeight: 700,
-                      color: item.provincialStock > 100 ? '#22c55e' : item.provincialStock > 50 ? '#f59e0b' : '#ef4444'
+                      border: `1px solid ${categoryColor}40`
                     }}>
-                      {item.provincialStock}
+                      {getCategoryEmoji(item.category)} {getCategoryLabel(item.category)}
+                    </div>
+                  </div>
+
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>{item.itemName}</h3>
+
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                    <span style={{
+                      fontSize: '1.75rem',
+                      fontWeight: 800,
+                      color: item.provincialStock > 100 ? 'var(--dash-success)' : item.provincialStock > 50 ? 'var(--dash-warning)' : 'var(--dash-danger)'
+                    }}>
+                      {item.provincialStock.toLocaleString()}
                     </span>
-                    <span style={{ color: '#94a3b8' }}>{item.unit}</span>
-                    <span style={{ color: '#64748b', fontSize: '0.875rem' }}>คงเหลือ</span>
+                    <span className="dash-text-muted">{item.unit} (กองกลาง)</span>
                   </div>
                 </div>
+
                 <button
                   onClick={() => addToList(item)}
-                  className="dash-btn dash-btn-primary dash-btn-block"
+                  className={`dash-btn ${inList ? 'dash-btn-secondary' : 'dash-btn-primary'} dash-btn-block`}
                   disabled={inList}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}
                 >
-                  {inList ? (
-                    <>✓ อยู่ในรายการแล้ว</>
-                  ) : (
-                    <>
-                      <Plus size={18} />
-                      เพิ่มในรายการ
-                    </>
-                  )}
+                  {inList ? '✔️ ในรายการ' : <><Plus size={18} /> ยื่นขอสินค้า</>}
                 </button>
               </div>
             );
@@ -281,9 +279,9 @@ export default function RequestForm({ onSuccess }: Props) {
         </div>
 
         {filteredItems.length === 0 && (
-          <div className="dash-card" style={{ padding: '3rem', textAlign: 'center' }}>
-            <Package size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-            <p style={{ color: '#94a3b8' }}>ไม่พบสินค้า</p>
+          <div className="dash-card" style={{ padding: '4rem', textAlign: 'center' }}>
+            <Package size={64} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
+            <p className="dash-text-muted">ไม่พบรหัสสินค้าที่ต้องการ</p>
           </div>
         )}
       </div>
@@ -298,178 +296,118 @@ export default function RequestForm({ onSuccess }: Props) {
             bottom: '2rem',
             right: '2rem',
             borderRadius: '50%',
-            width: '60px',
-            height: '60px',
+            width: '64px',
+            height: '64px',
             padding: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-            zIndex: 1000
+            boxShadow: '0 8px 32px rgba(59, 130, 246, 0.4)',
+            zIndex: 100
           }}
         >
-          <ClipboardList size={24} />
+          <ClipboardList size={28} />
           <span style={{
             position: 'absolute',
-            top: '-5px',
-            right: '-5px',
-            background: '#ef4444',
+            top: '-4px',
+            right: '-4px',
+            background: 'var(--dash-danger)',
             color: 'white',
             borderRadius: '50%',
             width: '24px',
             height: '24px',
             fontSize: '0.75rem',
-            fontWeight: 600,
+            fontWeight: 800,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            border: '2px solid var(--dash-bg-primary)'
           }}>
             {requestList.length}
           </span>
         </button>
       )}
 
-      {/* Request List */}
-      {showList && requestList.length > 0 && (
-        <div className="dash-card" style={{
-          padding: '1.5rem',
-          position: 'sticky',
-          top: '1rem',
-          maxHeight: 'calc(100vh - 2rem)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1.5rem'
-          }}>
-            <h3 className="dash-card-title" style={{ margin: 0 }}>
-              <ClipboardList size={20} style={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-              รายการขอ ({requestList.length})
+      {/* Sidebar/List Section */}
+      {showList && (
+        <div className="dash-card" style={{ position: 'sticky', top: '2rem', maxHeight: 'calc(100vh - 4rem)', display: 'flex', flexDirection: 'column', padding: '0' }}>
+          <div className="dash-card-header" style={{ padding: '1.5rem', marginBottom: 0 }}>
+            <h3 className="dash-card-title">
+              <ClipboardList size={20} style={{ marginRight: '0.5rem' }} />
+              รายการคำขอสินค้า
             </h3>
+            <button onClick={() => setShowList(false)} className="dash-btn dash-btn-secondary" style={{ padding: '0.4rem', minWidth: 'auto' }}>✕</button>
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {requestList.map(item => (
+                <div key={item._id} style={{ background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', padding: '1.25rem', border: '1px solid var(--dash-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <div style={{ fontWeight: 600 }}>{getCategoryEmoji(item.category)} {item.itemName}</div>
+                    <button onClick={() => removeFromList(item._id)} style={{ color: 'var(--dash-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+
+                  <div className="dash-form-group">
+                    <label className="dash-label" style={{ fontSize: '0.8rem' }}>จำนวนที่ขอ</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', background: 'var(--dash-bg-primary)', borderRadius: '8px', padding: '0.25rem', border: '1px solid var(--dash-border)' }}>
+                        <button onClick={() => updateQuantity(item._id, item.quantity - 1)} disabled={item.quantity <= 1} style={{ padding: '0.4rem', borderRadius: '6px', border: 'none', background: 'none', color: 'var(--dash-text-primary)' }}><Minus size={14} /></button>
+                        <input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) => updateQuantity(item._id, parseInt(e.target.value) || 1)}
+                          style={{ width: '50px', textAlign: 'center', background: 'none', border: 'none', color: 'var(--dash-text-primary)', fontWeight: 700 }}
+                        />
+                        <button onClick={() => updateQuantity(item._id, item.quantity + 1)} style={{ padding: '0.4rem', borderRadius: '6px', border: 'none', background: 'none', color: 'var(--dash-text-primary)' }}><Plus size={14} /></button>
+                      </div>
+                      <span className="dash-text-muted" style={{ fontSize: '0.9rem' }}>{item.unit}</span>
+                    </div>
+                  </div>
+
+                  <div className="dash-form-group" style={{ marginTop: '1rem' }}>
+                    <label className="dash-label" style={{ fontSize: '0.8rem' }}>เหตุผลการขอ <span style={{ color: 'var(--dash-danger)' }}>*</span></label>
+                    <textarea
+                      className="dash-textarea"
+                      rows={2}
+                      placeholder="ระบุเหตุผลความจำเป็น..."
+                      value={item.reason}
+                      onChange={(e) => updateReason(item._id, e.target.value)}
+                      style={{ fontSize: '0.875rem' }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ padding: '1.5rem', background: 'rgba(15, 23, 42, 0.6)', borderTop: '1px solid var(--dash-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontWeight: 700 }}>
+              <span>รายการทั้งหมด</span>
+              <span style={{ color: 'var(--dash-primary)' }}>{requestList.length} รายการ</span>
+            </div>
             <button
-              onClick={() => setShowList(false)}
-              className="dash-btn-icon"
-              style={{ fontSize: '1.25rem' }}
+              onClick={() => void handleSubmit()}
+              className="dash-btn dash-btn-primary dash-btn-block dash-btn-lg"
+              disabled={loading || requestList.length === 0}
             >
-              ✕
+              {loading ? '🔄 กำลังส่งคำขอ...' : <><Send size={18} /> ยืนยันยื่นคำขอสินค้า</>}
             </button>
           </div>
-
-          <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
-            {requestList.map(item => (
-              <div key={item._id} className="dash-card" style={{
-                padding: '1rem',
-                marginBottom: '1rem',
-                background: 'var(--dash-bg-tertiary)'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '0.75rem'
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{
-                      fontSize: '0.9375rem',
-                      fontWeight: 600,
-                      color: 'var(--dash-text-primary)',
-                      margin: '0 0 0.25rem 0'
-                    }}>
-                      {item.itemName}
-                    </h4>
-                    <span style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
-                      คงเหลือ: {item.provincialStock} {item.unit}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => removeFromList(item._id)}
-                    className="dash-btn-icon"
-                    style={{ color: '#ef4444' }}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-
-                <div className="dash-form-group" style={{ marginBottom: '0.75rem' }}>
-                  <label className="dash-label" style={{ fontSize: '0.875rem' }}>จำนวน</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                      className="dash-btn dash-btn-sm"
-                      disabled={item.quantity <= 1}
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <input
-                      type="number"
-                      className="dash-input"
-                      style={{ width: '80px', textAlign: 'center' }}
-                      value={item.quantity}
-                      onChange={(e) => updateQuantity(item._id, parseInt(e.target.value) || 1)}
-                      min={1}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                      className="dash-btn dash-btn-sm"
-                    >
-                      <Plus size={14} />
-                    </button>
-                    <span style={{ color: '#94a3b8', fontSize: '0.875rem' }}>{item.unit}</span>
-                  </div>
-                  {item.quantity > item.provincialStock && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <AlertCircle size={14} style={{ color: '#f59e0b' }} />
-                      <span style={{ fontSize: '0.75rem', color: '#f59e0b' }}>
-                        มากกว่าสต็อกที่มี
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <div className="dash-form-group">
-                  <label className="dash-label" style={{ fontSize: '0.875rem' }}>
-                    เหตุผล <span className="dash-required">*</span>
-                  </label>
-                  <textarea
-                    className="dash-input"
-                    rows={2}
-                    placeholder="ระบุเหตุผล..."
-                    value={item.reason}
-                    onChange={(e) => updateReason(item._id, e.target.value)}
-                    style={{ fontSize: '0.875rem' }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={() => void handleSubmit()}
-            className="dash-btn dash-btn-primary dash-btn-lg dash-btn-block"
-            disabled={loading}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            {loading ? (
-              <>🔄 กำลังส่ง...</>
-            ) : (
-              <>
-                <Send size={20} />
-                ยืนยันส่งคำขอ
-              </>
-            )}
-          </button>
         </div>
       )}
+
+      <style jsx global>{`
+        @media (max-width: 1024px) {
+          .dash-grid[style*="repeat(auto-fit, minmax(280px, 1fr))"] {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          }
+        }
+        @media (max-width: 900px) {
+          .dash-grid[style*="400px"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
