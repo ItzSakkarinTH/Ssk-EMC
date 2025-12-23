@@ -560,3 +560,155 @@
         margin-top: 0.5rem;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .dashboardHeader {
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .lastUpdated {
+    color: #64748b;
+}
+
+[data-theme="light"] .refreshBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #3b82f6;
+}
+
+[data-theme="light"] .refreshBtn:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+}
+
+[data-theme="light"] .statCard,
+[data-theme="light"] .statCardLarge {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .statCard:hover,
+[data-theme="light"] .statCardLarge:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="light"] .statValue,
+[data-theme="light"] .statValueLarge {
+    color: #1e293b;
+}
+
+[data-theme="light"] .statLabel {
+    color: #64748b;
+}
+
+[data-theme="light"] .statSubLabel {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .chartCard,
+[data-theme="light"] .chartCardFull {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .chartHeader h3 {
+    color: #1e293b;
+}
+
+[data-theme="light"] .chartSubtitle {
+    color: #64748b;
+}
+
+[data-theme="light"] .donutValue {
+    color: #1e293b;
+}
+
+[data-theme="light"] .donutLabel {
+    color: #64748b;
+}
+
+[data-theme="light"] .legendItem {
+    color: #475569;
+}
+
+[data-theme="light"] .legendItem strong {
+    color: #1e293b;
+}
+
+[data-theme="light"] .activityBarLabel {
+    color: #475569;
+}
+
+[data-theme="light"] .activityBarTrack {
+    background: #f1f5f9;
+}
+
+[data-theme="light"] .activityBarValue strong {
+    color: #1e293b;
+}
+
+[data-theme="light"] .categoryBarItem {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .categoryBarItem:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+[data-theme="light"] .categoryBarName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .categoryBarTrack {
+    background: #f1f5f9;
+}
+
+[data-theme="light"] .categoryBarDetails strong {
+    color: #475569;
+}
+
+[data-theme="light"] .categoryLegend {
+    border-top-color: #e2e8f0;
+}
+
+[data-theme="light"] .topStockItem {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .topStockItem:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+[data-theme="light"] .topStockName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .topStockBar {
+    background: #f1f5f9;
+}
+
+[data-theme="light"] .topStockQty strong {
+    color: #1e293b;
+}
+
+[data-theme="light"] .alertCritical {
+    background: #fef2f2;
+    border-color: #fee2e2;
+    color: #991b1b;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .alertWarning {
+    background: #fffbeb;
+    border-color: #fef3c7;
+    color: #92400e;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .topStockQty span {
+    color: #64748b;
+}

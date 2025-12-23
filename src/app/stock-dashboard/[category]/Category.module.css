@@ -136,3 +136,47 @@
     justify-content: center;
     color: #64748b;
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .categoryContainer {
+    background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 100%);
+    color: #1e293b;
+}
+
+[data-theme="light"] .backBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+[data-theme="light"] .backBtn:hover {
+    background: #f8fafc;
+    border-color: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+[data-theme="light"] .summary {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+[data-theme="light"] .itemCard {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .itemCard:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="light"] .itemName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .itemQty {
+    color: #94a3b8;
+}

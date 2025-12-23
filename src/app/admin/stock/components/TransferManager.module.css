@@ -643,3 +643,93 @@
         width: 100%;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .stepNumber {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .stepContent {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .stepTitle {
+    color: #1e293b;
+}
+
+[data-theme="light"] .stepSubtitle {
+    color: #475569;
+}
+
+[data-theme="light"] .stepLine {
+    background: #e2e8f0;
+}
+
+[data-theme="light"] .searchInput,
+[data-theme="light"] .input,
+[data-theme="light"] .select,
+[data-theme="light"] .textarea {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #1e293b;
+}
+
+[data-theme="light"] .stockCard {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .stockCard:hover {
+    background: #f8fafc;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .stockName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .selectedStockInfo {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .infoValue {
+    color: #1e293b;
+}
+
+[data-theme="light"] .staticSource {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .sourceName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .btnSecondary {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+[data-theme="light"] .btnSecondary:hover:not(:disabled) {
+    background: #f1f5f9;
+}
+
+/* Fix active steps and badges in light mode */
+[data-theme="light"] .stepActive .stepNumber {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff !important;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+[data-theme="light"] .unitBadge {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+    border-color: rgba(59, 130, 246, 0.2);
+}

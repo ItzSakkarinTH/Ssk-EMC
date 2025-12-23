@@ -314,3 +314,52 @@
         width: 100%;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .requestCard {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .requestCard:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .requestHeader {
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .requestDetails {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .viewButton {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+[data-theme="light"] .viewButton:hover {
+    background: #f1f5f9;
+}
+
+[data-theme="light"] .filterButton {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #475569;
+}
+
+[data-theme="light"] .filterButton:hover {
+    background: #f1f5f9;
+}
+
+/* Fix active state in light mode */
+[data-theme="light"] .filterButton.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff !important;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}

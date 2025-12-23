@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
@@ -15,7 +15,8 @@ import {
   ChevronRight,
   Eye,
   Package,
-  Zap
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 import styles from '../history/history.module.css';
 
@@ -35,6 +36,8 @@ export default function RequestsPage() {
   const { success, error: showError } = useToast();
   const [requests, setRequests] = useState<Request[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   // Quick action modal
   const [showQuickActionModal, setShowQuickActionModal] = useState(false);
@@ -52,11 +55,13 @@ export default function RequestsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  useEffect(() => {
-    void fetchRequests();
-  }, []);
+  // Auto-refresh interval (30 seconds)
+  const REFRESH_INTERVAL = 30000;
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setRefreshing(true);
+    }
     try {
       const token = localStorage.getItem('accessToken');
       const res = await fetch('/api/stock/admin/requests', {
@@ -66,15 +71,45 @@ export default function RequestsPage() {
       if (res.ok) {
         const data = await res.json();
         setRequests(data.requests || []);
-      } else {
+        setLastUpdated(new Date());
+      } else if (!isManualRefresh) {
         showError('ไม่สามารถโหลดรายการคำขอได้');
       }
     } catch (error) {
       console.error(error);
-      showError('เกิดข้อผิดพลาด');
+      if (!isManualRefresh) {
+        showError('เกิดข้อผิดพลาด');
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  }, [showError]);
+
+  // Initial fetch and auto-refresh
+  useEffect(() => {
+    void fetchRequests();
+
+    // Set up auto-refresh interval
+    const intervalId = setInterval(() => {
+      void fetchRequests(true);
+    }, REFRESH_INTERVAL);
+
+    // Cleanup on unmount
+    return () => clearInterval(intervalId);
+  }, [fetchRequests]);
+
+  const handleManualRefresh = () => {
+    void fetchRequests(true);
+  };
+
+  const formatLastUpdated = (date: Date | null) => {
+    if (!date) return '';
+    return date.toLocaleTimeString('th-TH', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
   };
 
   const openQuickAction = (requestId: string, action: 'approve' | 'reject') => {
@@ -118,7 +153,7 @@ export default function RequestsPage() {
       setSelectedRequestId(null);
       setQuickAction(null);
       setQuickNotes('');
-      void fetchRequests();
+      void fetchRequests(true);
 
     } catch (err: unknown) {
       const error = err as Error;
@@ -200,6 +235,45 @@ export default function RequestsPage() {
 
   return (
     <DashboardLayout title="คำขอสินค้า" subtitle="จัดการคำขอสินค้าจากศูนย์พักพิง">
+      {/* Refresh Info Bar */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '1rem',
+        padding: '0.75rem 1rem',
+        background: 'rgba(30, 41, 59, 0.6)',
+        borderRadius: '10px',
+        border: '1px solid rgba(148, 163, 184, 0.15)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', fontSize: '0.8125rem' }}>
+          <Clock size={14} />
+          <span>อัพเดทล่าสุด: {lastUpdated ? formatLastUpdated(lastUpdated) : '-'}</span>
+          <span style={{ color: '#64748b' }}>• รีเฟรชอัตโนมัติทุก 30 วินาที</span>
+        </div>
+        <button
+          onClick={handleManualRefresh}
+          disabled={refreshing}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 1rem',
+            background: refreshing ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.15)',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            borderRadius: '8px',
+            color: '#3b82f6',
+            fontSize: '0.8125rem',
+            fontWeight: 600,
+            cursor: refreshing ? 'not-allowed' : 'pointer',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          <RefreshCw size={14} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+          {refreshing ? 'กำลังรีเฟรช...' : 'รีเฟรช'}
+        </button>
+      </div>
+
       {/* Summary Stats */}
       <div className={styles.summary}>
         <div className={styles.summaryCard}>

@@ -230,7 +230,7 @@ export default function AdminStockPage() {
 
                   return (
                     <>
-                      <circle cx="50" cy="50" r="40" fill="none" stroke="#1e293b" strokeWidth="12" />
+                      <circle cx="50" cy="50" r="40" fill="none" stroke="var(--dash-border-color)" strokeWidth="12" />
                       <circle
                         cx="50" cy="50" r="40"
                         fill="none"

@@ -333,17 +333,17 @@ export default function UsersPage() {
                                         </span>
                                     </td>
                                     <td>
-                                        <div style={{ fontWeight: 600, color: '#f1f5f9' }}>{user.username}</div>
+                                        <div style={{ fontWeight: 600, color: 'var(--dash-text-primary)' }}>{user.username}</div>
                                     </td>
-                                    <td style={{ color: '#cbd5e1' }}>{user.name || '-'}</td>
-                                    <td style={{ color: '#cbd5e1' }}>{user.email}</td>
+                                    <td style={{ color: 'var(--dash-text-secondary)' }}>{user.name || '-'}</td>
+                                    <td style={{ color: 'var(--dash-text-secondary)' }}>{user.email}</td>
                                     <td>
                                         <span className={`dash-badge ${user.role === 'admin' ? 'dash-badge-warning' : 'dash-badge-info'
                                             }`}>
                                             {user.role === 'admin' ? '👑 Admin' : '👤 Staff'}
                                         </span>
                                     </td>
-                                    <td style={{ color: '#cbd5e1' }}>
+                                    <td style={{ color: 'var(--dash-text-secondary)' }}>
                                         {user.assignedShelterId ? (
                                             <span>
                                                 <Building2 size={14} style={{ display: 'inline', marginRight: '0.25rem' }} />

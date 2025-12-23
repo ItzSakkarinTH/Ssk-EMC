@@ -1,9 +1,10 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Bell, Plus, Edit, Trash2, AlertCircle, Info, AlertTriangle, X, Radio, Siren, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { Bell, Plus, Edit, Trash2, AlertCircle, Info, AlertTriangle, X, Radio, Siren, Sparkles } from 'lucide-react';
 
 interface Announcement {
     _id: string;
@@ -38,12 +39,7 @@ export default function AnnouncementsPage() {
         isActive: true
     });
 
-    useEffect(() => {
-        fetchAnnouncements();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const fetchAnnouncements = async () => {
+    const fetchAnnouncements = useCallback(async () => {
         try {
             const token = localStorage.getItem('accessToken');
             const res = await fetch('/api/admin/announcements', {
@@ -63,7 +59,11 @@ export default function AnnouncementsPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [toast]);
+
+    useEffect(() => {
+        fetchAnnouncements();
+    }, [fetchAnnouncements]);
 
     const handleOpenModal = (announcement?: Announcement) => {
         if (announcement) {
@@ -105,7 +105,7 @@ export default function AnnouncementsPage() {
             const res = await fetch(url, {
                 method,
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${token} `,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
@@ -128,7 +128,7 @@ export default function AnnouncementsPage() {
     };
 
     const handleDelete = async (id: string, title: string) => {
-        if (!confirm(`คุณแน่ใจหรือไม่ที่จะลบประกาศ "${title}"?`)) {
+        if (!confirm(`คุณแน่ใจหรือไม่ที่จะลบประกาศ "${title}" ? `)) {
             return;
         }
 
@@ -321,7 +321,7 @@ export default function AnnouncementsPage() {
                                     {getTypeIcon(announcement.type)}
                                 </div>
                                 <div>
-                                    <h3 className="dash-card-title" style={{ marginBottom: '0.25rem' }}>
+                                    <h3 className="dash-card-title" style={{ marginBottom: '0.25rem', color: 'var(--dash-text-primary)' }}>
                                         {announcement.title}
                                     </h3>
                                     <span className={`dash-badge ${getTypeBadge(announcement.type)}`}>
@@ -335,7 +335,7 @@ export default function AnnouncementsPage() {
                         </div>
 
                         <div className="dash-card-body">
-                            <p style={{ color: '#cbd5e1', marginBottom: '1rem', lineHeight: 1.6 }}>
+                            <p style={{ color: 'var(--dash-text-secondary)', marginBottom: '1rem', lineHeight: 1.6 }}>
                                 {announcement.content}
                             </p>
 
@@ -346,7 +346,7 @@ export default function AnnouncementsPage() {
                                 paddingTop: '1rem',
                                 borderTop: '1px solid rgba(148, 163, 184, 0.15)',
                                 fontSize: '0.875rem',
-                                color: '#94a3b8'
+                                color: 'var(--dash-text-muted)'
                             }}>
                                 <div>
                                     โดย: {announcement.createdBy.username}
@@ -511,8 +511,8 @@ export default function AnnouncementsPage() {
                             </div>
 
                             <div className="dash-modal-footer" style={{
-                                background: 'rgba(15, 23, 42, 0.5)',
-                                borderTop: '1px solid rgba(148, 163, 184, 0.1)'
+                                background: 'var(--dash-bg-tertiary)',
+                                borderTop: '1px solid var(--dash-border-color)'
                             }}>
                                 <button
                                     type="button"

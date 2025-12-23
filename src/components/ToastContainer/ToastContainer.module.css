@@ -156,3 +156,35 @@
         max-width: none;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .toast {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .toastMessage {
+    color: #1e293b;
+}
+
+[data-theme="light"] .success {
+    background: #ffffff;
+    border-left: 4px solid #10b981;
+}
+
+[data-theme="light"] .error {
+    background: #ffffff;
+    border-left: 4px solid #ef4444;
+}
+
+[data-theme="light"] .warning {
+    background: #ffffff;
+    border-left: 4px solid #f59e0b;
+}
+
+[data-theme="light"] .info {
+    background: #ffffff;
+    border-left: 4px solid #3b82f6;
+}

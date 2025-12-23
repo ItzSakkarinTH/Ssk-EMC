@@ -139,3 +139,23 @@
   font-size: 1.5rem;
   font-weight: bold;
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .alertItem {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .itemName {
+  color: #1e293b;
+}
+
+[data-theme="light"] .statusDescription {
+  color: #64748b;
+}
+
+[data-theme="light"] .alertFooter {
+  border-top-color: #e2e8f0;
+}

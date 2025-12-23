@@ -45,3 +45,16 @@
         padding: 1rem;
     }
 }
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .backBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+[data-theme="light"] .backBtn:hover {
+    background: #f8fafc;
+    color: #1e293b;
+}

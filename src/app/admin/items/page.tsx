@@ -258,7 +258,7 @@ export default function ItemsPage() {
                         {filteredItems.map((item) => (
                             <tr key={item._id}>
                                 <td>
-                                    <div style={{ fontWeight: 600, color: '#f1f5f9' }}>{item.name}</div>
+                                    <div style={{ fontWeight: 600, color: 'var(--dash-text-primary)' }}>{item.name}</div>
                                     {item.description && (
                                         <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginTop: '0.25rem' }}>
                                             {item.description}
