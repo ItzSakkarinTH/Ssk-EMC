@@ -37,6 +37,7 @@ interface Movement {
   };
   performedBy: {
     username: string;
+    fullName?: string;
   };
   createdAt: string;
   referenceId?: string;
@@ -405,7 +406,7 @@ export default function StaffHistoryPage() {
                       <td>
                         <code className={styles.refCode}>{movement.referenceId || '-'}</code>
                       </td>
-                      <td>{movement.performedBy?.username || 'N/A'}</td>
+                      <td>{movement.performedBy?.fullName || movement.performedBy?.username || 'N/A'}</td>
                       <td>
                         <div className={styles.dateCell}>
                           <div className={styles.relativeTime}>

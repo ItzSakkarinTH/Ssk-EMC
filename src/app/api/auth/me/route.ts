@@ -20,6 +20,7 @@ export async function GET() {
             user: {
                 id: payload.userId,
                 username: payload.username,
+                fullName: payload.fullName,
                 email: payload.email,
                 role: payload.role
             }
