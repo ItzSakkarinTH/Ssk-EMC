@@ -57,6 +57,7 @@ export class StockService {
       // บันทึก Movement
       await StockMovement.create([{
         stockId: data.stockId,
+        itemName: stock.itemName,
         movementType: 'receive',
         quantity: data.quantity,
         unit: stock.unit,
@@ -109,6 +110,11 @@ export class StockService {
         throw new Error('Insufficient stock');
       }
 
+      // Get shelter name
+      const Shelter = (await import('@/lib/db/models/Shelter')).default;
+      const shelter = await Shelter.findById(data.shelterId).select('name').session(session).lean();
+      const shelterName = shelter ? (shelter as { name: string }).name : 'ศูนย์พักพิง';
+
       const beforeQty = shelterStock.quantity;
 
       // ตัดสต๊อก
@@ -124,13 +130,14 @@ export class StockService {
       // บันทึก Movement
       await StockMovement.create([{
         stockId: data.stockId,
+        itemName: stock.itemName,
         movementType: 'dispense',
         quantity: data.quantity,
         unit: stock.unit,
         from: {
           type: 'shelter',
           id: new mongoose.Types.ObjectId(data.shelterId),
-          name: 'Shelter'
+          name: shelterName
         },
         to: {
           type: 'beneficiary',
@@ -215,6 +222,7 @@ export class StockService {
       // บันทึก Movement
       await StockMovement.create([{
         stockId: data.stockId,
+        itemName: stock.itemName,
         movementType: 'transfer',
         quantity: data.quantity,
         unit: stock.unit,

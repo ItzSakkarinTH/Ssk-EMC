@@ -13,8 +13,9 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  RefreshCw
+  ArrowLeft
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
 interface Movement {
@@ -44,6 +45,7 @@ interface Movement {
 
 export default function StaffHistoryPage() {
   const toast = useToast();
+  const router = useRouter();
   const [movements, setMovements] = useState<Movement[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,7 +60,13 @@ export default function StaffHistoryPage() {
 
   useEffect(() => {
     void fetchMovements();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, typeFilter, dateFilter, itemsPerPage]);
 
   const fetchMovements = async () => {
     try {
@@ -150,21 +158,46 @@ export default function StaffHistoryPage() {
 
   // Pagination logic
   const totalPages = Math.ceil(filteredMovements.length / itemsPerPage);
-  const paginatedMovements = filteredMovements.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedMovements = filteredMovements.slice(startIndex, endIndex);
 
-  const getMovementTypeConfig = (type: string) => {
+  const getMovementIcon = (type: string) => {
     switch (type) {
       case 'receive':
-        return { label: 'รับเข้า', color: '#22c55e', icon: TrendingDown };
+        return <TrendingDown size={16} />;
       case 'dispense':
-        return { label: 'จ่ายออก', color: '#ef4444', icon: TrendingUp };
+        return <TrendingUp size={16} />;
       case 'transfer':
-        return { label: 'โอน', color: '#3b82f6', icon: ArrowRight };
+        return <ArrowRight size={16} />;
       default:
-        return { label: type, color: '#64748b', icon: Package };
+        return <Package size={16} />;
+    }
+  };
+
+  const getMovementColor = (type: string) => {
+    switch (type) {
+      case 'receive':
+        return '#22c55e';
+      case 'dispense':
+        return '#ef4444';
+      case 'transfer':
+        return '#3b82f6';
+      default:
+        return '#64748b';
+    }
+  };
+
+  const getMovementLabel = (type: string) => {
+    switch (type) {
+      case 'receive':
+        return 'รับเข้า';
+      case 'dispense':
+        return 'จ่ายออก';
+      case 'transfer':
+        return 'โอน';
+      default:
+        return 'อื่นๆ';
     }
   };
 
@@ -184,278 +217,267 @@ export default function StaffHistoryPage() {
       title="ประวัติการเคลื่อนไหว"
       subtitle="ตรวจสอบรายการรับเข้า จ่ายออก และโอนสินค้าของศูนย์"
     >
-      {/* Stats Summary */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '2rem'
-      }}>
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-primary">
-            <Package size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">{movements.length}</div>
-            <div className="dash-stat-label">การเคลื่อนไหวทั้งหมด</div>
+      {/* Back Button */}
+      <div style={{ marginBottom: '1.5rem' }}>
+        <button
+          onClick={() => router.back()}
+          className="dash-btn"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          <ArrowLeft size={18} />
+          ย้อนกลับ
+        </button>
+      </div>
+
+      {/* Summary Stats */}
+      <div className={styles.summary}>
+        <div className={styles.summaryCard}>
+          <Package size={32} />
+          <div>
+            <div className={styles.summaryLabel}>ทั้งหมด</div>
+            <div className={styles.summaryValue}>{filteredMovements.length}</div>
           </div>
         </div>
-
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-success">
-            <TrendingDown size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">
-              {movements.filter(m => m.movementType === 'receive').length}
+        <div className={styles.summaryCard} style={{ borderColor: 'rgba(34, 197, 94, 0.3)' }}>
+          <TrendingDown size={32} style={{ color: '#22c55e' }} />
+          <div>
+            <div className={styles.summaryLabel}>รับเข้า</div>
+            <div className={styles.summaryValue} style={{ color: '#22c55e' }}>
+              {filteredMovements.filter(m => m.movementType === 'receive').length}
             </div>
-            <div className="dash-stat-label">รับเข้า</div>
           </div>
         </div>
-
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-danger">
-            <TrendingUp size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">
-              {movements.filter(m => m.movementType === 'dispense').length}
+        <div className={styles.summaryCard} style={{ borderColor: 'rgba(239, 68, 68, 0.3)' }}>
+          <TrendingUp size={32} style={{ color: '#ef4444' }} />
+          <div>
+            <div className={styles.summaryLabel}>จ่ายออก</div>
+            <div className={styles.summaryValue} style={{ color: '#ef4444' }}>
+              {filteredMovements.filter(m => m.movementType === 'dispense').length}
             </div>
-            <div className="dash-stat-label">จ่ายออก</div>
           </div>
         </div>
-
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-info">
-            <ArrowRight size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">
-              {movements.filter(m => m.movementType === 'transfer').length}
+        <div className={styles.summaryCard} style={{ borderColor: 'rgba(59, 130, 246, 0.3)' }}>
+          <ArrowRight size={32} style={{ color: '#3b82f6' }} />
+          <div>
+            <div className={styles.summaryLabel}>โอน</div>
+            <div className={styles.summaryValue} style={{ color: '#3b82f6' }}>
+              {filteredMovements.filter(m => m.movementType === 'transfer').length}
             </div>
-            <div className="dash-stat-label">โอน</div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className={styles.filtersSection}>
-        <div className={styles.searchBox}>
-          <Search size={18} className={styles.searchIcon} />
+      <div className={styles.filterSection}>
+        {/* Search */}
+        <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+          <Search size={20} style={{
+            position: 'absolute',
+            left: '1rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#94a3b8'
+          }} />
           <input
             type="text"
-            placeholder="ค้นหาชื่อสินค้า, แหล่งที่มา, หรือเลขที่อ้างอิง..."
+            className="dash-input"
+            placeholder="ค้นหาสินค้า, ผู้รับ, เอกสาร..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className={styles.searchInput}
+            style={{ paddingLeft: '3rem' }}
           />
         </div>
 
+        {/* Type Filter */}
         <div className={styles.filterGroup}>
-          <div className={styles.filterItem}>
-            <Filter size={16} />
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
-              className={styles.filterSelect}
-            >
-              <option value="all">ประเภททั้งหมด</option>
-              <option value="receive">รับเข้า</option>
-              <option value="dispense">จ่ายออก</option>
-              <option value="transfer">โอน</option>
-            </select>
+          <Filter size={18} />
+          <span>ประเภท:</span>
+          <div className={styles.buttonGroup}>
+            {[
+              { value: 'all', label: 'ทั้งหมด' },
+              { value: 'receive', label: 'รับเข้า' },
+              { value: 'dispense', label: 'จ่ายออก' },
+              { value: 'transfer', label: 'โอน' }
+            ].map(option => (
+              <button
+                key={option.value}
+                className={`${styles.filterBtn} ${typeFilter === option.value ? styles.active : ''}`}
+                onClick={() => setTypeFilter(option.value as typeof typeFilter)}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div className={styles.filterItem}>
-            <Calendar size={16} />
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as typeof dateFilter)}
-              className={styles.filterSelect}
-            >
-              <option value="all">ทุกช่วงเวลา</option>
-              <option value="today">วันนี้</option>
-              <option value="week">7 วันที่แล้ว</option>
-              <option value="month">30 วันที่แล้ว</option>
-            </select>
+        {/* Date Filter */}
+        <div className={styles.filterGroup}>
+          <Calendar size={18} />
+          <span>ช่วงเวลา:</span>
+          <div className={styles.buttonGroup}>
+            {[
+              { value: 'all', label: 'ทั้งหมด' },
+              { value: 'today', label: 'วันนี้' },
+              { value: 'week', label: '7 วัน' },
+              { value: 'month', label: '30 วัน' }
+            ].map(option => (
+              <button
+                key={option.value}
+                className={`${styles.filterBtn} ${dateFilter === option.value ? styles.active : ''}`}
+                onClick={() => setDateFilter(option.value as typeof dateFilter)}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
-
-          <button
-            onClick={() => void fetchMovements()}
-            className="dash-btn dash-btn-secondary dash-btn-sm"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            <RefreshCw size={16} />
-            รีเฟรช
-          </button>
         </div>
       </div>
 
-      {/* Movements Table */}
-      <div className="dash-card">
-        <div className="dash-card-header">
-          <h3 className="dash-card-title">
-            รายการเคลื่อนไหว
-          </h3>
-          <span className="dash-badge dash-badge-primary">
-            {filteredMovements.length} รายการ
-          </span>
+      {/* Results Info & Per Page Selector */}
+      <div className={styles.tableHeader}>
+        <div className={styles.resultsInfo}>
+          แสดง {startIndex + 1}-{Math.min(endIndex, filteredMovements.length)} จาก {filteredMovements.length} รายการ
         </div>
+        <div className={styles.perPageSelector}>
+          <span>แสดง:</span>
+          {[5, 10, 25, 50, 100].map(num => (
+            <button
+              key={num}
+              className={`${styles.perPageBtn} ${itemsPerPage === num ? styles.active : ''}`}
+              onClick={() => setItemsPerPage(num)}
+            >
+              {num}
+            </button>
+          ))}
+          <span>รายการ</span>
+        </div>
+      </div>
 
-        <div className="dash-card-body">
-          {paginatedMovements.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-              <Package size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-              <h3 style={{ color: '#94a3b8', margin: 0 }}>ไม่พบข้อมูล</h3>
-            </div>
-          ) : (
-            <>
-              <div className="dash-table-responsive">
-                <table className="dash-table">
-                  <thead>
-                    <tr>
-                      <th>เวลา</th>
-                      <th>ประเภท</th>
-                      <th>สินค้า</th>
-                      <th style={{ textAlign: 'right' }}>จำนวน</th>
-                      <th>จาก</th>
-                      <th>ถึง</th>
-                      <th>โดย</th>
-                      <th>หมายเหตุ</th>
+      {/* Table */}
+      {paginatedMovements.length > 0 ? (
+        <>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ประเภท</th>
+                  <th>สินค้า</th>
+                  <th>จำนวน</th>
+                  <th>จาก</th>
+                  <th>ไปยัง</th>
+                  <th>เอกสาร</th>
+                  <th>ผู้บันทึก</th>
+                  <th>วันเวลา</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedMovements.map((movement) => {
+                  const itemName = movement.itemName || movement.stockId?.itemName || 'N/A';
+                  const color = getMovementColor(movement.movementType);
+                  return (
+                    <tr key={movement._id}>
+                      <td>
+                        <span
+                          className={styles.typeBadge}
+                          style={{
+                            background: `${color}20`,
+                            color: color
+                          }}
+                        >
+                          {getMovementIcon(movement.movementType)}
+                          {getMovementLabel(movement.movementType)}
+                        </span>
+                      </td>
+                      <td>
+                        <strong>{itemName}</strong>
+                      </td>
+                      <td>
+                        <span
+                          className={styles.quantity}
+                          style={{ color }}
+                        >
+                          {movement.movementType === 'receive' ? '+' : movement.movementType === 'dispense' ? '-' : ''}
+                          {movement.quantity.toLocaleString()} {movement.unit}
+                        </span>
+                      </td>
+                      <td>{movement.from?.name || '-'}</td>
+                      <td>{movement.to?.name || '-'}</td>
+                      <td>
+                        <code className={styles.refCode}>{movement.referenceId || '-'}</code>
+                      </td>
+                      <td>{movement.performedBy?.username || 'N/A'}</td>
+                      <td>
+                        <div className={styles.dateCell}>
+                          <div className={styles.relativeTime}>
+                            {getRelativeTime(movement.createdAt)}
+                          </div>
+                          <div className={styles.fullDate}>
+                            {formatDate(movement.createdAt)}
+                          </div>
+                        </div>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedMovements.map(movement => {
-                      const typeConfig = getMovementTypeConfig(movement.movementType);
-                      const TypeIcon = typeConfig.icon;
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-                      return (
-                        <tr key={movement._id}>
-                          <td>
-                            <div style={{ fontSize: '0.875rem', color: '#cbd5e1' }}>
-                              {getRelativeTime(movement.createdAt)}
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
-                              {formatDate(movement.createdAt)}
-                            </div>
-                          </td>
-                          <td>
-                            <span className="dash-badge" style={{
-                              background: `${typeConfig.color}20`,
-                              color: typeConfig.color,
-                              border: `1px solid ${typeConfig.color}40`,
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '0.375rem'
-                            }}>
-                              <TypeIcon size={14} />
-                              {typeConfig.label}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ fontWeight: 500, color: '#f1f5f9' }}>
-                              {movement.itemName || movement.stockId?.itemName}
-                            </div>
-                            {movement.referenceId && (
-                              <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
-                                {movement.referenceId}
-                              </div>
-                            )}
-                          </td>
-                          <td style={{ textAlign: 'right' }}>
-                            <span style={{
-                              fontSize: '1.125rem',
-                              fontWeight: 700,
-                              color: typeConfig.color
-                            }}>
-                              {movement.quantity.toLocaleString()}
-                            </span>
-                            <span style={{ marginLeft: '0.5rem', color: '#94a3b8' }}>
-                              {movement.unit}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ fontSize: '0.875rem', color: '#cbd5e1' }}>
-                              {movement.from?.name || '-'}
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ fontSize: '0.875rem', color: '#cbd5e1' }}>
-                              {movement.to?.name || '-'}
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ fontSize: '0.875rem', color: '#94a3b8' }}>
-                              {movement.performedBy?.username}
-                            </div>
-                          </td>
-                          <td>
-                            {movement.notes && (
-                              <div style={{
-                                fontSize: '0.8125rem',
-                                color: '#94a3b8',
-                                maxWidth: '200px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }} title={movement.notes}>
-                                {movement.notes}
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button
+                className={styles.pageBtn}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={18} />
+                ก่อนหน้า
+              </button>
+
+              <div className={styles.pageNumbers}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    return page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - currentPage) <= 1;
+                  })
+                  .map((page, index, array) => {
+                    const prevPage = array[index - 1];
+                    const showEllipsis = prevPage && page - prevPage > 1;
+
+                    return (
+                      <div key={page} style={{ display: 'flex', gap: '0.5rem' }}>
+                        {showEllipsis && <span className={styles.ellipsis}>...</span>}
+                        <button
+                          className={`${styles.pageNumBtn} ${currentPage === page ? styles.active : ''}`}
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </button>
+                      </div>
+                    );
+                  })}
               </div>
 
-              {/* Pagination */}
-              <div className={styles.pagination}>
-                <div className={styles.paginationInfo}>
-                  แสดง {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, filteredMovements.length)} จาก {filteredMovements.length}
-                </div>
-
-                <div className={styles.paginationControls}>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className={styles.paginationButton}
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  <span className={styles.paginationNumbers}>
-                    {currentPage} / {totalPages || 1}
-                  </span>
-
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages || totalPages === 0}
-                    className={styles.paginationButton}
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className={styles.paginationSelect}
-                >
-                  <option value={10}>10 / หน้า</option>
-                  <option value={25}>25 / หน้า</option>
-                  <option value={50}>50 / หน้า</option>
-                  <option value={100}>100 / หน้า</option>
-                </select>
-              </div>
-            </>
+              <button
+                className={styles.pageBtn}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                ถัดไป
+                <ChevronRight size={18} />
+              </button>
+            </div>
           )}
+        </>
+      ) : (
+        <div className={styles.emptyState}>
+          <Package size={64} style={{ opacity: 0.3 }} />
+          <h3>ไม่พบข้อมูล</h3>
+          <p>ลองปรับเปลี่ยนตัวกรองหรือคำค้นหา</p>
         </div>
-      </div>
+      )}
     </DashboardLayout>
   );
 }
