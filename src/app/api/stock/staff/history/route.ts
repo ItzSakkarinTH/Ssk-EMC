@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
         ]
       })
         .sort({ createdAt: -1 })
-        .populate('performedBy', 'username fullName')
+        .populate('performedBy', 'username name')
         .populate('stockId', 'itemName category')
         .lean();
 

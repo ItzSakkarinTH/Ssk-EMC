@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         const movements = await StockMovement.find({
             movementType: 'receive'
         })
-            .populate('performedBy', 'username fullName')
+            .populate('performedBy', 'username name')
             .populate('stockId', 'itemName') // ← เพิ่ม populate stockId
             .sort({ performedAt: -1 }) // เรียงจากใหม่ไปเก่า
             .limit(500) // จำกัด 500 รายการล่าสุด

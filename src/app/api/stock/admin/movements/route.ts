@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         // Fetch all movements (receive and transfer), sorted by date descending
         const movements = await StockMovement.find()
             .populate('stockId', 'itemName')
-            .populate('performedBy', 'username fullName')
+            .populate('performedBy', 'username name')
             .sort({ performedAt: -1 })
             .lean();
 
