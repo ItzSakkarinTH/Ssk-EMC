@@ -12,13 +12,9 @@ import {
   Search,
   Filter,
   ChevronLeft,
-  ChevronRight,
-  ArrowLeft,
-  User,
-  FileText,
-  Clock
+  ChevronRight
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import styles from './history.module.css';
 
 interface Movement {
   _id: string;
@@ -48,7 +44,6 @@ interface Movement {
 
 export default function StaffHistoryPage() {
   const toast = useToast();
-  const router = useRouter();
   const [movements, setMovements] = useState<Movement[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -168,26 +163,26 @@ export default function StaffHistoryPage() {
   const getMovementIcon = (type: string) => {
     switch (type) {
       case 'receive':
-        return <TrendingUp size={16} />;
+        return <TrendingUp size={18} />;
       case 'dispense':
-        return <TrendingDown size={16} />;
+        return <TrendingDown size={18} />;
       case 'transfer':
-        return <ArrowLeftRight size={16} />;
+        return <ArrowLeftRight size={18} />;
       default:
-        return <Package size={16} />;
+        return <Package size={18} />;
     }
   };
 
-  const getMovementBadgeClass = (type: string) => {
+  const getMovementColor = (type: string) => {
     switch (type) {
       case 'receive':
-        return 'dash-badge-success';
+        return 'var(--dash-success)';
       case 'dispense':
-        return 'dash-badge-danger';
+        return 'var(--dash-danger)';
       case 'transfer':
-        return 'dash-badge-info';
+        return 'var(--dash-primary)';
       default:
-        return '';
+        return 'var(--dash-text-muted)';
     }
   };
 
@@ -217,294 +212,254 @@ export default function StaffHistoryPage() {
 
   return (
     <DashboardLayout
-      title="📜 ประวัติการเคลื่อนไหวสินค้า"
+      title="ประวัติการเคลื่อนไหวสินค้า"
       subtitle="ตรวจสอบรายการรับเข้า จ่ายออก และโอนสินค้าของศูนย์"
     >
-      <div style={{ marginBottom: '1.5rem' }}>
-        <button
-          onClick={() => router.back()}
-          className="dash-btn dash-btn-secondary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          <ArrowLeft size={18} />
-          ย้อนกลับ
-        </button>
-      </div>
-
       {/* Summary Stats */}
-      <div className="dash-grid dash-grid-4" style={{ marginBottom: '2rem' }}>
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-primary">
-            <Package size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">{filteredMovements.length}</div>
-            <div className="dash-stat-label">รายการทั้งหมด</div>
+      <div className={styles.summary}>
+        <div className={styles.summaryCard}>
+          <Package size={32} />
+          <div>
+            <div className={styles.summaryLabel}>ทั้งหมด</div>
+            <div className={styles.summaryValue}>{filteredMovements.length}</div>
           </div>
         </div>
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-success">
-            <TrendingUp size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">
+        <div className={styles.summaryCard}>
+          <TrendingUp size={32} />
+          <div>
+            <div className={styles.summaryLabel}>รับเข้า</div>
+            <div className={styles.summaryValue}>
               {filteredMovements.filter(m => m.movementType === 'receive').length}
             </div>
-            <div className="dash-stat-label">รับเข้า</div>
           </div>
         </div>
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-danger">
-            <TrendingDown size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">
+        <div className={styles.summaryCard}>
+          <TrendingDown size={32} />
+          <div>
+            <div className={styles.summaryLabel}>จ่ายออก</div>
+            <div className={styles.summaryValue}>
               {filteredMovements.filter(m => m.movementType === 'dispense').length}
             </div>
-            <div className="dash-stat-label">จ่ายออก</div>
           </div>
         </div>
-        <div className="dash-stat-card">
-          <div className="dash-stat-icon dash-stat-icon-info">
-            <ArrowLeftRight size={24} />
-          </div>
-          <div className="dash-stat-content">
-            <div className="dash-stat-value">
+        <div className={styles.summaryCard}>
+          <ArrowLeftRight size={32} />
+          <div>
+            <div className={styles.summaryLabel}>โอน</div>
+            <div className={styles.summaryValue}>
               {filteredMovements.filter(m => m.movementType === 'transfer').length}
             </div>
-            <div className="dash-stat-label">รายการโอน</div>
           </div>
         </div>
       </div>
 
-      <div className="dash-card" style={{ marginBottom: '1.5rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Search */}
-          <div style={{ position: 'relative' }}>
-            <Search size={20} style={{
-              position: 'absolute',
-              left: '1rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: 'var(--dash-text-muted)',
-              zIndex: 1
-            }} />
-            <input
-              type="text"
-              className="dash-input"
-              placeholder="ค้นหาสินค้า, ผู้ส่ง/รับ, เลขที่เอกสาร..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '3rem' }}
-            />
+      {/* Filters */}
+      <div className={styles.filterSection}>
+        {/* Search */}
+        <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+          <Search size={20} style={{
+            position: 'absolute',
+            left: '1rem',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#94a3b8'
+          }} />
+          <input
+            type="text"
+            className="dash-input"
+            placeholder="ค้นหาสินค้า, ผู้ส่ง/รับ, เอกสาร..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ paddingLeft: '3rem' }}
+          />
+        </div>
+
+        {/* Type Filter */}
+        <div className={styles.filterGroup}>
+          <Filter size={18} />
+          <span>ประเภท:</span>
+          <div className={styles.buttonGroup}>
+            {[
+              { value: 'all', label: 'ทั้งหมด' },
+              { value: 'receive', label: 'รับเข้า' },
+              { value: 'dispense', label: 'จ่ายออก' },
+              { value: 'transfer', label: 'โอน' }
+            ].map(option => (
+              <button
+                key={option.value}
+                className={`${styles.filterBtn} ${typeFilter === option.value ? styles.active : ''}`}
+                onClick={() => setTypeFilter(option.value as typeof typeFilter)}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
+        </div>
 
-          <div className="dash-grid dash-grid-2">
-            {/* Type Filter */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div className="dash-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Filter size={16} /> ประเภทรายการ
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {[
-                  { value: 'all', label: 'ทั้งหมด' },
-                  { value: 'receive', label: '📥 รับเข้า' },
-                  { value: 'dispense', label: '📤 จ่ายออก' },
-                  { value: 'transfer', label: '🔄 โอน' }
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setTypeFilter(opt.value as 'all' | 'receive' | 'transfer' | 'dispense')}
-                    className={`dash-btn ${typeFilter === opt.value ? 'dash-btn-primary' : 'dash-btn-secondary'}`}
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8125rem' }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Date Filter */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div className="dash-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Calendar size={16} /> ช่วงเวลา
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {[
-                  { value: 'all', label: 'ทั้งหมด' },
-                  { value: 'today', label: 'วันนี้' },
-                  { value: 'week', label: '7 วัน' },
-                  { value: 'month', label: '30 วัน' }
-                ].map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setDateFilter(opt.value as 'all' | 'today' | 'week' | 'month')}
-                    className={`dash-btn ${dateFilter === opt.value ? 'dash-btn-primary' : 'dash-btn-secondary'}`}
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.8125rem' }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+        {/* Date Filter */}
+        <div className={styles.filterGroup}>
+          <Calendar size={18} />
+          <span>ช่วงเวลา:</span>
+          <div className={styles.buttonGroup}>
+            {[
+              { value: 'all', label: 'ทั้งหมด' },
+              { value: 'today', label: 'วันนี้' },
+              { value: 'week', label: '7 วัน' },
+              { value: 'month', label: '30 วัน' }
+            ].map(option => (
+              <button
+                key={option.value}
+                className={`${styles.filterBtn} ${dateFilter === option.value ? styles.active : ''}`}
+                onClick={() => setDateFilter(option.value as typeof dateFilter)}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Results Table */}
-      <div className="dash-card" style={{ marginTop: '1.5rem', padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--dash-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div className="dash-text-muted">
-            แสดง {filteredMovements.length > 0 ? startIndex + 1 : 0} ถึง {Math.min(endIndex, filteredMovements.length)} จาก {filteredMovements.length} รายการ
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span className="dash-text-muted">แสดง:</span>
-            <select
-              className="dash-select"
-              style={{ padding: '0.25rem 2rem 0.25rem 0.75rem', fontSize: '0.875rem' }}
-              value={itemsPerPage}
-              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+      {/* Results Info & Per Page Selector */}
+      <div className={styles.tableHeader}>
+        <div className={styles.resultsInfo}>
+          แสดง {filteredMovements.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredMovements.length)} จาก {filteredMovements.length} รายการ
+        </div>
+        <div className={styles.perPageSelector}>
+          <span>แสดง:</span>
+          {[5, 10, 25, 50].map(num => (
+            <button
+              key={num}
+              className={`${styles.perPageBtn} ${itemsPerPage === num ? styles.active : ''}`}
+              onClick={() => setItemsPerPage(num)}
             >
-              {[5, 10, 25, 50].map(n => <option key={n} value={n}>{n}</option>)}
-            </select>
-          </div>
+              {num}
+            </button>
+          ))}
+          <span>รายการ</span>
         </div>
+      </div>
 
-        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {paginatedMovements.map((movement) => {
-            const itemName = movement.itemName || movement.stockId?.itemName || 'N/A';
-            const badgeClass = getMovementBadgeClass(movement.movementType);
-            const label = getMovementLabel(movement.movementType);
+      {/* Table */}
+      {paginatedMovements.length > 0 ? (
+        <>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ประเภท</th>
+                  <th>สินค้า</th>
+                  <th>จำนวน</th>
+                  <th>จาก</th>
+                  <th>ไปยัง</th>
+                  <th>ผู้บันทึก</th>
+                  <th>วันเวลา</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedMovements.map((movement) => {
+                  const itemName = movement.itemName || movement.stockId?.itemName || 'N/A';
+                  return (
+                    <tr key={movement._id}>
+                      <td>
+                        <span
+                          className={styles.typeBadge}
+                          style={{
+                            background: `${getMovementColor(movement.movementType)}20`,
+                            color: getMovementColor(movement.movementType)
+                          }}
+                        >
+                          {getMovementIcon(movement.movementType)}
+                          {getMovementLabel(movement.movementType)}
+                        </span>
+                      </td>
+                      <td>
+                        <strong>{itemName}</strong>
+                      </td>
+                      <td>
+                        <span
+                          className={styles.quantity}
+                          style={{ color: getMovementColor(movement.movementType) }}
+                        >
+                          {movement.movementType === 'receive' ? '+' : movement.movementType === 'dispense' ? '-' : ''}{movement.quantity.toLocaleString()} {movement.unit}
+                        </span>
+                      </td>
+                      <td>{movement.from?.name || '-'}</td>
+                      <td>{movement.to?.name || '-'}</td>
+                      <td>{movement.performedBy?.name || movement.performedBy?.username || 'N/A'}</td>
+                      <td>
+                        <div className={styles.dateCell}>
+                          <div className={styles.relativeTime}>
+                            {getRelativeTime(movement.createdAt)}
+                          </div>
+                          <div className={styles.fullDate}>
+                            {formatDate(movement.createdAt)}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-            return (
-              <div key={movement._id} style={{
-                background: 'rgba(30, 41, 59, 0.4)',
-                border: '1px solid var(--dash-border)',
-                borderRadius: '12px',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                transition: 'all 0.2s ease',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div className={`dash-badge ${badgeClass}`} style={{ padding: '0.4rem 0.8rem' }}>
-                      {getMovementIcon(movement.movementType)}
-                      {label}
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--dash-text-primary)' }}>{itemName}</div>
-                      <div className="dash-text-muted" style={{ fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <Clock size={12} /> {getRelativeTime(movement.createdAt)} ({formatDate(movement.createdAt)})
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className={styles.pagination}>
+              <button
+                className={styles.pageBtn}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft size={18} />
+                ก่อนหน้า
+              </button>
+
+              <div className={styles.pageNumbers}>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    // Show first, last, current, and adjacent pages
+                    return page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - currentPage) <= 1;
+                  })
+                  .map((page, index, array) => {
+                    // Add ellipsis
+                    const prevPage = array[index - 1];
+                    const showEllipsis = prevPage && page - prevPage > 1;
+
+                    return (
+                      <div key={page} style={{ display: 'flex', gap: '0.5rem' }}>
+                        {showEllipsis && <span className={styles.ellipsis}>...</span>}
+                        <button
+                          className={`${styles.pageNumBtn} ${currentPage === page ? styles.active : ''}`}
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </button>
                       </div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{
-                      fontSize: '1.25rem',
-                      fontWeight: 900,
-                      color: movement.movementType === 'receive' ? 'var(--dash-success)' : movement.movementType === 'dispense' ? 'var(--dash-danger)' : 'var(--dash-primary)'
-                    }}>
-                      {movement.movementType === 'receive' ? '+' : movement.movementType === 'dispense' ? '-' : ''}
-                      {movement.quantity.toLocaleString()}
-                      <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--dash-text-muted)', marginLeft: '0.25rem' }}>{movement.unit}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="dash-grid dash-grid-4" style={{ gap: '0.75rem' }}>
-                  <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className="dash-text-muted">จาก:</span> <strong>{movement.from?.name || '-'}</strong>
-                  </div>
-                  <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className="dash-text-muted">ไปยัง:</span> <strong>{movement.to?.name || '-'}</strong>
-                  </div>
-                  <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <User size={14} className="dash-text-muted" /> <strong>{movement.performedBy?.name || movement.performedBy?.username || 'N/A'}</strong>
-                  </div>
-                  {movement.referenceId && (
-                    <div className="dash-text-secondary" style={{ fontSize: '0.8125rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <FileText size={14} className="dash-text-muted" /> <span>เอกสาร: {movement.referenceId}</span>
-                    </div>
-                  )}
-                </div>
-
-                {movement.notes && (
-                  <div style={{ fontSize: '0.8125rem', padding: '0.75rem', background: 'rgba(30, 41, 59, 0.6)', borderRadius: '8px', color: 'var(--dash-text-secondary)', borderLeft: '3px solid var(--dash-primary)' }}>
-                    <strong>หมายเหตุ:</strong> {movement.notes}
-                  </div>
-                )}
+                    );
+                  })}
               </div>
-            );
-          })}
 
-          {paginatedMovements.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '4rem' }}>
-              <Package size={48} style={{ opacity: 0.2, margin: '0 auto 1rem' }} />
-              <p className="dash-text-muted">ไม่พบประวัติการเคลื่อนไหว</p>
+              <button
+                className={styles.pageBtn}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+              >
+                ถัดไป
+                <ChevronRight size={18} />
+              </button>
             </div>
           )}
+        </>
+      ) : (
+        <div className={styles.emptyState}>
+          <Package size={64} style={{ opacity: 0.3 }} />
+          <h3>ไม่พบข้อมูล</h3>
+          <p>ลองปรับเปลี่ยนตัวกรองหรือคำค้นหา</p>
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div style={{ padding: '1.5rem', borderTop: '1px solid var(--dash-border)', display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="dash-btn dash-btn-secondary"
-              style={{ padding: '0.5rem 1rem' }}
-            >
-              <ChevronLeft size={18} />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
-              // Simple pagination logic: show first, last, current, and neighbors
-              if (page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`dash-btn ${currentPage === page ? 'dash-btn-primary' : 'dash-btn-secondary'}`}
-                    style={{ minWidth: '40px', padding: '0.5rem' }}
-                  >
-                    {page}
-                  </button>
-                );
-              } else if (Math.abs(page - currentPage) === 2) {
-                return <span key={page} style={{ alignSelf: 'center', color: 'var(--dash-text-muted)' }}>...</span>;
-              }
-              return null;
-            })}
-
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="dash-btn dash-btn-secondary"
-              style={{ padding: '0.5rem 1rem' }}
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
-      </div>
-
-      <style jsx global>{`
-        @media (max-width: 768px) {
-          .dash-grid-4 {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
-          .dash-table th:nth-child(4),
-          .dash-table td:nth-child(4),
-          .dash-table th:nth-child(5),
-          .dash-table td:nth-child(5),
-          .dash-table th:nth-child(6),
-          .dash-table td:nth-child(6) {
-            display: none;
-          }
-        }
-      `}</style>
+      )}
     </DashboardLayout>
   );
 }
