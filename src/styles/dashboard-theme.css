@@ -414,6 +414,50 @@
     border-color: var(--dash-info-border);
 }
 
+.dash-badge-critical {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.4) 100%);
+    color: #ff8a8a;
+    border-color: rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+    animation: dash-pulse-red 2s infinite;
+}
+
+.dash-badge-urgent {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.4) 100%);
+    color: #ffcc33;
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+    animation: dash-pulse-orange 2s infinite;
+}
+
+@keyframes dash-pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+@keyframes dash-pulse-orange {
+    0% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+    }
+}
+
 /* ==================== Grid System ==================== */
 
 .dash-grid {
@@ -1218,6 +1262,20 @@ textarea.dash-input {
     background: rgba(59, 130, 246, 0.1);
     color: #2563eb;
     border-color: rgba(59, 130, 246, 0.3);
+}
+
+[data-theme="light"] .dash-badge-critical {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fca5a5;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+}
+
+[data-theme="light"] .dash-badge-urgent {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fcd34d;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
 }
 
 [data-theme="light"] .dash-modal-overlay {

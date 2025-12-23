@@ -42,6 +42,26 @@
     background: rgba(59, 130, 246, 0.05);
 }
 
+.closeBtn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: var(--sidebar-text, #f8fafc);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+    margin-left: auto;
+}
+
+[data-theme="light"] .closeBtn {
+    color: #475569;
+}
+
+.closeBtn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .logoContainer {
     flex-shrink: 0;
     width: 56px;
@@ -476,11 +496,20 @@
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
-        transition: transform 0.3s ease;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 100%;
+        max-width: 280px;
     }
 
     .sidebar.open {
         transform: translateX(0);
+        box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+    }
+
+    .closeBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 

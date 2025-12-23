@@ -166,7 +166,7 @@ export default function AnnouncementsPage() {
     const getTypeBadge = (type: string) => {
         switch (type) {
             case 'urgent':
-                return 'dash-badge-danger';
+                return 'dash-badge-urgent';
             case 'warning':
                 return 'dash-badge-warning';
             default:

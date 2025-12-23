@@ -48,14 +48,26 @@
   flex-shrink: 0;
 }
 
+.outOfStock {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.15) 100%);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
 .outOfStock .alertIconBox {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.critical {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.1) 100%);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .critical .alertIconBox {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.2);
   color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
 .low .alertIconBox {
@@ -146,6 +158,16 @@
   background: #ffffff;
   border-color: #e2e8f0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .outOfStock {
+  background: #fff1f2;
+  border-color: #fecaca;
+}
+
+[data-theme="light"] .critical {
+  background: #fff5f5;
+  border-color: #fed7d7;
 }
 
 [data-theme="light"] .itemName {
