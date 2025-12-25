@@ -34,7 +34,6 @@ interface Shelter {
 
 interface ShelterFormData {
     name: string;
-    code: string;
     province: string;
     district: string;
     subdistrict: string;
@@ -62,7 +61,6 @@ export default function SheltersPage() {
     const [editingShelter, setEditingShelter] = useState<Shelter | null>(null);
     const [formData, setFormData] = useState<ShelterFormData>({
         name: '',
-        code: '',
         province: 'ศรีสะเกษ',
         district: '',
         subdistrict: '',
@@ -130,7 +128,6 @@ export default function SheltersPage() {
             const assignedStaff = shelter.assignedStaff?.[0];
             setFormData({
                 name: shelter.name,
-                code: shelter.code,
                 province: shelter.location.province,
                 district: shelter.location.district,
                 subdistrict: shelter.location.subdistrict,
@@ -145,7 +142,6 @@ export default function SheltersPage() {
             setEditingShelter(null);
             setFormData({
                 name: '',
-                code: '',
                 province: 'ศรีสะเกษ',
                 district: '',
                 subdistrict: '',
@@ -184,7 +180,8 @@ export default function SheltersPage() {
                 },
                 body: JSON.stringify({
                     name: formData.name,
-                    code: formData.code,
+                    // รหัสศูนย์จะถูกสร้างอัตโนมัติสำหรับศูนย์ใหม่ หรือส่งรหัสเดิมเมื่อแก้ไข
+                    ...(editingShelter ? { code: editingShelter.code } : {}),
                     location: {
                         province: formData.province,
                         district: formData.district,
@@ -495,16 +492,20 @@ export default function SheltersPage() {
                                         />
                                     </div>
 
-                                    <div className="dash-form-group">
-                                        <label className="dash-label">รหัสศูนย์ *</label>
-                                        <input
-                                            type="text"
-                                            className="dash-input"
-                                            value={formData.code}
-                                            onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                                            required
-                                        />
-                                    </div>
+                                    {/* รหัสศูนย์จะถูกสร้างอัตโนมัติ - แสดงเฉพาะเมื่อแก้ไข */}
+                                    {editingShelter && (
+                                        <div className="dash-form-group">
+                                            <label className="dash-label">รหัสศูนย์</label>
+                                            <input
+                                                type="text"
+                                                className="dash-input"
+                                                value={editingShelter.code}
+                                                disabled
+                                                style={{ backgroundColor: 'var(--dash-bg-tertiary)', color: 'var(--dash-text-muted)' }}
+                                            />
+                                            <small style={{ color: '#94a3b8' }}>รหัสศูนย์ไม่สามารถแก้ไขได้</small>
+                                        </div>
+                                    )}
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">จังหวัด *</label>
