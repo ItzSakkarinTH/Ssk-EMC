@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Building2, MapPin, Users, Edit, Trash2, Plus, X, Phone, FileText, User } from 'lucide-react';
+import SearchableSelect from '@/components/SearchableSelect';
+import { Building2, MapPin, Users, Edit, Plus, X, FileText, User } from 'lucide-react';
 import styles from './shelters.module.css';
 import { getDistricts, getSubDistricts } from '@/lib/sisaket-data';
 
@@ -39,8 +40,6 @@ interface ShelterFormData {
     subdistrict: string;
     address: string;
     capacity: number;
-    contactName: string;
-    contactPhone: string;
     status: 'active' | 'inactive';
     assignedStaffId: string;
 }
@@ -66,8 +65,6 @@ export default function SheltersPage() {
         subdistrict: '',
         address: '',
         capacity: 100,
-        contactName: '',
-        contactPhone: '',
         status: 'active',
         assignedStaffId: ''
     });
@@ -133,8 +130,6 @@ export default function SheltersPage() {
                 subdistrict: shelter.location.subdistrict,
                 address: shelter.location.address,
                 capacity: shelter.capacity,
-                contactName: shelter.contactPerson.name,
-                contactPhone: shelter.contactPerson.phone,
                 status: shelter.status === 'full' ? 'active' : shelter.status,
                 assignedStaffId: assignedStaff?._id || ''
             });
@@ -147,8 +142,6 @@ export default function SheltersPage() {
                 subdistrict: '',
                 address: '',
                 capacity: 100,
-                contactName: '',
-                contactPhone: '',
                 status: 'active',
                 assignedStaffId: ''
             });
@@ -189,10 +182,6 @@ export default function SheltersPage() {
                         address: formData.address
                     },
                     capacity: formData.capacity,
-                    contactPerson: {
-                        name: formData.contactName,
-                        phone: formData.contactPhone
-                    },
                     status: formData.status,
                     assignedStaffId: formData.assignedStaffId || null
                 })
@@ -214,32 +203,6 @@ export default function SheltersPage() {
         }
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`คุณแน่ใจหรือไม่ที่จะลบศูนย์พักพิง "${name}"?`)) {
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            const res = await fetch(`/api/admin/shelters/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                toast.success('ลบศูนย์พักพิงสำเร็จ');
-                fetchShelters();
-            } else {
-                const errorData = await res.json();
-                console.error('Failed to delete shelter:', errorData);
-                toast.error('ไม่สามารถลบศูนย์พักพิงได้');
-            }
-        } catch (error) {
-            console.error('Error deleting shelter:', error);
-            toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
-        }
-    };
-
     const getOccupancyPercentage = (shelter: Shelter) => {
         return Math.round((shelter.currentOccupancy / shelter.capacity) * 100);
     };
@@ -254,9 +217,6 @@ export default function SheltersPage() {
             shelter.location.district.toLowerCase().includes(searchTerm.toLowerCase());
         return matchDistrict && matchSearch;
     });
-
-    // Statistics
-    const totalCapacity = shelters.reduce((sum, s) => sum + s.capacity, 0);
 
     if (loading) {
         return (
@@ -408,14 +368,8 @@ export default function SheltersPage() {
                                     </div>
                                 </div>
 
-                                {/* Contact */}
-                                <div className={styles.contactInfo}>
-                                    <Phone size={16} />
-                                    <span>{shelter.contactPerson.phone}</span>
-                                </div>
-
                                 {/* Assigned Staff */}
-                                <div className={styles.contactInfo} style={{ borderTop: '1px solid rgba(148, 163, 184, 0.1)', paddingTop: '0.75rem', marginTop: '0.75rem' }}>
+                                <div className={styles.contactInfo}>
                                     <User size={16} />
                                     <span>
                                         {shelter.assignedStaff && shelter.assignedStaff.length > 0 ? (
@@ -521,45 +475,33 @@ export default function SheltersPage() {
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">อำเภอ *</label>
-                                        <select
-                                            className="dash-input"
+                                        <SearchableSelect
+                                            options={getDistricts()}
                                             value={formData.district}
-                                            onChange={(e) => {
+                                            onChange={(value) => {
                                                 setFormData({
                                                     ...formData,
-                                                    district: e.target.value,
+                                                    district: value,
                                                     subdistrict: '' // รีเซ็ตตำบลเมื่อเปลี่ยนอำเภอ
                                                 });
                                             }}
+                                            placeholder="-- เลือกอำเภอ --"
                                             required
-                                        >
-                                            <option value="">-- เลือกอำเภอ --</option>
-                                            {getDistricts().map(district => (
-                                                <option key={district} value={district}>
-                                                    {district}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            emptyMessage="ไม่พบอำเภอที่ค้นหา"
+                                        />
                                     </div>
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">ตำบล *</label>
-                                        <select
-                                            className="dash-input"
+                                        <SearchableSelect
+                                            options={formData.district ? getSubDistricts(formData.district) : []}
                                             value={formData.subdistrict}
-                                            onChange={(e) => setFormData({ ...formData, subdistrict: e.target.value })}
-                                            required
+                                            onChange={(value) => setFormData({ ...formData, subdistrict: value })}
+                                            placeholder={formData.district ? '-- เลือกตำบล --' : '-- เลือกอำเภอก่อน --'}
                                             disabled={!formData.district}
-                                        >
-                                            <option value="">
-                                                {formData.district ? '-- เลือกตำบล --' : '-- เลือกอำเภอก่อน --'}
-                                            </option>
-                                            {formData.district && getSubDistricts(formData.district).map(subdistrict => (
-                                                <option key={subdistrict} value={subdistrict}>
-                                                    {subdistrict}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            required
+                                            emptyMessage="ไม่พบตำบลที่ค้นหา"
+                                        />
                                     </div>
 
                                     <div className="dash-form-group">
@@ -581,28 +523,6 @@ export default function SheltersPage() {
                                             value={formData.address}
                                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                             rows={2}
-                                        />
-                                    </div>
-
-                                    <div className="dash-form-group">
-                                        <label className="dash-label">ผู้ประสานงาน *</label>
-                                        <input
-                                            type="text"
-                                            className="dash-input"
-                                            value={formData.contactName}
-                                            onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="dash-form-group">
-                                        <label className="dash-label">เบอร์โทร *</label>
-                                        <input
-                                            type="tel"
-                                            className="dash-input"
-                                            value={formData.contactPhone}
-                                            onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                                            required
                                         />
                                     </div>
 

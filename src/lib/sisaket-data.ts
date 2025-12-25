@@ -29,6 +29,7 @@ export const SISAKET_DISTRICTS = {
 export const getDistricts = () => Object.keys(SISAKET_DISTRICTS);
 
 // Helper function to get sub-districts by district
-export const getSubDistricts = (district: string) => {
-    return SISAKET_DISTRICTS[district as keyof typeof SISAKET_DISTRICTS] || [];
+export const getSubDistricts = (district: string): string[] => {
+    const subDistricts = SISAKET_DISTRICTS[district as keyof typeof SISAKET_DISTRICTS];
+    return subDistricts ? [...subDistricts] : [];
 };
