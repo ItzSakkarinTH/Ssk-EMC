@@ -6,7 +6,6 @@ export function middleware(request: NextRequest) {
 
   // Public routes - ไม่ต้อง auth
   const publicRoutes = [
-    '/stock-dashboard',
     '/login',
     '/api/stock/public'
   ];
