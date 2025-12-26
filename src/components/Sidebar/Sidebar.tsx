@@ -46,11 +46,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     title: 'หน้าหลัก',
                     icon: Home,
                     path: '/'
-                },
-                {
-                    title: 'Dashboard สต๊อก',
-                    icon: Package,
-                    path: '/stock-dashboard'
                 }
             ];
         }
@@ -61,11 +56,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     title: 'หน้าหลัก',
                     icon: Home,
                     path: '/'
-                },
-                {
-                    title: 'Dashboard สต๊อก',
-                    icon: Package,
-                    path: '/stock-dashboard'
                 },
                 {
                     title: 'จัดการสต๊อกจังหวัด',
@@ -101,11 +91,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     title: 'หน้าหลัก',
                     icon: Home,
                     path: '/'
-                },
-                {
-                    title: 'Dashboard สต๊อก',
-                    icon: Package,
-                    path: '/stock-dashboard'
                 },
                 {
                     title: 'จัดการสต๊อกศูนย์',
