@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Package, Edit, Trash2, Plus, Search, X } from 'lucide-react';
+import FileUploadModal, { UploadedData } from '@/components/FileUploadModal/FileUploadModal';
+import { Package, Edit, Trash2, Plus, Search, X, Upload } from 'lucide-react';
 
 interface StockItem {
     _id: string;
@@ -40,6 +41,7 @@ export default function ItemsPage() {
         maxStock: 100
     });
     const [submitting, setSubmitting] = useState(false);
+    const [showUploadModal, setShowUploadModal] = useState(false);
 
     useEffect(() => {
         fetchItems();
@@ -158,6 +160,50 @@ export default function ItemsPage() {
         }
     };
 
+    const handleImportItems = async (uploadedData: UploadedData) => {
+        const token = localStorage.getItem('accessToken');
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const row of uploadedData.data) {
+            try {
+                const itemData = {
+                    name: row.name as string,
+                    category: row.category as string,
+                    unit: row.unit as string,
+                    minStock: Number(row.minStock) || 0,
+                    maxStock: Number(row.maxStock) || 100,
+                    description: (row.description as string) || ''
+                };
+
+                const res = await fetch('/api/admin/items', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(itemData)
+                });
+
+                if (res.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } catch (error) {
+                console.error('Error importing item:', error);
+                errorCount++;
+            }
+        }
+
+        if (successCount > 0) {
+            toast.success(`นำเข้าสำเร็จ ${successCount} รายการ${errorCount > 0 ? `, ล้มเหลว ${errorCount} รายการ` : ''}`);
+            fetchItems();
+        } else {
+            toast.error('ไม่สามารถนำเข้าข้อมูลได้');
+        }
+    };
+
     const filteredItems = items.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -210,13 +256,22 @@ export default function ItemsPage() {
                     </div>
                 </div>
 
-                <button
-                    className="dash-btn dash-btn-primary"
-                    onClick={() => handleOpenModal()}
-                >
-                    <Plus size={20} />
-                    เพิ่มสินค้า
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                        className="dash-btn dash-btn-secondary"
+                        onClick={() => setShowUploadModal(true)}
+                    >
+                        <Upload size={20} />
+                        นำเข้าข้อมูล
+                    </button>
+                    <button
+                        className="dash-btn dash-btn-primary"
+                        onClick={() => handleOpenModal()}
+                    >
+                        <Plus size={20} />
+                        เพิ่มสินค้า
+                    </button>
+                </div>
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
@@ -442,6 +497,15 @@ export default function ItemsPage() {
                     </div>
                 </div>
             )}
+
+            {/* File Upload Modal */}
+            <FileUploadModal
+                isOpen={showUploadModal}
+                onClose={() => setShowUploadModal(false)}
+                onImport={handleImportItems}
+                type="items"
+                title="นำเข้าข้อมูลสินค้า"
+            />
         </DashboardLayout>
     );
 }

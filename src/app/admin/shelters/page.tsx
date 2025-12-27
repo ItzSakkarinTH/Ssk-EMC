@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import SearchableSelect from '@/components/SearchableSelect';
-import { Building2, MapPin, Users, Edit, Plus, X, FileText, User } from 'lucide-react';
+import FileUploadModal, { UploadedData } from '@/components/FileUploadModal/FileUploadModal';
+import { Building2, MapPin, Users, Edit, Plus, X, FileText, User, Upload } from 'lucide-react';
 import styles from './shelters.module.css';
 import { getDistricts, getSubDistricts } from '@/lib/sisaket-data';
 
@@ -73,6 +74,7 @@ export default function SheltersPage() {
     // Filter states
     const [selectedDistrict, setSelectedDistrict] = useState<string>('ทั้งหมด');
     const [searchTerm, setSearchTerm] = useState('');
+    const [showUploadModal, setShowUploadModal] = useState(false);
 
     useEffect(() => {
         fetchShelters();
@@ -207,6 +209,53 @@ export default function SheltersPage() {
         return Math.round((shelter.currentOccupancy / shelter.capacity) * 100);
     };
 
+    const handleImportShelters = async (uploadedData: UploadedData) => {
+        const token = localStorage.getItem('accessToken');
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const row of uploadedData.data) {
+            try {
+                const shelterData = {
+                    name: row.name as string,
+                    location: {
+                        province: 'ศรีสะเกษ',
+                        district: row.district as string,
+                        subdistrict: row.subdistrict as string,
+                        address: (row.address as string) || ''
+                    },
+                    capacity: Number(row.capacity) || 100,
+                    status: (row.status as string) || 'active'
+                };
+
+                const res = await fetch('/api/admin/shelters', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(shelterData)
+                });
+
+                if (res.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } catch (error) {
+                console.error('Error importing shelter:', error);
+                errorCount++;
+            }
+        }
+
+        if (successCount > 0) {
+            toast.success(`นำเข้าสำเร็จ ${successCount} รายการ${errorCount > 0 ? `, ล้มเหลว ${errorCount} รายการ` : ''}`);
+            fetchShelters();
+        } else {
+            toast.error('ไม่สามารถนำเข้าข้อมูลได้');
+        }
+    };
+
     // Get unique districts
     const districts = ['ทั้งหมด', ...new Set(shelters.map(s => s.location.district))];
 
@@ -290,20 +339,31 @@ export default function SheltersPage() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '1.5rem',
-                marginTop: '2rem'
+                marginTop: '2rem',
+                flexWrap: 'wrap',
+                gap: '1rem'
             }}>
                 <h2 className={styles.resultsTitle}>
                     ศูนย์พักพิงใน {selectedDistrict} <span className="dash-badge dash-badge-info">
                         {filteredShelters.filter(s => s.status === 'active').length}/{filteredShelters.length} แห่ง
                     </span>
                 </h2>
-                <button
-                    className="dash-btn dash-btn-primary"
-                    onClick={() => handleOpenModal()}
-                >
-                    <Plus size={20} />
-                    เพิ่มศูนย์พักพิง
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                        className="dash-btn dash-btn-secondary"
+                        onClick={() => setShowUploadModal(true)}
+                    >
+                        <Upload size={20} />
+                        นำเข้าข้อมูล
+                    </button>
+                    <button
+                        className="dash-btn dash-btn-primary"
+                        onClick={() => handleOpenModal()}
+                    >
+                        <Plus size={20} />
+                        เพิ่มศูนย์พักพิง
+                    </button>
+                </div>
             </div>
 
             {filteredShelters.length > 0 ? (
@@ -582,6 +642,15 @@ export default function SheltersPage() {
                     </div>
                 </div>
             )}
+
+            {/* File Upload Modal */}
+            <FileUploadModal
+                isOpen={showUploadModal}
+                onClose={() => setShowUploadModal(false)}
+                onImport={handleImportShelters}
+                type="shelters"
+                title="นำเข้าข้อมูลศูนย์พักพิง"
+            />
         </DashboardLayout>
     );
 }
