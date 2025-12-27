@@ -232,12 +232,6 @@ This project is licensed under the MIT License.
 
 ---
 
-## 👨‍💻 Authors
-
-- **Sisaket Provincial Office** - Initial work
-- **Antigravity AI** - Development assistance
-
----
 
 ## 🙏 Acknowledgments
 
@@ -250,10 +244,7 @@ This project is licensed under the MIT License.
 
 ## 📞 Contact
 
-**Sisaket Provincial Office**
-- Website: https://sisaket.go.th
-- Email: info@sisaket.go.th
-- Tel: 045-XXX-XXXX
+Tiktok: RealAom 
 
 ---
 
