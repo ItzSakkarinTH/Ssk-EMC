@@ -2,8 +2,8 @@
 
 import { Menu, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useMounted } from '@/hooks/useMounted';
 import styles from './MobileNav.module.css';
-import Image from 'next/image';
 
 interface MobileNavProps {
     onOpenSidebar: () => void;
@@ -11,6 +11,10 @@ interface MobileNavProps {
 
 export default function MobileNav({ onOpenSidebar }: MobileNavProps) {
     const { toggleTheme, isDark } = useTheme();
+    const mounted = useMounted();
+
+    // Use consistent dark theme for SSR to prevent hydration mismatch
+    const showDark = mounted ? isDark : true;
 
     return (
         <header className={styles.mobileHeader}>
@@ -19,7 +23,8 @@ export default function MobileNav({ onOpenSidebar }: MobileNavProps) {
             </button>
 
             <div className={styles.logoAndTitle}>
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                     src="/images/sskems2.png"
                     alt="Logo"
                     width={32}
@@ -30,7 +35,7 @@ export default function MobileNav({ onOpenSidebar }: MobileNavProps) {
             </div>
 
             <button className={styles.themeBtn} onClick={toggleTheme}>
-                {isDark ? <Sun size={20} /> : <Moon size={20} />}
+                {showDark ? <Sun size={20} /> : <Moon size={20} />}
             </button>
         </header>
     );
