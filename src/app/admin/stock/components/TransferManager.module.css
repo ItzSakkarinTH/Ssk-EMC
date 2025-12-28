@@ -733,3 +733,468 @@
     color: #2563eb;
     border-color: rgba(59, 130, 246, 0.2);
 }
+
+/* ==================== Multi-Select Styles ==================== */
+
+/* Selection Bar */
+.selectionBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.selectionInfo {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.selectionCount {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dash-primary);
+}
+
+.selectionTotal {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--dash-text-secondary);
+    padding-left: 1.5rem;
+    border-left: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.selectionActions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.selectionBtn {
+    padding: 0.5rem 1rem;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    color: var(--dash-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.selectionBtn:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.3);
+    transform: translateY(-1px);
+}
+
+.selectionBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.selectionBtnDanger {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: var(--dash-danger);
+}
+
+.selectionBtnDanger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.25);
+}
+
+/* Checkbox in Stock Cards */
+.checkbox {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(148, 163, 184, 0.4);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.checkboxChecked {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: #3b82f6;
+    color: white;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Selected Stock Card State */
+.stockCardSelected {
+    border-color: var(--dash-primary) !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%) !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3),
+        0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.stockCardSelected::before {
+    opacity: 1;
+}
+
+/* Disabled Stock Card (out of stock) */
+.stockCardDisabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
+.stockQtyEmpty {
+    color: var(--dash-danger) !important;
+}
+
+/* Action Info (left side of step actions) */
+.actionInfo {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--dash-success);
+}
+
+/* ==================== Step 2: Selected Items List ==================== */
+
+.selectedItemsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.selectedItemRow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.7) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.selectedItemRow:hover {
+    border-color: rgba(148, 163, 184, 0.3);
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(51, 65, 85, 0.7) 100%);
+}
+
+.itemNumber {
+    width: 28px;
+    height: 28px;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--dash-primary);
+    flex-shrink: 0;
+}
+
+.itemEmoji {
+    font-size: 1.75rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.itemDetails {
+    flex: 1;
+    min-width: 0;
+}
+
+.itemName {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dash-text-primary);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.itemAvailable {
+    font-size: 0.8125rem;
+    color: var(--dash-text-muted);
+    font-weight: 500;
+}
+
+/* Quantity Controls */
+.quantityControls {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.qtyBtn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.2);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 8px;
+    color: var(--dash-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.qtyBtn:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.3);
+    transform: scale(1.05);
+}
+
+.qtyBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.qtyInput {
+    width: 70px;
+    height: 36px;
+    text-align: center;
+    background: rgba(15, 23, 42, 0.8);
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+    color: var(--dash-text-primary);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.qtyInput:focus {
+    outline: none;
+    border-color: var(--dash-primary);
+}
+
+.itemUnit {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--dash-text-muted);
+    min-width: 40px;
+}
+
+.removeBtn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    color: var(--dash-danger);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.removeBtn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    transform: scale(1.05);
+}
+
+/* Quantity Summary */
+.quantitySummary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--dash-text-secondary);
+}
+
+.summaryHighlight {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--dash-success);
+}
+
+/* ==================== Step 3: Transfer Summary Multi ==================== */
+
+.transferSummaryMulti {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.summaryHeader {
+    padding: 1rem 1.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    font-weight: 700;
+    color: var(--dash-primary);
+}
+
+.summaryList {
+    padding: 0.75rem 1.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.summaryRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.summaryRow:last-child {
+    border-bottom: none;
+}
+
+.summaryEmoji {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.summaryItemName {
+    flex: 1;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--dash-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.summaryQty {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--dash-success);
+    flex-shrink: 0;
+}
+
+/* ==================== Responsive for Multi-Select ==================== */
+
+@media (max-width: 768px) {
+    .selectionBar {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .selectionInfo {
+        justify-content: center;
+    }
+
+    .selectionActions {
+        justify-content: center;
+    }
+
+    .selectedItemRow {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .itemDetails {
+        flex: 1 1 calc(100% - 120px);
+        order: 2;
+    }
+
+    .itemNumber {
+        order: 1;
+    }
+
+    .itemEmoji {
+        order: 1;
+    }
+
+    .quantityControls {
+        order: 3;
+        flex: 1 1 100%;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+
+    .itemUnit {
+        order: 3;
+    }
+
+    .removeBtn {
+        order: 2;
+        margin-left: auto;
+    }
+}
+
+/* ==================== Light Mode for Multi-Select ==================== */
+
+[data-theme="light"] .selectionBar {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="light"] .selectionBtn {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="light"] .selectionBtnDanger {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+[data-theme="light"] .checkbox {
+    background: #ffffff;
+    border-color: #d1d5db;
+}
+
+[data-theme="light"] .stockCardSelected {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%) !important;
+}
+
+[data-theme="light"] .selectedItemRow {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .selectedItemRow:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+[data-theme="light"] .qtyInput {
+    background: #ffffff;
+    border-color: #d1d5db;
+    color: #1e293b;
+}
+
+[data-theme="light"] .quantitySummary {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(5, 150, 105, 0.02) 100%);
+    border-color: rgba(16, 185, 129, 0.2);
+}
+
+[data-theme="light"] .transferSummaryMulti {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(37, 99, 235, 0.02) 100%);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+[data-theme="light"] .summaryHeader {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.15);
+}
+
+[data-theme="light"] .summaryItemName {
+    color: #1e293b;
+}

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/contexts/ToastContext';
-import { Package, ArrowRight, Search, CheckCircle2 } from 'lucide-react';
+import { Package, ArrowRight, Search, CheckCircle2, Check, X, Minus, Plus, Trash2 } from 'lucide-react';
 import styles from './TransferManager.module.css';
 
 interface Shelter {
@@ -18,6 +18,11 @@ interface Stock {
   unit: string;
   provincialStock: number;
   totalQuantity: number;
+}
+
+interface SelectedItem {
+  stock: Stock;
+  quantity: number;
 }
 
 interface Props {
@@ -112,9 +117,8 @@ export default function TransferManager({ onSuccess }: Props) {
 
   // Step states
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
-  const [quantity, setQuantity] = useState('');
-  const [fromShelterId, setFromShelterId] = useState<string>('provincial');
+  const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
+  const [fromShelterId] = useState<string>('provincial');
   const [toShelterId, setToShelterId] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -167,14 +171,56 @@ export default function TransferManager({ onSuccess }: Props) {
     }
   };
 
-  const handleSelectStock = (stock: Stock) => {
-    setSelectedStock(stock);
-    setCurrentStep(2);
-    setQuantity('');
+  // Check if item is selected
+  const isItemSelected = useCallback((stockId: string) => {
+    return selectedItems.some(item => item.stock._id === stockId);
+  }, [selectedItems]);
+
+  // Toggle item selection
+  const toggleItemSelection = (stock: Stock) => {
+    if (isItemSelected(stock._id)) {
+      setSelectedItems(prev => prev.filter(item => item.stock._id !== stock._id));
+    } else {
+      // Default quantity = 1 หรือ max ถ้าน้อยกว่า 1
+      const defaultQty = Math.min(1, stock.provincialStock);
+      setSelectedItems(prev => [...prev, { stock, quantity: defaultQty }]);
+    }
+  };
+
+  // Select all visible items
+  const selectAll = () => {
+    const newItems: SelectedItem[] = filteredStocks
+      .filter(stock => !isItemSelected(stock._id) && stock.provincialStock > 0)
+      .map(stock => ({
+        stock,
+        quantity: Math.min(1, stock.provincialStock)
+      }));
+    setSelectedItems(prev => [...prev, ...newItems]);
+  };
+
+  // Deselect all items
+  const deselectAll = () => {
+    setSelectedItems([]);
+  };
+
+  // Update quantity for an item
+  const updateItemQuantity = (stockId: string, newQuantity: number) => {
+    setSelectedItems(prev => prev.map(item => {
+      if (item.stock._id === stockId) {
+        const clampedQty = Math.max(1, Math.min(newQuantity, item.stock.provincialStock));
+        return { ...item, quantity: clampedQty };
+      }
+      return item;
+    }));
+  };
+
+  // Remove item from selection
+  const removeItem = (stockId: string) => {
+    setSelectedItems(prev => prev.filter(item => item.stock._id !== stockId));
   };
 
   const handleSubmit = async () => {
-    if (!selectedStock || !quantity || !toShelterId) {
+    if (selectedItems.length === 0 || !toShelterId) {
       toast.warning('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -184,50 +230,71 @@ export default function TransferManager({ onSuccess }: Props) {
       return;
     }
 
-    const qty = parseFloat(quantity);
-    if (qty <= 0) {
-      toast.warning('จำนวนต้องมากกว่า 0');
-      return;
-    }
-
-    if (fromShelterId === 'provincial' && qty > selectedStock.provincialStock) {
-      toast.error(`สต็อกกองกลางมีเพียง ${selectedStock.provincialStock} ${selectedStock.unit}`);
-      return;
+    // Validate all quantities
+    for (const item of selectedItems) {
+      if (item.quantity <= 0) {
+        toast.warning(`จำนวนของ ${item.stock.itemName} ต้องมากกว่า 0`);
+        return;
+      }
+      if (item.quantity > item.stock.provincialStock) {
+        toast.error(`สต็อก ${item.stock.itemName} มีเพียง ${item.stock.provincialStock} ${item.stock.unit}`);
+        return;
+      }
     }
 
     setLoading(true);
 
     try {
       const token = localStorage.getItem('accessToken');
-      const res = await fetch('/api/stock/admin/transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          stockId: selectedStock._id,
-          quantity: qty,
-          fromShelterId,
-          toShelterId,
-          notes
-        })
-      });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'เกิดข้อผิดพลาด');
+      // ส่ง request ทีละ item (หรือจะทำเป็น batch ก็ได้ถ้า API รองรับ)
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const item of selectedItems) {
+        try {
+          const res = await fetch('/api/stock/admin/transfer', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              stockId: item.stock._id,
+              quantity: item.quantity,
+              fromShelterId,
+              toShelterId,
+              notes
+            })
+          });
+
+          if (res.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+            const err = await res.json();
+            console.error(`Failed to transfer ${item.stock.itemName}:`, err.error);
+          }
+        } catch (err) {
+          errorCount++;
+          console.error(`Error transferring ${item.stock.itemName}:`, err);
+        }
       }
 
       // รีเซ็ตฟอร์ม
-      setSelectedStock(null);
-      setQuantity('');
-      setFromShelterId('provincial');
+      setSelectedItems([]);
       setToShelterId('');
       setNotes('');
       setCurrentStep(1);
 
-      toast.success('โอนสต๊อกสำเร็จ! ✅');
+      if (errorCount === 0) {
+        toast.success(`โอนสต๊อกสำเร็จ ${successCount} รายการ! ✅`);
+      } else if (successCount > 0) {
+        toast.warning(`โอนสำเร็จ ${successCount} รายการ, ล้มเหลว ${errorCount} รายการ`);
+      } else {
+        toast.error('ไม่สามารถโอนสต๊อกได้');
+      }
+
       await fetchStocks();
       onSuccess();
 
@@ -248,6 +315,9 @@ export default function TransferManager({ onSuccess }: Props) {
     : shelters.find(s => s.shelterId === fromShelterId)?.shelterName || '';
 
   const toShelterName = shelters.find(s => s.shelterId === toShelterId)?.shelterName || '';
+
+  // Calculate total items being transferred
+  const totalItems = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <div className={styles.container}>
@@ -273,7 +343,7 @@ export default function TransferManager({ onSuccess }: Props) {
         </div>
       </div>
 
-      {/* Step 1: Select Stock */}
+      {/* Step 1: Select Multiple Stocks */}
       {currentStep === 1 && (
         <div className={styles.stepContent}>
           <div className={styles.stepHeader}>
@@ -281,7 +351,42 @@ export default function TransferManager({ onSuccess }: Props) {
               <Package size={28} />
               เลือกสินค้าที่ต้องการโอน
             </h2>
-            <p className={styles.stepSubtitle}>คลิกที่การ์ดเพื่อเลือกสินค้า</p>
+            <p className={styles.stepSubtitle}>คลิกที่การ์ดเพื่อเลือกหลายรายการได้พร้อมกัน</p>
+          </div>
+
+          {/* Selection Summary Bar */}
+          <div className={styles.selectionBar}>
+            <div className={styles.selectionInfo}>
+              <span className={styles.selectionCount}>
+                <Check size={18} />
+                เลือกแล้ว {selectedItems.length} รายการ
+              </span>
+              {selectedItems.length > 0 && (
+                <span className={styles.selectionTotal}>
+                  รวม {totalItems.toLocaleString()} หน่วย
+                </span>
+              )}
+            </div>
+            <div className={styles.selectionActions}>
+              <button
+                type="button"
+                className={styles.selectionBtn}
+                onClick={selectAll}
+                disabled={filteredStocks.every(s => isItemSelected(s._id) || s.provincialStock === 0)}
+              >
+                เลือกทั้งหมด
+              </button>
+              {selectedItems.length > 0 && (
+                <button
+                  type="button"
+                  className={`${styles.selectionBtn} ${styles.selectionBtnDanger}`}
+                  onClick={deselectAll}
+                >
+                  <X size={16} />
+                  ล้างการเลือก
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Search */}
@@ -307,13 +412,22 @@ export default function TransferManager({ onSuccess }: Props) {
               {filteredStocks.map((stock) => {
                 const categoryDisplay = getCategoryDisplay(stock.category);
                 const emoji = getItemEmoji(stock.itemName, stock.category);
+                const selected = isItemSelected(stock._id);
+                const disabled = stock.provincialStock === 0;
+
                 return (
                   <button
                     key={stock._id}
-                    className={styles.stockCard}
-                    onClick={() => handleSelectStock(stock)}
+                    className={`${styles.stockCard} ${selected ? styles.stockCardSelected : ''} ${disabled ? styles.stockCardDisabled : ''}`}
+                    onClick={() => !disabled && toggleItemSelection(stock)}
                     type="button"
+                    disabled={disabled}
                   >
+                    {/* Selection Checkbox */}
+                    <div className={`${styles.checkbox} ${selected ? styles.checkboxChecked : ''}`}>
+                      {selected && <Check size={16} />}
+                    </div>
+
                     <div className={styles.stockEmoji}>
                       {emoji}
                     </div>
@@ -327,11 +441,10 @@ export default function TransferManager({ onSuccess }: Props) {
                     </div>
                     <div className={styles.stockQuantity}>
                       <div className={styles.stockQtyLabel}>กองกลาง</div>
-                      <div className={styles.stockQtyValue}>
+                      <div className={`${styles.stockQtyValue} ${disabled ? styles.stockQtyEmpty : ''}`}>
                         {stock.provincialStock.toLocaleString()} <span>{stock.unit}</span>
                       </div>
                     </div>
-                    <ArrowRight className={styles.stockArrow} size={20} />
                   </button>
                 );
               })}
@@ -342,57 +455,109 @@ export default function TransferManager({ onSuccess }: Props) {
               <p>ไม่พบสินค้า</p>
             </div>
           )}
+
+          {/* Next Button */}
+          <div className={styles.stepActions}>
+            <div className={styles.actionInfo}>
+              {selectedItems.length > 0 && (
+                <span>✅ เลือกแล้ว {selectedItems.length} รายการ</span>
+              )}
+            </div>
+            <button
+              type="button"
+              className={styles.btnPrimary}
+              onClick={() => {
+                if (selectedItems.length === 0) {
+                  toast.warning('กรุณาเลือกอย่างน้อย 1 รายการ');
+                  return;
+                }
+                setCurrentStep(2);
+              }}
+              disabled={selectedItems.length === 0}
+            >
+              ถัดไป →
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Step 2: Enter Quantity */}
-      {currentStep === 2 && selectedStock && (
+      {/* Step 2: Enter Quantities */}
+      {currentStep === 2 && (
         <div className={styles.stepContent}>
           <div className={styles.stepHeader}>
             <h2 className={styles.stepTitle}>
-              📦 {selectedStock.itemName}
+              📦 ระบุจำนวนสินค้า
             </h2>
-            <p className={styles.stepSubtitle}>ระบุจำนวนที่ต้องการโอน</p>
+            <p className={styles.stepSubtitle}>กำหนดจำนวนสินค้าที่ต้องการโอนแต่ละรายการ</p>
           </div>
 
-          <div className={styles.selectedStockInfo}>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>สต็อกกองกลาง</span>
-              <span className={styles.infoValue}>
-                {selectedStock.provincialStock.toLocaleString()} {selectedStock.unit}
-              </span>
-            </div>
+          {/* Selected Items List */}
+          <div className={styles.selectedItemsList}>
+            {selectedItems.map((item, index) => {
+              const emoji = getItemEmoji(item.stock.itemName, item.stock.category);
+              return (
+                <div key={item.stock._id} className={styles.selectedItemRow}>
+                  <div className={styles.itemNumber}>{index + 1}</div>
+                  <div className={styles.itemEmoji}>{emoji}</div>
+                  <div className={styles.itemDetails}>
+                    <div className={styles.itemName}>{item.stock.itemName}</div>
+                    <div className={styles.itemAvailable}>
+                      คงเหลือ: {item.stock.provincialStock.toLocaleString()} {item.stock.unit}
+                    </div>
+                  </div>
+                  <div className={styles.quantityControls}>
+                    <button
+                      type="button"
+                      className={styles.qtyBtn}
+                      onClick={() => updateItemQuantity(item.stock._id, item.quantity - 1)}
+                      disabled={item.quantity <= 1}
+                    >
+                      <Minus size={16} />
+                    </button>
+                    <input
+                      type="number"
+                      className={styles.qtyInput}
+                      value={item.quantity}
+                      onChange={(e) => updateItemQuantity(item.stock._id, parseInt(e.target.value) || 1)}
+                      min={1}
+                      max={item.stock.provincialStock}
+                    />
+                    <button
+                      type="button"
+                      className={styles.qtyBtn}
+                      onClick={() => updateItemQuantity(item.stock._id, item.quantity + 1)}
+                      disabled={item.quantity >= item.stock.provincialStock}
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </div>
+                  <span className={styles.itemUnit}>{item.stock.unit}</span>
+                  <button
+                    type="button"
+                    className={styles.removeBtn}
+                    onClick={() => removeItem(item.stock._id)}
+                    title="ลบรายการนี้"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
 
-          <div className={styles.quantityInput}>
-            <label className={styles.label}>จำนวนที่โอน</label>
-            <div className={styles.inputWithUnit}>
-              <input
-                type="number"
-                className={styles.input}
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                min="1"
-                max={selectedStock.provincialStock}
-                placeholder="0"
-                autoFocus
-              />
-              <span className={styles.unitBadge}>{selectedStock.unit}</span>
-            </div>
-            <small className={styles.hint}>
-              สูงสุด: {selectedStock.provincialStock.toLocaleString()} {selectedStock.unit}
-            </small>
+          {/* Summary */}
+          <div className={styles.quantitySummary}>
+            <span>รวมทั้งหมด</span>
+            <span className={styles.summaryHighlight}>
+              {selectedItems.length} รายการ / {totalItems.toLocaleString()} หน่วย
+            </span>
           </div>
 
           <div className={styles.stepActions}>
             <button
               type="button"
               className={styles.btnSecondary}
-              onClick={() => {
-                setCurrentStep(1);
-                setSelectedStock(null);
-                setQuantity('');
-              }}
+              onClick={() => setCurrentStep(1)}
             >
               ← ย้อนกลับ
             </button>
@@ -400,13 +565,13 @@ export default function TransferManager({ onSuccess }: Props) {
               type="button"
               className={styles.btnPrimary}
               onClick={() => {
-                if (!quantity || parseFloat(quantity) <= 0) {
-                  toast.warning('กรุณาระบุจำนวน');
+                if (selectedItems.length === 0) {
+                  toast.warning('กรุณาเลือกอย่างน้อย 1 รายการ');
                   return;
                 }
                 setCurrentStep(3);
               }}
-              disabled={!quantity || parseFloat(quantity) <= 0}
+              disabled={selectedItems.length === 0}
             >
               ถัดไป →
             </button>
@@ -415,7 +580,7 @@ export default function TransferManager({ onSuccess }: Props) {
       )}
 
       {/* Step 3: Select Destination */}
-      {currentStep === 3 && selectedStock && (
+      {currentStep === 3 && (
         <div className={styles.stepContent}>
           <div className={styles.stepHeader}>
             <h2 className={styles.stepTitle}>
@@ -425,16 +590,23 @@ export default function TransferManager({ onSuccess }: Props) {
           </div>
 
           {/* Transfer Summary */}
-          <div className={styles.transferSummary}>
-            <div className={styles.summaryItem}>
-              <span className={styles.summaryLabel}>สินค้า</span>
-              <span className={styles.summaryValue}>{selectedStock.itemName}</span>
+          <div className={styles.transferSummaryMulti}>
+            <div className={styles.summaryHeader}>
+              <span>📋 รายการที่จะโอน ({selectedItems.length} รายการ)</span>
             </div>
-            <div className={styles.summaryItem}>
-              <span className={styles.summaryLabel}>จำนวน</span>
-              <span className={styles.summaryValue}>
-                {quantity} {selectedStock.unit}
-              </span>
+            <div className={styles.summaryList}>
+              {selectedItems.map((item) => {
+                const emoji = getItemEmoji(item.stock.itemName, item.stock.category);
+                return (
+                  <div key={item.stock._id} className={styles.summaryRow}>
+                    <span className={styles.summaryEmoji}>{emoji}</span>
+                    <span className={styles.summaryItemName}>{item.stock.itemName}</span>
+                    <span className={styles.summaryQty}>
+                      {item.quantity.toLocaleString()} {item.stock.unit}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -490,8 +662,8 @@ export default function TransferManager({ onSuccess }: Props) {
             <div className="dash-alert dash-alert-info" style={{ marginTop: '1.5rem' }}>
               <strong>📋 สรุปการโอน</strong>
               <div style={{ marginTop: '0.75rem', fontSize: '0.9375rem', lineHeight: '1.6' }}>
-                โอน <strong>{selectedStock.itemName}</strong> จำนวน{' '}
-                <strong>{quantity} {selectedStock.unit}</strong>
+                โอน <strong>{selectedItems.length} รายการ</strong> รวม{' '}
+                <strong>{totalItems.toLocaleString()} หน่วย</strong>
                 <br />
                 จาก <strong>{fromShelterName}</strong> → <strong>{toShelterName}</strong>
               </div>
@@ -513,7 +685,7 @@ export default function TransferManager({ onSuccess }: Props) {
               onClick={handleSubmit}
               disabled={loading || !toShelterId}
             >
-              {loading ? '⏳ กำลังโอน...' : '✅ ยืนยันโอนสต๊อก'}
+              {loading ? '⏳ กำลังโอน...' : `✅ ยืนยันโอน ${selectedItems.length} รายการ`}
             </button>
           </div>
         </div>
