@@ -30,6 +30,7 @@ export default function MobileNav({ onOpenSidebar }: MobileNavProps) {
                     width={32}
                     height={32}
                     className={styles.logo}
+                    suppressHydrationWarning
                 />
                 <span className={styles.title}>Sisaket EMS</span>
             </div>

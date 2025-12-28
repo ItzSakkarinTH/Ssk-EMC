@@ -127,6 +127,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         width={100}
                         height={100}
                         className={styles.logoImage}
+                        suppressHydrationWarning
                     />
                 </div>
                 <div className={styles.logoText}>
