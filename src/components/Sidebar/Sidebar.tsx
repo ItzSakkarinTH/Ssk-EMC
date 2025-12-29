@@ -14,7 +14,6 @@ import {
     LayoutDashboard,
     ArrowLeftRight,
     AlertCircle,
-    BarChart3,
     Megaphone,
     Wrench,
     History,
@@ -70,8 +69,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         { title: 'ประวัติการเคลื่อนไหว', path: '/admin/stock/history', icon: History },
                         { title: 'ทุกศูนย์พักพิง', path: '/admin/stock/all-shelters', icon: Building2 },
                         { title: 'โอนสต๊อก', path: '/admin/stock/transfers', icon: ArrowLeftRight },
-                        { title: 'คำร้องขอสินค้า', path: '/admin/stock/requests', icon: ClipboardList },
-                        { title: 'วิเคราะห์ข้อมูล', path: '/admin/stock/analytics', icon: BarChart3 }
+                        { title: 'คำร้องขอสินค้า', path: '/admin/stock/requests', icon: ClipboardList }
                     ]
                 },
                 {
