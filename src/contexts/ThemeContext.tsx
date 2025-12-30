@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useLayoutEffect, useCallback, ReactNode } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -17,36 +17,25 @@ interface ThemeProviderProps {
     children: ReactNode;
 }
 
-// Get initial theme from localStorage or system preference
-function getInitialTheme(): Theme {
-    if (typeof window === 'undefined') {
-        return 'dark'; // Default for SSR
-    }
-
-    try {
-        const savedTheme = localStorage.getItem('theme') as Theme | null;
-        if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-            return savedTheme;
-        }
-
-        // Check system preference
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        return prefersDark ? 'dark' : 'light';
-    } catch {
-        return 'dark';
-    }
+// Get theme from DOM (set by inline script before React mounts)
+function getThemeFromDOM(): Theme {
+    if (typeof document === 'undefined') return 'dark';
+    const theme = document.documentElement.getAttribute('data-theme');
+    return theme === 'light' ? 'light' : 'dark';
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-    const [theme, setThemeState] = useState<Theme>('dark');
-    const [mounted, setMounted] = useState(false);
+    // Use lazy initialization to get theme from DOM
+    const [theme, setThemeState] = useState<Theme>(() => getThemeFromDOM());
 
-    // Initialize theme on mount
-    useEffect(() => {
-        const initialTheme = getInitialTheme();
-        setThemeState(initialTheme);
-        document.documentElement.setAttribute('data-theme', initialTheme);
-        setMounted(true);
+    // Sync with DOM on first render (in case SSR doesn't match)
+    useLayoutEffect(() => {
+        const domTheme = getThemeFromDOM();
+        if (domTheme !== theme) {
+            setThemeState(domTheme);
+        }
+        // Only run once on mount
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Update document and localStorage when theme changes
@@ -76,15 +65,6 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         isDark: theme === 'dark',
     };
 
-    // Prevent flash of wrong theme on initial render
-    if (!mounted) {
-        return (
-            <ThemeContext.Provider value={value}>
-                <div style={{ visibility: 'hidden' }}>{children}</div>
-            </ThemeContext.Provider>
-        );
-    }
-
     return (
         <ThemeContext.Provider value={value}>
             {children}
@@ -99,3 +79,4 @@ export function useTheme(): ThemeContextType {
     }
     return context;
 }
+

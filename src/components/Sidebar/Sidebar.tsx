@@ -1,8 +1,6 @@
-
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
     Home,
@@ -16,7 +14,6 @@ import {
     LayoutDashboard,
     ArrowLeftRight,
     AlertCircle,
-    BarChart3,
     Megaphone,
     Wrench,
     History,
@@ -26,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useMounted } from '@/hooks/useMounted';
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
@@ -37,6 +35,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
     const { user, isAuthenticated, logout } = useAuth();
     const { toggleTheme, isDark } = useTheme();
+    const mounted = useMounted();
+
+    // Use consistent dark theme for SSR to prevent hydration mismatch
+    const showDark = mounted ? isDark : true;
 
     // กำหนด nav items ตาม role
     const getNavItems = () => {
@@ -46,11 +48,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     title: 'หน้าหลัก',
                     icon: Home,
                     path: '/'
-                },
-                {
-                    title: 'Dashboard สต๊อก',
-                    icon: Package,
-                    path: '/stock-dashboard'
                 }
             ];
         }
@@ -63,11 +60,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     path: '/'
                 },
                 {
-                    title: 'Dashboard สต๊อก',
-                    icon: Package,
-                    path: '/stock-dashboard'
-                },
-                {
                     title: 'จัดการสต๊อกจังหวัด',
                     icon: LayoutDashboard,
                     category: true,
@@ -77,8 +69,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         { title: 'ประวัติการเคลื่อนไหว', path: '/admin/stock/history', icon: History },
                         { title: 'ทุกศูนย์พักพิง', path: '/admin/stock/all-shelters', icon: Building2 },
                         { title: 'โอนสต๊อก', path: '/admin/stock/transfers', icon: ArrowLeftRight },
-                        { title: 'คำร้องขอสินค้า', path: '/admin/stock/requests', icon: ClipboardList },
-                        { title: 'วิเคราะห์ข้อมูล', path: '/admin/stock/analytics', icon: BarChart3 }
+                        { title: 'คำร้องขอสินค้า', path: '/admin/stock/requests', icon: ClipboardList }
                     ]
                 },
                 {
@@ -101,11 +92,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     title: 'หน้าหลัก',
                     icon: Home,
                     path: '/'
-                },
-                {
-                    title: 'Dashboard สต๊อก',
-                    icon: Package,
-                    path: '/stock-dashboard'
                 },
                 {
                     title: 'จัดการสต๊อกศูนย์',
@@ -132,13 +118,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Header */}
             <div className={styles.header}>
                 <div className={styles.logoContainer}>
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                         src="/images/sskems2.png"
                         alt="Sisaket EMS Logo"
                         width={100}
                         height={100}
                         className={styles.logoImage}
-                        priority
+                        suppressHydrationWarning
                     />
                 </div>
                 <div className={styles.logoText}>
@@ -199,10 +186,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <button
                     onClick={toggleTheme}
                     className={styles.themeBtn}
-                    title={isDark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด'}
+                    title={showDark ? 'เปลี่ยนเป็นโหมดสว่าง' : 'เปลี่ยนเป็นโหมดมืด'}
                 >
-                    {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                    <span>{isDark ? 'โหมดสว่าง' : 'โหมดมืด'}</span>
+                    {showDark ? <Sun size={18} /> : <Moon size={18} />}
+                    <span>{showDark ? 'โหมดสว่าง' : 'โหมดมืด'}</span>
                 </button>
             </div>
 

@@ -313,3 +313,156 @@
 [data-theme="light"] .contactInfo {
     background: #f1f5f9;
 }
+
+/* ==================== Modal Form Styles ==================== */
+
+.formSection {
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.formSectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--dash-primary, #3b82f6);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.formSectionTitle svg {
+    width: 18px;
+    height: 18px;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.formGridFull {
+    grid-column: 1 / -1;
+}
+
+/* Enhanced input focus states */
+.formSection :global(.dash-input):focus {
+    border-color: var(--dash-primary, #3b82f6);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Enhanced label styles */
+.formSection :global(.dash-label) {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--dash-text-secondary, #94a3b8);
+}
+
+/* Required asterisk */
+.formSection :global(.dash-label)::after {
+    content: '';
+}
+
+.requiredField :global(.dash-label)::after {
+    content: '*';
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* Staff select card style */
+.staffSelectCard {
+    padding: 0.75rem 1rem;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+}
+
+.staffSelectCard.empty {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* Status toggle */
+.statusToggle {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.statusOption {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.4);
+    color: var(--dash-text-secondary);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+}
+
+.statusOption:hover {
+    border-color: rgba(148, 163, 184, 0.4);
+}
+
+.statusOption.active {
+    border-color: var(--dash-success, #10b981);
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--dash-success, #10b981);
+}
+
+.statusOption.inactive {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+/* ==================== Light Mode Modal Overrides ==================== */
+
+[data-theme="light"] .formSection {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .formSectionTitle {
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .statusOption {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+/* ==================== Responsive Adjustments ==================== */
+
+@media (max-width: 768px) {
+    .filterControls {
+        grid-template-columns: 1fr;
+    }
+
+    .filterStats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .formGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .statusToggle {
+        flex-direction: column;
+    }
+}

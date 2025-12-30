@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import { Building2, MapPin, Users, Edit, Trash2, Plus, X, Phone, FileText, User } from 'lucide-react';
+import SearchableSelect from '@/components/SearchableSelect';
+import FileUploadModal, { UploadedData } from '@/components/FileUploadModal/FileUploadModal';
+import { Building2, MapPin, Users, Edit, Plus, X, FileText, User, Upload } from 'lucide-react';
 import styles from './shelters.module.css';
 import { getDistricts, getSubDistricts } from '@/lib/sisaket-data';
 
@@ -34,14 +36,11 @@ interface Shelter {
 
 interface ShelterFormData {
     name: string;
-    code: string;
     province: string;
     district: string;
     subdistrict: string;
     address: string;
     capacity: number;
-    contactName: string;
-    contactPhone: string;
     status: 'active' | 'inactive';
     assignedStaffId: string;
 }
@@ -62,14 +61,11 @@ export default function SheltersPage() {
     const [editingShelter, setEditingShelter] = useState<Shelter | null>(null);
     const [formData, setFormData] = useState<ShelterFormData>({
         name: '',
-        code: '',
         province: 'ศรีสะเกษ',
         district: '',
         subdistrict: '',
         address: '',
         capacity: 100,
-        contactName: '',
-        contactPhone: '',
         status: 'active',
         assignedStaffId: ''
     });
@@ -78,6 +74,7 @@ export default function SheltersPage() {
     // Filter states
     const [selectedDistrict, setSelectedDistrict] = useState<string>('ทั้งหมด');
     const [searchTerm, setSearchTerm] = useState('');
+    const [showUploadModal, setShowUploadModal] = useState(false);
 
     useEffect(() => {
         fetchShelters();
@@ -130,14 +127,11 @@ export default function SheltersPage() {
             const assignedStaff = shelter.assignedStaff?.[0];
             setFormData({
                 name: shelter.name,
-                code: shelter.code,
                 province: shelter.location.province,
                 district: shelter.location.district,
                 subdistrict: shelter.location.subdistrict,
                 address: shelter.location.address,
                 capacity: shelter.capacity,
-                contactName: shelter.contactPerson.name,
-                contactPhone: shelter.contactPerson.phone,
                 status: shelter.status === 'full' ? 'active' : shelter.status,
                 assignedStaffId: assignedStaff?._id || ''
             });
@@ -145,14 +139,11 @@ export default function SheltersPage() {
             setEditingShelter(null);
             setFormData({
                 name: '',
-                code: '',
                 province: 'ศรีสะเกษ',
                 district: '',
                 subdistrict: '',
                 address: '',
                 capacity: 100,
-                contactName: '',
-                contactPhone: '',
                 status: 'active',
                 assignedStaffId: ''
             });
@@ -184,7 +175,8 @@ export default function SheltersPage() {
                 },
                 body: JSON.stringify({
                     name: formData.name,
-                    code: formData.code,
+                    // รหัสศูนย์จะถูกสร้างอัตโนมัติสำหรับศูนย์ใหม่ หรือส่งรหัสเดิมเมื่อแก้ไข
+                    ...(editingShelter ? { code: editingShelter.code } : {}),
                     location: {
                         province: formData.province,
                         district: formData.district,
@@ -192,10 +184,6 @@ export default function SheltersPage() {
                         address: formData.address
                     },
                     capacity: formData.capacity,
-                    contactPerson: {
-                        name: formData.contactName,
-                        phone: formData.contactPhone
-                    },
                     status: formData.status,
                     assignedStaffId: formData.assignedStaffId || null
                 })
@@ -217,34 +205,55 @@ export default function SheltersPage() {
         }
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`คุณแน่ใจหรือไม่ที่จะลบศูนย์พักพิง "${name}"?`)) {
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem('accessToken');
-            const res = await fetch(`/api/admin/shelters/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                toast.success('ลบศูนย์พักพิงสำเร็จ');
-                fetchShelters();
-            } else {
-                const errorData = await res.json();
-                console.error('Failed to delete shelter:', errorData);
-                toast.error('ไม่สามารถลบศูนย์พักพิงได้');
-            }
-        } catch (error) {
-            console.error('Error deleting shelter:', error);
-            toast.error('เกิดข้อผิดพลาดในการลบข้อมูล');
-        }
-    };
-
     const getOccupancyPercentage = (shelter: Shelter) => {
         return Math.round((shelter.currentOccupancy / shelter.capacity) * 100);
+    };
+
+    const handleImportShelters = async (uploadedData: UploadedData) => {
+        const token = localStorage.getItem('accessToken');
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const row of uploadedData.data) {
+            try {
+                const shelterData = {
+                    name: row.name as string,
+                    location: {
+                        province: 'ศรีสะเกษ',
+                        district: row.district as string,
+                        subdistrict: row.subdistrict as string,
+                        address: (row.address as string) || ''
+                    },
+                    capacity: Number(row.capacity) || 100,
+                    status: (row.status as string) || 'active'
+                };
+
+                const res = await fetch('/api/admin/shelters', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(shelterData)
+                });
+
+                if (res.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                }
+            } catch (error) {
+                console.error('Error importing shelter:', error);
+                errorCount++;
+            }
+        }
+
+        if (successCount > 0) {
+            toast.success(`นำเข้าสำเร็จ ${successCount} รายการ${errorCount > 0 ? `, ล้มเหลว ${errorCount} รายการ` : ''}`);
+            fetchShelters();
+        } else {
+            toast.error('ไม่สามารถนำเข้าข้อมูลได้');
+        }
     };
 
     // Get unique districts
@@ -257,9 +266,6 @@ export default function SheltersPage() {
             shelter.location.district.toLowerCase().includes(searchTerm.toLowerCase());
         return matchDistrict && matchSearch;
     });
-
-    // Statistics
-    const totalCapacity = shelters.reduce((sum, s) => sum + s.capacity, 0);
 
     if (loading) {
         return (
@@ -333,20 +339,31 @@ export default function SheltersPage() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '1.5rem',
-                marginTop: '2rem'
+                marginTop: '2rem',
+                flexWrap: 'wrap',
+                gap: '1rem'
             }}>
                 <h2 className={styles.resultsTitle}>
                     ศูนย์พักพิงใน {selectedDistrict} <span className="dash-badge dash-badge-info">
                         {filteredShelters.filter(s => s.status === 'active').length}/{filteredShelters.length} แห่ง
                     </span>
                 </h2>
-                <button
-                    className="dash-btn dash-btn-primary"
-                    onClick={() => handleOpenModal()}
-                >
-                    <Plus size={20} />
-                    เพิ่มศูนย์พักพิง
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                    <button
+                        className="dash-btn dash-btn-secondary"
+                        onClick={() => setShowUploadModal(true)}
+                    >
+                        <Upload size={20} />
+                        นำเข้าข้อมูล
+                    </button>
+                    <button
+                        className="dash-btn dash-btn-primary"
+                        onClick={() => handleOpenModal()}
+                    >
+                        <Plus size={20} />
+                        เพิ่มศูนย์พักพิง
+                    </button>
+                </div>
             </div>
 
             {filteredShelters.length > 0 ? (
@@ -411,14 +428,8 @@ export default function SheltersPage() {
                                     </div>
                                 </div>
 
-                                {/* Contact */}
-                                <div className={styles.contactInfo}>
-                                    <Phone size={16} />
-                                    <span>{shelter.contactPerson.phone}</span>
-                                </div>
-
                                 {/* Assigned Staff */}
-                                <div className={styles.contactInfo} style={{ borderTop: '1px solid rgba(148, 163, 184, 0.1)', paddingTop: '0.75rem', marginTop: '0.75rem' }}>
+                                <div className={styles.contactInfo}>
                                     <User size={16} />
                                     <span>
                                         {shelter.assignedStaff && shelter.assignedStaff.length > 0 ? (
@@ -495,16 +506,20 @@ export default function SheltersPage() {
                                         />
                                     </div>
 
-                                    <div className="dash-form-group">
-                                        <label className="dash-label">รหัสศูนย์ *</label>
-                                        <input
-                                            type="text"
-                                            className="dash-input"
-                                            value={formData.code}
-                                            onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                                            required
-                                        />
-                                    </div>
+                                    {/* รหัสศูนย์จะถูกสร้างอัตโนมัติ - แสดงเฉพาะเมื่อแก้ไข */}
+                                    {editingShelter && (
+                                        <div className="dash-form-group">
+                                            <label className="dash-label">รหัสศูนย์</label>
+                                            <input
+                                                type="text"
+                                                className="dash-input"
+                                                value={editingShelter.code}
+                                                disabled
+                                                style={{ backgroundColor: 'var(--dash-bg-tertiary)', color: 'var(--dash-text-muted)' }}
+                                            />
+                                            <small style={{ color: '#94a3b8' }}>รหัสศูนย์ไม่สามารถแก้ไขได้</small>
+                                        </div>
+                                    )}
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">จังหวัด *</label>
@@ -520,45 +535,33 @@ export default function SheltersPage() {
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">อำเภอ *</label>
-                                        <select
-                                            className="dash-input"
+                                        <SearchableSelect
+                                            options={getDistricts()}
                                             value={formData.district}
-                                            onChange={(e) => {
+                                            onChange={(value) => {
                                                 setFormData({
                                                     ...formData,
-                                                    district: e.target.value,
+                                                    district: value,
                                                     subdistrict: '' // รีเซ็ตตำบลเมื่อเปลี่ยนอำเภอ
                                                 });
                                             }}
+                                            placeholder="-- เลือกอำเภอ --"
                                             required
-                                        >
-                                            <option value="">-- เลือกอำเภอ --</option>
-                                            {getDistricts().map(district => (
-                                                <option key={district} value={district}>
-                                                    {district}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            emptyMessage="ไม่พบอำเภอที่ค้นหา"
+                                        />
                                     </div>
 
                                     <div className="dash-form-group">
                                         <label className="dash-label">ตำบล *</label>
-                                        <select
-                                            className="dash-input"
+                                        <SearchableSelect
+                                            options={formData.district ? getSubDistricts(formData.district) : []}
                                             value={formData.subdistrict}
-                                            onChange={(e) => setFormData({ ...formData, subdistrict: e.target.value })}
-                                            required
+                                            onChange={(value) => setFormData({ ...formData, subdistrict: value })}
+                                            placeholder={formData.district ? '-- เลือกตำบล --' : '-- เลือกอำเภอก่อน --'}
                                             disabled={!formData.district}
-                                        >
-                                            <option value="">
-                                                {formData.district ? '-- เลือกตำบล --' : '-- เลือกอำเภอก่อน --'}
-                                            </option>
-                                            {formData.district && getSubDistricts(formData.district).map(subdistrict => (
-                                                <option key={subdistrict} value={subdistrict}>
-                                                    {subdistrict}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            required
+                                            emptyMessage="ไม่พบตำบลที่ค้นหา"
+                                        />
                                     </div>
 
                                     <div className="dash-form-group">
@@ -580,28 +583,6 @@ export default function SheltersPage() {
                                             value={formData.address}
                                             onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                             rows={2}
-                                        />
-                                    </div>
-
-                                    <div className="dash-form-group">
-                                        <label className="dash-label">ผู้ประสานงาน *</label>
-                                        <input
-                                            type="text"
-                                            className="dash-input"
-                                            value={formData.contactName}
-                                            onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="dash-form-group">
-                                        <label className="dash-label">เบอร์โทร *</label>
-                                        <input
-                                            type="tel"
-                                            className="dash-input"
-                                            value={formData.contactPhone}
-                                            onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                                            required
                                         />
                                     </div>
 
@@ -661,6 +642,15 @@ export default function SheltersPage() {
                     </div>
                 </div>
             )}
+
+            {/* File Upload Modal */}
+            <FileUploadModal
+                isOpen={showUploadModal}
+                onClose={() => setShowUploadModal(false)}
+                onImport={handleImportShelters}
+                type="shelters"
+                title="นำเข้าข้อมูลศูนย์พักพิง"
+            />
         </DashboardLayout>
     );
 }

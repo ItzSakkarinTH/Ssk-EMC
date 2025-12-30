@@ -75,6 +75,26 @@ export async function GET(request: NextRequest) {
     }
 }
 
+// Helper function to generate shelter code
+async function generateShelterCode(): Promise<string> {
+    const lastShelter = await Shelter.findOne({}).sort({ code: -1 }).select('code').lean();
+
+    if (!lastShelter || !lastShelter.code) {
+        return 'SH-001';
+    }
+
+    // Extract number from code like "SH-001"
+    const match = lastShelter.code.match(/SH-(\d+)/);
+    if (match) {
+        const nextNumber = parseInt(match[1], 10) + 1;
+        return `SH-${nextNumber.toString().padStart(3, '0')}`;
+    }
+
+    // Fallback: count existing shelters
+    const count = await Shelter.countDocuments();
+    return `SH-${(count + 1).toString().padStart(3, '0')}`;
+}
+
 export async function POST(request: NextRequest) {
     try {
         const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -89,21 +109,28 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { assignedStaffId, ...shelterData } = body;
-
-        // Validate input
-        const validatedData = shelterSchema.parse(shelterData);
+        const { assignedStaffId, code: providedCode, ...shelterData } = body;
 
         await connectDB();
 
-        // Check if code already exists
-        const existingShelter = await Shelter.findOne({ code: validatedData.code });
-        if (existingShelter) {
-            return NextResponse.json(
-                { error: 'รหัสศูนย์พักพิงนี้มีอยู่ในระบบแล้ว' },
-                { status: 400 }
-            );
+        // Generate code automatically if not provided
+        let shelterCode = providedCode;
+        if (!shelterCode || shelterCode.trim() === '') {
+            shelterCode = await generateShelterCode();
+        } else {
+            // Check if provided code already exists
+            const existingShelter = await Shelter.findOne({ code: shelterCode });
+            if (existingShelter) {
+                return NextResponse.json(
+                    { error: 'รหัสศูนย์พักพิงนี้มีอยู่ในระบบแล้ว' },
+                    { status: 400 }
+                );
+            }
         }
+
+        // Validate input (without code since we handle it separately)
+        const dataToValidate = { ...shelterData, code: shelterCode };
+        const validatedData = shelterSchema.parse(dataToValidate);
 
         // Create new shelter
         const shelter = await Shelter.create({
