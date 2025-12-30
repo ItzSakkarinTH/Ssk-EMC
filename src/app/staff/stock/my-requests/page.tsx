@@ -136,7 +136,7 @@ export default function MyRequestsPage() {
                                 </div>
                             </div>
 
-                            <div style={{ background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', padding: '1rem' }}>
+                            <div style={{ background: 'var(--dash-bg-tertiary)', borderRadius: '12px', padding: '1rem' }}>
                                 <div style={{ fontWeight: 700, fontSize: '0.875rem', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between' }}>
                                     <span>รายการสินค้า</span>
                                     <span className="dash-text-muted">{request.items.length} รายการ</span>

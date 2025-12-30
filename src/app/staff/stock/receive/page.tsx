@@ -380,7 +380,7 @@ export default function ReceivePage() {
             <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {receiveList.map(item => (
-                  <div key={item._id} style={{ background: 'rgba(15, 23, 42, 0.4)', borderRadius: '12px', padding: '1rem', border: '1px solid var(--dash-border)' }}>
+                  <div key={item._id} style={{ background: 'var(--dash-bg-tertiary)', borderRadius: '12px', padding: '1rem', border: '1px solid var(--dash-border)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                       <div style={{ fontWeight: 600 }}>{getCategoryEmoji(item.category)} {item.itemName}</div>
                       <button onClick={() => removeFromList(item._id)} style={{ color: 'var(--dash-danger)', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -439,7 +439,7 @@ export default function ReceivePage() {
               </div>
             </div>
 
-            <div style={{ padding: '1.5rem', background: 'rgba(15, 23, 42, 0.6)', borderTop: '1px solid var(--dash-border)' }}>
+            <div style={{ padding: '1.5rem', background: 'var(--dash-surface-solid)', borderTop: '1px solid var(--dash-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontWeight: 700 }}>
                 <span>รวมรายการรับเข้า</span>
                 <span style={{ color: 'var(--dash-success)' }}>{receiveList.length} รายการ</span>
