@@ -242,14 +242,14 @@ export default function RequestsPage() {
         alignItems: 'center',
         marginBottom: '1rem',
         padding: '0.75rem 1rem',
-        background: 'rgba(30, 41, 59, 0.6)',
+        background: 'var(--dash-surface)',
         borderRadius: '10px',
-        border: '1px solid rgba(148, 163, 184, 0.15)'
+        border: '1px solid var(--dash-border)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#94a3b8', fontSize: '0.8125rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--dash-text-muted)', fontSize: '0.8125rem' }}>
           <Clock size={14} />
           <span>อัพเดทล่าสุด: {lastUpdated ? formatLastUpdated(lastUpdated) : '-'}</span>
-          <span style={{ color: '#64748b' }}>• รีเฟรชอัตโนมัติทุก 30 วินาที</span>
+          <span style={{ color: 'var(--dash-text-disabled)' }}>• รีเฟรชอัตโนมัติทุก 30 วินาที</span>
         </div>
         <button
           onClick={handleManualRefresh}
@@ -259,10 +259,10 @@ export default function RequestsPage() {
             alignItems: 'center',
             gap: '0.5rem',
             padding: '0.5rem 1rem',
-            background: refreshing ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.15)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
+            background: refreshing ? 'var(--dash-info-bg)' : 'rgba(59, 130, 246, 0.15)',
+            border: '1px solid var(--dash-info-border)',
             borderRadius: '8px',
-            color: '#3b82f6',
+            color: 'var(--dash-primary)',
             fontSize: '0.8125rem',
             fontWeight: 600,
             cursor: refreshing ? 'not-allowed' : 'pointer',
@@ -320,7 +320,7 @@ export default function RequestsPage() {
             left: '1rem',
             top: '50%',
             transform: 'translateY(-50%)',
-            color: '#94a3b8'
+            color: 'var(--dash-text-muted)'
           }} />
           <input
             type="text"
@@ -423,13 +423,13 @@ export default function RequestsPage() {
                       </td>
                       <td>
                         <strong>{req.shelter.name}</strong>
-                        <div style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--dash-text-muted)' }}>
                           {req.shelter.code}
                         </div>
                       </td>
                       <td>{req.requestedBy.name}</td>
                       <td>
-                        <span style={{ fontWeight: 600, color: '#3b82f6' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--dash-primary)' }}>
                           {req.itemCount} รายการ
                         </span>
                       </td>
@@ -466,9 +466,9 @@ export default function RequestsPage() {
                                 className="dash-btn-icon"
                                 title="อนุมัติคำขอ"
                                 style={{
-                                  color: '#22c55e',
-                                  background: 'rgba(34, 197, 94, 0.1)',
-                                  border: '1px solid rgba(34, 197, 94, 0.2)',
+                                  color: 'var(--dash-success)',
+                                  background: 'var(--dash-success-bg)',
+                                  border: '1px solid var(--dash-success-border)',
                                   padding: '0.5rem',
                                   borderRadius: '8px'
                                 }}
@@ -480,9 +480,9 @@ export default function RequestsPage() {
                                 className="dash-btn-icon"
                                 title="ปฏิเสธคำขอ"
                                 style={{
-                                  color: '#ef4444',
-                                  background: 'rgba(239, 68, 68, 0.1)',
-                                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                                  color: 'var(--dash-danger)',
+                                  background: 'var(--dash-danger-bg)',
+                                  border: '1px solid var(--dash-danger-border)',
                                   padding: '0.5rem',
                                   borderRadius: '8px'
                                 }}
@@ -496,9 +496,9 @@ export default function RequestsPage() {
                             className="dash-btn-icon"
                             title="ดูรายละเอียด"
                             style={{
-                              color: '#3b82f6',
-                              background: 'rgba(59, 130, 246, 0.1)',
-                              border: '1px solid rgba(59, 130, 246, 0.2)',
+                              color: 'var(--dash-primary)',
+                              background: 'var(--dash-info-bg)',
+                              border: '1px solid var(--dash-info-border)',
                               padding: '0.5rem',
                               borderRadius: '8px'
                             }}
@@ -595,7 +595,7 @@ export default function RequestsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-              <Zap size={24} style={{ color: quickAction === 'approve' ? '#22c55e' : '#ef4444' }} />
+              <Zap size={24} style={{ color: quickAction === 'approve' ? 'var(--dash-success)' : 'var(--dash-danger)' }} />
               <h3 className="dash-card-title" style={{ margin: 0 }}>
                 {quickAction === 'approve' ? 'อนุมัติคำขอ' : 'ปฏิเสธคำขอ'}
               </h3>
