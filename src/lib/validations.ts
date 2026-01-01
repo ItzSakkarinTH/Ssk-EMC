@@ -26,9 +26,14 @@ export const itemSchema = z.object({
     category: z.string().min(2).max(50),
     unit: z.string().min(1).max(20),
     description: z.string().max(500).optional(),
-    minStock: z.number().int().min(0, 'สต๊อกต่ำสุดต้องไม่ติดลบ'),
-    maxStock: z.number().int().positive('สต๊อกสูงสุดต้องมากกว่า 0')
-}).refine(data => data.maxStock > data.minStock, {
+    minStock: z.number().int().min(0, 'สต๊อกต่ำสุดต้องไม่ติดลบ').optional().default(0),
+    maxStock: z.number().int().positive('สต๊อกสูงสุดต้องมากกว่า 0').optional().nullable()
+}).refine(data => {
+    // ถ้าไม่มี maxStock หรือ minStock ให้ผ่าน validation
+    if (data.maxStock === null || data.maxStock === undefined) return true;
+    if (data.minStock === undefined) return true;
+    return data.maxStock > data.minStock;
+}, {
     message: 'สต๊อกสูงสุดต้องมากกว่าสต๊อกต่ำสุด',
     path: ['maxStock']
 });
