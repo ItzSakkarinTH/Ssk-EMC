@@ -228,7 +228,7 @@ export default function RequestDetailPage() {
       <DashboardLayout title="ไม่พบข้อมูล" subtitle="">
         <div className="dash-card" style={{ padding: '3rem', textAlign: 'center' }}>
           <AlertCircle size={64} style={{ opacity: 0.3, marginBottom: '1rem' }} />
-          <h3 style={{ color: '#f1f5f9', marginBottom: '0.5rem' }}>ไม่พบคำขอนี้</h3>
+          <h3 style={{ color: 'var(--dash-text-primary)', marginBottom: '0.5rem' }}>ไม่พบคำขอนี้</h3>
           <button
             onClick={() => router.push('/admin/stock/requests')}
             className="dash-btn dash-btn-primary"
@@ -299,7 +299,7 @@ export default function RequestDetailPage() {
               </span>
             </div>
           </div>
-          <div style={{ textAlign: 'right', color: '#94a3b8', fontSize: '0.875rem' }}>
+          <div style={{ textAlign: 'right', color: 'var(--dash-text-muted)', fontSize: '0.875rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Calendar size={16} />
               {formatDate(request.createdAt)}
@@ -374,28 +374,28 @@ export default function RequestDetailPage() {
                   <tr key={idx}>
                     <td style={{ textAlign: 'center' }}>{idx + 1}</td>
                     <td>
-                      <strong style={{ color: '#f1f5f9' }}>{item.itemName}</strong>
+                      <strong style={{ color: 'var(--dash-text-primary)' }}>{item.itemName}</strong>
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       <span style={{
                         fontSize: '1.125rem',
                         fontWeight: 700,
-                        color: '#3b82f6'
+                        color: 'var(--dash-primary)'
                       }}>
                         {item.requestedQuantity.toLocaleString()}
                       </span>
-                      <span style={{ marginLeft: '0.5rem', color: '#94a3b8' }}>
+                      <span style={{ marginLeft: '0.5rem', color: 'var(--dash-text-muted)' }}>
                         {item.unit}
                       </span>
                     </td>
                     <td>
                       <div style={{
                         padding: '0.5rem 0.75rem',
-                        background: 'rgba(100, 116, 139, 0.1)',
+                        background: 'var(--dash-surface-active)',
                         borderRadius: '6px',
-                        borderLeft: '3px solid #64748b',
+                        borderLeft: '3px solid var(--dash-primary)',
                         fontSize: '0.875rem',
-                        color: '#cbd5e1'
+                        color: 'var(--dash-text-secondary)'
                       }}>
                         {item.reason}
                       </div>
@@ -418,7 +418,7 @@ export default function RequestDetailPage() {
           <div className="dash-form-group" style={{ marginBottom: '2rem' }}>
             <label className="dash-label">
               หมายเหตุจาก Admin
-              {request.status === 'pending' && <span style={{ color: '#94a3b8' }}> (จำเป็นสำหรับการปฏิเสธ)</span>}
+              {request.status === 'pending' && <span style={{ color: 'var(--dash-text-muted)' }}> (จำเป็นสำหรับการปฏิเสธ)</span>}
             </label>
             <textarea
               className="dash-input"
@@ -471,7 +471,7 @@ export default function RequestDetailPage() {
             ผลการพิจารณา
           </h3>
           {request.reviewedBy && (
-            <div style={{ marginBottom: '1rem', color: '#cbd5e1' }}>
+            <div style={{ marginBottom: '1rem', color: 'var(--dash-text-secondary)' }}>
               <strong>พิจารณาโดย:</strong> {request.reviewedBy.username}
               {request.reviewedAt && (
                 <> | {formatDate(request.reviewedAt)}</>
@@ -481,14 +481,14 @@ export default function RequestDetailPage() {
           {request.adminNotes && (
             <div style={{
               padding: '1rem',
-              background: 'rgba(100, 116, 139, 0.1)',
+              background: 'var(--dash-surface-active)',
               borderRadius: '8px',
-              borderLeft: '3px solid #64748b'
+              borderLeft: '3px solid var(--dash-primary)'
             }}>
-              <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '0.875rem', color: 'var(--dash-text-muted)', marginBottom: '0.5rem' }}>
                 หมายเหตุ:
               </div>
-              <div style={{ color: '#cbd5e1' }}>
+              <div style={{ color: 'var(--dash-text-secondary)' }}>
                 {request.adminNotes}
               </div>
             </div>
