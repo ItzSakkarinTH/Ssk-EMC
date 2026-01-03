@@ -35,7 +35,7 @@ export async function GET() {
         // เตรียมโครงสร้างข้อมูลสำหรับแต่ละหมวดหมู่
         const trends: Record<string, number[]> = {
             water: new Array(7).fill(0),
-            food: new Array(7).fill(0),
+            food_secondary: new Array(7).fill(0), // อาหารทั้งหมด (ยกเว้นน้ำดื่ม)
             medicine: new Array(7).fill(0),
             bedding: new Array(7).fill(0),
         };
@@ -48,13 +48,19 @@ export async function GET() {
 
             if (dayIndex !== -1) {
                 let category = 'other';
-                const stock = m.stockId as any;
+                const stock = m.stockId as { category?: string } | null;
                 const name = (m.itemName || '').toLowerCase();
 
                 // ตรรกะแยกหมวดหมู่
-                if (name.includes('น้ำ')) category = 'water';
-                else if (name.includes('ที่นอน') || name.includes('ผ้าห่ม') || name.includes('หมอน') || name.includes('มุ้ง')) category = 'bedding';
-                else if (stock?.category) category = stock.category;
+                if (name.includes('น้ำ') && !name.includes('น้ำตาล') && !name.includes('น้ำปลา') && !name.includes('น้ำมัน')) {
+                    category = 'water';
+                } else if (name.includes('ที่นอน') || name.includes('ผ้าห่ม') || name.includes('หมอน') || name.includes('มุ้ง')) {
+                    category = 'bedding';
+                } else if (stock?.category === 'food') {
+                    category = 'food_secondary'; // อาหารทั้งหมดเข้า food_secondary
+                } else if (stock?.category) {
+                    category = stock.category;
+                }
 
                 if (trends[category]) {
                     trends[category][dayIndex] += m.quantity;

@@ -32,6 +32,7 @@ interface StockOverview {
   byCategory: {
     water: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
     food: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
+    food_secondary: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
     medicine: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
     bedding: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
     clothing: { items: number; quantity: number; status?: 'sufficient' | 'low' | 'critical' };
@@ -124,10 +125,10 @@ export default function HomePage() {
     },
     {
       name: 'อาหาร',
-      category: 'food',
-      quantity: overview?.byCategory?.food?.quantity || 0,
-      status: overview?.byCategory?.food?.status,
-      color: getColorByStatus(overview?.byCategory?.food?.status)
+      category: 'food_secondary',
+      quantity: overview?.byCategory?.food_secondary?.quantity || 0,
+      status: overview?.byCategory?.food_secondary?.status,
+      color: getColorByStatus(overview?.byCategory?.food_secondary?.status)
     },
     {
       name: 'ยา',
@@ -148,10 +149,10 @@ export default function HomePage() {
   // Calculate max for chart scale
   const maxQuantity = Math.max(...categoryData.map(d => d.quantity), 1);
 
-  // Trend data from API
+  // Trend data from API - ใช้ food_secondary แทน food
   const trendDays = trends.labels.length > 0 ? trends.labels : ['...', '...', '...', '...', '...', '...', '...'];
   const waterTrend = trends.data.water || [0, 0, 0, 0, 0, 0, 0];
-  const foodTrend = trends.data.food || [0, 0, 0, 0, 0, 0, 0];
+  const foodTrend = trends.data.food_secondary || [0, 0, 0, 0, 0, 0, 0]; // ใช้อาหารรองแทน
   const medicineTrend = trends.data.medicine || [0, 0, 0, 0, 0, 0, 0];
   const beddingTrend = trends.data.bedding || [0, 0, 0, 0, 0, 0, 0];
 
