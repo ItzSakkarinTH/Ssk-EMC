@@ -34,19 +34,19 @@ export async function GET() {
     }
 
     const byCategory: Record<string, CategoryData> = {
-      water: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 },    // น้ำดื่ม
-      food: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 },     // อาหาร
-      medicine: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 }, // ยา
-      bedding: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 },  // เครื่องนอน (ที่นอน/ผ้าห่ม)
-      clothing: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 }, // เสื้อผ้าทั่วไป
-      other: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 }     // อื่นๆ
+      water: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 },          // น้ำดื่ม
+      food_secondary: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 }, // อาหาร (ทุกรายการ)
+      medicine: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 },       // ยา
+      bedding: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 },        // เครื่องนอน (ที่นอน/ผ้าห่ม)
+      clothing: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 },       // เสื้อผ้าทั่วไป
+      other: { items: 0, quantity: 0, minLevel: 0, criticalLevel: 0 }           // อื่นๆ
     };
 
     allStocks.forEach((stock: { category: 'food' | 'medicine' | 'clothing' | 'other'; itemName: string; totalQuantity: number; minStockLevel: number; criticalLevel: number }) => {
       const name = stock.itemName.toLowerCase();
 
-      // 1. แยกน้ำดื่มออกจาก food
-      if (stock.category === 'food' && name.includes('น้ำ')) {
+      // 1. แยกน้ำดื่มออกจาก food (เฉพาะที่มีคำว่า "น้ำ" แต่ไม่ใช่น้ำตาล, น้ำปลา, น้ำมัน)
+      if (stock.category === 'food' && name.includes('น้ำ') && !name.includes('น้ำตาล') && !name.includes('น้ำปลา') && !name.includes('น้ำมัน')) {
         byCategory.water.items++;
         byCategory.water.quantity += stock.totalQuantity;
         byCategory.water.minLevel += stock.minStockLevel;
@@ -59,7 +59,14 @@ export async function GET() {
         byCategory.bedding.minLevel += stock.minStockLevel;
         byCategory.bedding.criticalLevel += stock.criticalLevel;
       }
-      // 3. จัดเข้าหมวดปกติที่เหลือ
+      // 3. อาหารทั้งหมด (ที่ไม่ใช่น้ำดื่ม) -> food_secondary
+      else if (stock.category === 'food') {
+        byCategory.food_secondary.items++;
+        byCategory.food_secondary.quantity += stock.totalQuantity;
+        byCategory.food_secondary.minLevel += stock.minStockLevel;
+        byCategory.food_secondary.criticalLevel += stock.criticalLevel;
+      }
+      // 4. จัดเข้าหมวดปกติที่เหลือ (medicine, clothing, other)
       else {
         byCategory[stock.category].items++;
         byCategory[stock.category].quantity += stock.totalQuantity;
