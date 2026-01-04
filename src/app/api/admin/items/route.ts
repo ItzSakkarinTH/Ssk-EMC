@@ -74,8 +74,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create new item
-        const item = await StockItem.create(validatedData);
+        // Create new item - transform null maxStock to undefined for Mongoose compatibility
+        const itemData = {
+            ...validatedData,
+            maxStock: validatedData.maxStock ?? undefined
+        };
+        const item = await StockItem.create(itemData);
 
         errorTracker.logInfo('Item created successfully', {
             itemId: item._id,
