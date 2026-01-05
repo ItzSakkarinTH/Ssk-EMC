@@ -37,12 +37,14 @@ const StockItemSchema = new Schema<IStockItem>({
     },
     minStock: {
         type: Number,
-        required: true,
+        required: false,
+        default: 0,
         min: 0
     },
     maxStock: {
         type: Number,
-        required: true,
+        required: false,
+        default: null,
         min: 1
     }
 }, {

@@ -176,7 +176,7 @@ export default function RequestApproval() {
         <h3 style={{ fontSize: '1.5rem', fontWeight: 600, color: 'var(--dash-text-primary)', marginBottom: '0.5rem' }}>
           ไม่มีคำขอรอพิจารณา
         </h3>
-        <p style={{ color: '#94a3b8' }}>
+        <p style={{ color: 'var(--dash-text-muted)' }}>
           คำขอทั้งหมดได้รับการพิจารณาแล้ว
         </p>
       </div>
@@ -231,7 +231,7 @@ export default function RequestApproval() {
                   }}>
                     {req.requestNumber}
                   </h3>
-                  <span style={{ fontSize: '0.8125rem', color: '#94a3b8' }}>
+                  <span style={{ fontSize: '0.8125rem', color: 'var(--dash-text-muted)' }}>
                     {new Date(req.requestedAt).toLocaleDateString('th-TH', {
                       year: 'numeric',
                       month: 'short',
@@ -339,7 +339,7 @@ export default function RequestApproval() {
                 <h2 className="dash-card-title" style={{ marginBottom: '0.5rem' }}>
                   {selectedRequest.requestNumber}
                 </h2>
-                <p style={{ color: '#94a3b8', margin: 0 }}>
+                <p style={{ color: 'var(--dash-text-muted)', margin: 0 }}>
                   รายละเอียดคำขอสินค้า
                 </p>
               </div>
@@ -393,10 +393,11 @@ export default function RequestApproval() {
                 {selectedRequest.items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="dash-card"
                     style={{
                       padding: '1.25rem',
-                      background: 'var(--dash-bg-tertiary)'
+                      background: 'var(--dash-surface)',
+                      border: '1px solid var(--dash-border)',
+                      borderRadius: 'var(--dash-radius-md)'
                     }}
                   >
                     <div style={{
@@ -423,13 +424,13 @@ export default function RequestApproval() {
                     </div>
                     <div style={{
                       padding: '0.75rem',
-                      background: 'rgba(100, 116, 139, 0.1)',
+                      background: 'var(--dash-surface-active)',
                       borderRadius: '8px',
-                      borderLeft: '3px solid #64748b'
+                      borderLeft: '3px solid var(--dash-primary)'
                     }}>
                       <div style={{
                         fontSize: '0.8125rem',
-                        color: '#94a3b8',
+                        color: 'var(--dash-text-muted)',
                         marginBottom: '0.25rem'
                       }}>
                         เหตุผล:

@@ -13,7 +13,7 @@ interface StockItem {
     unit: string;
     description?: string;
     minStock: number;
-    maxStock: number;
+    maxStock: number | null;
 }
 
 interface ItemFormData {
@@ -21,8 +21,8 @@ interface ItemFormData {
     category: string;
     unit: string;
     description: string;
-    minStock: number;
-    maxStock: number;
+    minStock: number | string;
+    maxStock: number | string;
 }
 
 export default function ItemsPage() {
@@ -38,7 +38,7 @@ export default function ItemsPage() {
         unit: '',
         description: '',
         minStock: 0,
-        maxStock: 100
+        maxStock: ''
     });
     const [submitting, setSubmitting] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -78,8 +78,8 @@ export default function ItemsPage() {
                 category: item.category,
                 unit: item.unit,
                 description: item.description || '',
-                minStock: item.minStock,
-                maxStock: item.maxStock
+                minStock: item.minStock ?? 0,
+                maxStock: item.maxStock ?? ''
             });
         } else {
             setEditingItem(null);
@@ -89,7 +89,7 @@ export default function ItemsPage() {
                 unit: '',
                 description: '',
                 minStock: 0,
-                maxStock: 100
+                maxStock: ''
             });
         }
         setShowModal(true);
@@ -117,7 +117,11 @@ export default function ItemsPage() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify({
+                    ...formData,
+                    minStock: formData.minStock === '' ? 0 : Number(formData.minStock),
+                    maxStock: formData.maxStock === '' ? null : Number(formData.maxStock)
+                })
             });
 
             if (res.ok) {
@@ -326,8 +330,8 @@ export default function ItemsPage() {
                                     </span>
                                 </td>
                                 <td>{item.unit}</td>
-                                <td>{item.minStock.toLocaleString()}</td>
-                                <td>{item.maxStock.toLocaleString()}</td>
+                                <td>{item.minStock?.toLocaleString() ?? 0}</td>
+                                <td>{item.maxStock ? item.maxStock.toLocaleString() : <span style={{ color: 'var(--dash-text-muted)', fontStyle: 'italic' }}>ไม่จำกัด</span>}</td>
                                 <td>
                                     <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                                         <button
@@ -451,26 +455,26 @@ export default function ItemsPage() {
                                     </div>
 
                                     <div className="dash-form-group">
-                                        <label className="dash-label">สต๊อกต่ำสุด *</label>
+                                        <label className="dash-label">สต๊อกต่ำสุด</label>
                                         <input
                                             type="number"
                                             className="dash-input"
                                             value={formData.minStock}
-                                            onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) })}
-                                            required
+                                            onChange={(e) => setFormData({ ...formData, minStock: e.target.value === '' ? '' : parseInt(e.target.value) })}
                                             min="0"
+                                            placeholder="0"
                                         />
                                     </div>
 
                                     <div className="dash-form-group">
-                                        <label className="dash-label">สต๊อกสูงสุด *</label>
+                                        <label className="dash-label">สต๊อกสูงสุด</label>
                                         <input
                                             type="number"
                                             className="dash-input"
                                             value={formData.maxStock}
-                                            onChange={(e) => setFormData({ ...formData, maxStock: parseInt(e.target.value) })}
-                                            required
+                                            onChange={(e) => setFormData({ ...formData, maxStock: e.target.value === '' ? '' : parseInt(e.target.value) })}
                                             min="1"
+                                            placeholder="ไม่จำกัด (เว้นว่าง)"
                                         />
                                     </div>
                                 </div>
