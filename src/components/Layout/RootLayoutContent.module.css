@@ -26,12 +26,24 @@
 }
 
 @media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .contentWrapper {
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
     .mainContent {
         margin-left: 0;
         padding-top: 0;
-    }
-
-    .container {
-        flex-direction: column;
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
