@@ -1,10 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import FileUploadModal, { UploadedData } from '@/components/FileUploadModal/FileUploadModal';
-import { Package, Edit, Trash2, Plus, Search, X, Upload } from 'lucide-react';
+import {
+    Package,
+    Edit,
+    Trash2,
+    Plus,
+    Search,
+    X,
+    Upload,
+    Filter,
+    ChevronLeft,
+    ChevronRight,
+    Layers
+} from 'lucide-react';
+import styles from './page.module.css';
 
 interface StockItem {
     _id: string;
@@ -25,11 +38,25 @@ interface ItemFormData {
     maxStock: number | string;
 }
 
+const CATEGORIES = [
+    { value: '', label: 'ทั้งหมด' },
+    { value: 'อาหาร', label: 'อาหาร' },
+    { value: 'เครื่องดื่ม', label: 'เครื่องดื่ม' },
+    { value: 'ยา', label: 'ยา' },
+    { value: 'เวชภัณฑ์', label: 'เวชภัณฑ์' },
+    { value: 'เสื้อผ้า', label: 'เสื้อผ้า' },
+    { value: 'ผ้าห่ม', label: 'ผ้าห่ม' },
+    { value: 'อุปกรณ์อาบน้ำ', label: 'อุปกรณ์อาบน้ำ' },
+    { value: 'อุปกรณ์ทำความสะอาด', label: 'อุปกรณ์ทำความสะอาด' },
+    { value: 'อื่นๆ', label: 'อื่นๆ' }
+];
+
 export default function ItemsPage() {
     const toast = useToast();
     const [items, setItems] = useState<StockItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingItem, setEditingItem] = useState<StockItem | null>(null);
     const [formData, setFormData] = useState<ItemFormData>({
@@ -43,10 +70,19 @@ export default function ItemsPage() {
     const [submitting, setSubmitting] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
 
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+
     useEffect(() => {
         fetchItems();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, categoryFilter, itemsPerPage]);
 
     const fetchItems = async () => {
         try {
@@ -208,10 +244,28 @@ export default function ItemsPage() {
         }
     };
 
-    const filteredItems = items.filter(item =>
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Filter items
+    const filteredItems = useMemo(() => {
+        return items.filter(item => {
+            // Search filter
+            const matchesSearch =
+                item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                item.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
+            if (!matchesSearch) return false;
+
+            // Category filter
+            if (categoryFilter && item.category !== categoryFilter) return false;
+
+            return true;
+        });
+    }, [items, searchTerm, categoryFilter]);
+
+    // Pagination
+    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedItems = filteredItems.slice(startIndex, endIndex);
 
     const categories = [...new Set(items.map(item => item.category))];
 
@@ -231,36 +285,28 @@ export default function ItemsPage() {
             title="จัดการรายการสินค้า"
             subtitle="จัดการรายการสินค้าในระบบ"
         >
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '2rem',
-                gap: '1rem',
-                flexWrap: 'wrap'
-            }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', flex: 1 }}>
-                    <div className="dash-stat-card">
-                        <div className="dash-stat-icon dash-stat-icon-primary">
-                            <Package size={28} />
-                        </div>
-                        <div className="dash-stat-content">
-                            <div className="dash-stat-value">{items.length}</div>
-                            <div className="dash-stat-label">สินค้าทั้งหมด</div>
-                        </div>
-                    </div>
-                    <div className="dash-stat-card">
-                        <div className="dash-stat-icon dash-stat-icon-info">
-                            <Package size={28} />
-                        </div>
-                        <div className="dash-stat-content">
-                            <div className="dash-stat-value">{categories.length}</div>
-                            <div className="dash-stat-label">หมวดหมู่</div>
-                        </div>
+            {/* Summary Stats */}
+            <div className={styles.summary}>
+                <div className={styles.summaryCard}>
+                    <Package size={32} />
+                    <div>
+                        <div className={styles.summaryLabel}>สินค้าทั้งหมด</div>
+                        <div className={styles.summaryValue}>{items.length}</div>
                     </div>
                 </div>
+                <div className={styles.summaryCard}>
+                    <Layers size={32} />
+                    <div>
+                        <div className={styles.summaryLabel}>หมวดหมู่</div>
+                        <div className={styles.summaryValue}>{categories.length}</div>
+                    </div>
+                </div>
+            </div>
 
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+            {/* Header with Action Buttons */}
+            <div className={styles.headerSection}>
+                <div></div>
+                <div className={styles.actionButtons}>
                     <button
                         className="dash-btn dash-btn-secondary"
                         onClick={() => setShowUploadModal(true)}
@@ -278,18 +324,17 @@ export default function ItemsPage() {
                 </div>
             </div>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ position: 'relative', maxWidth: '400px' }}>
-                    <Search
-                        size={20}
-                        style={{
-                            position: 'absolute',
-                            left: '1rem',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: '#94a3b8'
-                        }}
-                    />
+            {/* Filter Section */}
+            <div className={styles.filterSection}>
+                {/* Search */}
+                <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+                    <Search size={20} style={{
+                        position: 'absolute',
+                        left: '1rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: '#94a3b8'
+                    }} />
                     <input
                         type="text"
                         className="dash-input"
@@ -299,67 +344,180 @@ export default function ItemsPage() {
                         style={{ paddingLeft: '3rem' }}
                     />
                 </div>
-            </div>
 
-            <div className="dash-table-container">
-                <table className="dash-table">
-                    <thead>
-                        <tr>
-                            <th>ชื่อสินค้า</th>
-                            <th>หมวดหมู่</th>
-                            <th>หน่วย</th>
-                            <th>สต๊อกต่ำสุด</th>
-                            <th>สต๊อกสูงสุด</th>
-                            <th style={{ textAlign: 'center' }}>จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredItems.map((item) => (
-                            <tr key={item._id}>
-                                <td>
-                                    <div style={{ fontWeight: 600, color: 'var(--dash-text-primary)' }}>{item.name}</div>
-                                    {item.description && (
-                                        <div style={{ fontSize: '0.875rem', color: '#94a3b8', marginTop: '0.25rem' }}>
-                                            {item.description}
-                                        </div>
-                                    )}
-                                </td>
-                                <td>
-                                    <span className="dash-badge dash-badge-info">
-                                        {item.category}
-                                    </span>
-                                </td>
-                                <td>{item.unit}</td>
-                                <td>{item.minStock?.toLocaleString() ?? 0}</td>
-                                <td>{item.maxStock ? item.maxStock.toLocaleString() : <span style={{ color: 'var(--dash-text-muted)', fontStyle: 'italic' }}>ไม่จำกัด</span>}</td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                                        <button
-                                            className="dash-btn dash-btn-secondary"
-                                            style={{ padding: '0.5rem' }}
-                                            onClick={() => handleOpenModal(item)}
-                                        >
-                                            <Edit size={16} />
-                                        </button>
-                                        <button
-                                            className="dash-btn dash-btn-danger"
-                                            style={{ padding: '0.5rem' }}
-                                            onClick={() => handleDelete(item._id, item.name)}
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                {/* Category Filter */}
+                <div className={styles.filterGroup}>
+                    <Filter size={18} />
+                    <span>หมวดหมู่:</span>
+                    <div className={styles.buttonGroup}>
+                        {CATEGORIES.slice(0, 5).map(cat => (
+                            <button
+                                key={cat.value}
+                                className={`${styles.filterBtn} ${categoryFilter === cat.value ? styles.active : ''}`}
+                                onClick={() => setCategoryFilter(cat.value)}
+                            >
+                                {cat.label}
+                            </button>
                         ))}
-                    </tbody>
-                </table>
+                        {categoryFilter && !CATEGORIES.slice(0, 5).some(c => c.value === categoryFilter) && (
+                            <button
+                                className={`${styles.filterBtn} ${styles.active}`}
+                                onClick={() => setCategoryFilter('')}
+                            >
+                                {categoryFilter}
+                            </button>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            {filteredItems.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-                    <Package size={64} style={{ opacity: 0.5, marginBottom: '1rem' }} />
-                    <p>{searchTerm ? 'ไม่พบสินค้าที่ค้นหา' : 'ยังไม่มีสินค้าในระบบ'}</p>
+            {/* Results Info & Per Page Selector */}
+            <div className={styles.tableHeader}>
+                <div className={styles.resultsInfo}>
+                    แสดง {filteredItems.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredItems.length)} จาก {filteredItems.length} รายการ
+                </div>
+                <div className={styles.perPageSelector}>
+                    <span>แสดง:</span>
+                    {[5, 10, 25, 50].map(num => (
+                        <button
+                            key={num}
+                            className={`${styles.perPageBtn} ${itemsPerPage === num ? styles.active : ''}`}
+                            onClick={() => setItemsPerPage(num)}
+                        >
+                            {num}
+                        </button>
+                    ))}
+                    <span>รายการ</span>
+                </div>
+            </div>
+
+            {/* Table */}
+            {paginatedItems.length > 0 ? (
+                <>
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>ชื่อสินค้า</th>
+                                    <th>หมวดหมู่</th>
+                                    <th>หน่วย</th>
+                                    <th>สต๊อกต่ำสุด</th>
+                                    <th>สต๊อกสูงสุด</th>
+                                    <th style={{ textAlign: 'center' }}>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {paginatedItems.map((item) => (
+                                    <tr key={item._id}>
+                                        <td>
+                                            <div className={styles.itemName}>{item.name}</div>
+                                            {item.description && (
+                                                <div className={styles.itemDescription}>
+                                                    {item.description}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <span className={styles.categoryBadge}>
+                                                {item.category}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={styles.unitBadge}>
+                                                {item.unit}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={styles.stockValue}>
+                                                {item.minStock?.toLocaleString() ?? 0}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {item.maxStock ? (
+                                                <span className={styles.stockValue}>
+                                                    {item.maxStock.toLocaleString()}
+                                                </span>
+                                            ) : (
+                                                <span className={styles.noLimit}>ไม่จำกัด</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <div className={styles.actionBtns}>
+                                                <button
+                                                    className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
+                                                    onClick={() => handleOpenModal(item)}
+                                                    title="แก้ไข"
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button
+                                                    className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
+                                                    onClick={() => handleDelete(item._id, item.name)}
+                                                    title="ลบ"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className={styles.pagination}>
+                            <button
+                                className={styles.pageBtn}
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft size={18} />
+                                ก่อนหน้า
+                            </button>
+
+                            <div className={styles.pageNumbers}>
+                                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                    .filter(page => {
+                                        return page === 1 ||
+                                            page === totalPages ||
+                                            Math.abs(page - currentPage) <= 1;
+                                    })
+                                    .map((page, index, array) => {
+                                        const prevPage = array[index - 1];
+                                        const showEllipsis = prevPage && page - prevPage > 1;
+
+                                        return (
+                                            <div key={page} style={{ display: 'flex', gap: '0.5rem' }}>
+                                                {showEllipsis && <span className={styles.ellipsis}>...</span>}
+                                                <button
+                                                    className={`${styles.pageNumBtn} ${currentPage === page ? styles.active : ''}`}
+                                                    onClick={() => setCurrentPage(page)}
+                                                >
+                                                    {page}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                            </div>
+
+                            <button
+                                className={styles.pageBtn}
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                ถัดไป
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className={styles.emptyState}>
+                    <Package size={64} style={{ opacity: 0.3 }} />
+                    <h3>{searchTerm || categoryFilter ? 'ไม่พบสินค้าที่ค้นหา' : 'ยังไม่มีสินค้าในระบบ'}</h3>
+                    <p>{searchTerm || categoryFilter ? 'ลองปรับเปลี่ยนตัวกรองหรือคำค้นหา' : 'คลิกปุ่ม "เพิ่มสินค้า" เพื่อเริ่มต้น'}</p>
                 </div>
             )}
 
