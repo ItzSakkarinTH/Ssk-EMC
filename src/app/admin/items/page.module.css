@@ -1,0 +1,544 @@
+/* Summary Cards */
+.summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summaryCard {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s;
+}
+
+.summaryCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.2);
+}
+
+.summaryCard svg {
+    color: #3b82f6;
+}
+
+.summaryLabel {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    margin-bottom: 0.25rem;
+}
+
+.summaryValue {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+}
+
+/* Header Section */
+.headerSection {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.actionButtons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Filter Section */
+.filterSection {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 12px;
+}
+
+.filterGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+    color: #cbd5e1;
+}
+
+.filterGroup svg {
+    color: #3b82f6;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filterBtn {
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.5);
+    color: #94a3b8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.filterBtn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    color: #f1f5f9;
+}
+
+.filterBtn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* Table Header */
+.tableHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.resultsInfo {
+    font-size: 0.875rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.perPageSelector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #94a3b8;
+}
+
+.perPageBtn {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.5);
+    color: #94a3b8;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.perPageBtn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+.perPageBtn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+/* Table */
+.tableWrapper {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+}
+
+.table thead {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.1) 100%);
+    border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.table th {
+    padding: 1rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #3b82f6;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    color: #cbd5e1;
+    font-size: 0.875rem;
+}
+
+.table tbody tr {
+    transition: all 0.2s;
+}
+
+.table tbody tr:hover {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.itemName {
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.itemDescription {
+    font-size: 0.8125rem;
+    color: #64748b;
+    margin-top: 0.25rem;
+}
+
+.categoryBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+.unitBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+}
+
+.stockValue {
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.noLimit {
+    color: #64748b;
+    font-style: italic;
+    font-size: 0.8125rem;
+}
+
+.actionBtns {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.actionBtn {
+    padding: 0.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.5);
+    color: #94a3b8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.actionBtn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.actionBtnEdit:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.actionBtnDelete {
+    color: #f87171;
+}
+
+.actionBtnDelete:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 0;
+}
+
+.pageBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.5);
+    color: #94a3b8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.pageBtn:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    color: #f1f5f9;
+}
+
+.pageBtn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.pageNumbers {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.pageNumBtn {
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(15, 23, 42, 0.5);
+    color: #94a3b8;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.pageNumBtn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+}
+
+.pageNumBtn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.ellipsis {
+    color: #64748b;
+    padding: 0 0.25rem;
+}
+
+/* Empty State */
+.emptyState {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #64748b;
+}
+
+.emptyState svg {
+    margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+    font-size: 1.25rem;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+}
+
+.emptyState p {
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .filterSection {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filterGroup {
+        flex-wrap: wrap;
+    }
+
+    .tableWrapper {
+        font-size: 0.8125rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .headerSection {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .actionButtons {
+        justify-content: center;
+    }
+
+    .tableHeader {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .perPageSelector {
+        justify-content: center;
+    }
+
+    .pagination {
+        flex-direction: column;
+    }
+
+    .pageNumbers {
+        order: -1;
+    }
+
+    .buttonGroup {
+        flex-wrap: wrap;
+    }
+}
+
+/* ==================== Light Mode Overrides ==================== */
+
+[data-theme="light"] .summaryCard {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .summaryValue {
+    color: #1e293b;
+}
+
+[data-theme="light"] .filterSection {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .filterBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .filterBtn:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .perPageBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .perPageBtn:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .tableWrapper {
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .table {
+    background: #ffffff;
+}
+
+[data-theme="light"] .table thead {
+    background: #f8fafc;
+    border-bottom-color: #e2e8f0;
+}
+
+[data-theme="light"] .table td {
+    border-bottom-color: #f1f5f9;
+    color: #475569;
+}
+
+[data-theme="light"] .table tbody tr:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .itemName {
+    color: #1e293b;
+}
+
+[data-theme="light"] .stockValue {
+    color: #1e293b;
+}
+
+[data-theme="light"] .categoryBadge {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="light"] .unitBadge {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+[data-theme="light"] .actionBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .actionBtn:hover {
+    background: #f8fafc;
+}
+
+[data-theme="light"] .pageBtn,
+[data-theme="light"] .pageNumBtn {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+
+[data-theme="light"] .pageBtn:hover:not(:disabled),
+[data-theme="light"] .pageNumBtn:hover {
+    background: #f8fafc;
+}
+
+/* Fix active states in light mode */
+[data-theme="light"] .filterBtn.active,
+[data-theme="light"] .perPageBtn.active,
+[data-theme="light"] .pageNumBtn.active {
+    background: #3b82f6;
+    color: #ffffff !important;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
