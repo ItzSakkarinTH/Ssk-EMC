@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
-import FileUploadModal, { UploadedData } from '@/components/FileUploadModal/FileUploadModal';
+import FileUploadModal, { UploadedData, ImportProgress } from '@/components/FileUploadModal/FileUploadModal';
 import {
     Package,
     Edit,
@@ -200,12 +200,30 @@ export default function ItemsPage() {
         }
     };
 
-    const handleImportItems = async (uploadedData: UploadedData) => {
+    // Progressive import function with progress tracking
+    const handleProgressiveImportItems = async (
+        uploadedData: UploadedData,
+        onProgress: (progress: ImportProgress) => void
+    ): Promise<{ successCount: number; errorCount: number }> => {
         const token = localStorage.getItem('accessToken');
         let successCount = 0;
         let errorCount = 0;
+        const total = uploadedData.data.length;
+        const startTime = Date.now();
 
-        for (const row of uploadedData.data) {
+        for (let i = 0; i < uploadedData.data.length; i++) {
+            const row = uploadedData.data[i];
+
+            // Report progress before each item
+            onProgress({
+                current: i,
+                total,
+                successCount,
+                errorCount,
+                startTime,
+                currentItem: row.name as string || `รายการ ${i + 1}`
+            });
+
             try {
                 const itemData = {
                     name: row.name as string,
@@ -234,14 +252,32 @@ export default function ItemsPage() {
                 console.error('Error importing item:', error);
                 errorCount++;
             }
+
+            // Report progress after each item
+            onProgress({
+                current: i + 1,
+                total,
+                successCount,
+                errorCount,
+                startTime,
+                currentItem: row.name as string || `รายการ ${i + 1}`
+            });
         }
 
+        // Final toast notification
         if (successCount > 0) {
             toast.success(`นำเข้าสำเร็จ ${successCount} รายการ${errorCount > 0 ? `, ล้มเหลว ${errorCount} รายการ` : ''}`);
             fetchItems();
         } else {
             toast.error('ไม่สามารถนำเข้าข้อมูลได้');
         }
+
+        return { successCount, errorCount };
+    };
+
+    // Legacy import without progress (for small datasets)
+    const handleImportItems = async (uploadedData: UploadedData) => {
+        await handleProgressiveImportItems(uploadedData, () => { });
     };
 
     // Filter items
@@ -665,6 +701,7 @@ export default function ItemsPage() {
                 isOpen={showUploadModal}
                 onClose={() => setShowUploadModal(false)}
                 onImport={handleImportItems}
+                onProgressiveImport={handleProgressiveImportItems}
                 type="items"
                 title="นำเข้าข้อมูลสินค้า"
             />

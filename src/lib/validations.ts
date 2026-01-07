@@ -7,15 +7,15 @@ export const shelterSchema = z.object({
     location: z.object({
         province: z.string().min(2),
         district: z.string().min(2),
-        subdistrict: z.string().min(2),
+        subdistrict: z.string().min(2).nullable().optional().transform(val => val || ''),
         address: z.string().optional()
     }),
-    capacity: z.number().int().positive('จำนวนรองรับต้องมากกว่า 0'),
+    capacity: z.number().int().nonnegative('จำนวนรองรับต้องไม่ติดลบ'),
     contactPerson: z.object({
         name: z.string().min(3),
         phone: z.string().regex(/^[0-9-]+$/, 'เบอร์โทรศัพท์ไม่ถูกต้อง').min(9).max(12)
-    }),
-    status: z.enum(['active', 'inactive', 'full']).optional()
+    }).optional(),
+    status: z.enum(['active', 'inactive', 'full', 'closed']).optional()
 });
 
 export const shelterUpdateSchema = shelterSchema.partial();
