@@ -215,76 +215,84 @@ export default function SheltersPage() {
         onProgress: (progress: ImportProgress) => void
     ): Promise<{ successCount: number; errorCount: number }> => {
         const token = localStorage.getItem('accessToken');
-        let successCount = 0;
-        let errorCount = 0;
         const total = uploadedData.data.length;
         const startTime = Date.now();
 
-        for (let i = 0; i < uploadedData.data.length; i++) {
-            const row = uploadedData.data[i];
+        // Report initial progress
+        onProgress({
+            current: 0,
+            total,
+            successCount: 0,
+            errorCount: 0,
+            startTime,
+            currentItem: 'กำลังเตรียมข้อมูล...'
+        });
 
-            // Report progress before each item
-            onProgress({
-                current: i,
-                total,
-                successCount,
-                errorCount,
-                startTime,
-                currentItem: row.name as string || `รายการ ${i + 1}`
+        // Transform data for bulk API
+        const shelters = uploadedData.data.map(row => ({
+            name: row.name as string,
+            location: {
+                province: 'ศรีสะเกษ',
+                district: row.district as string,
+                subdistrict: (row.subdistrict as string) || '',
+                address: (row.address as string) || ''
+            },
+            capacity: Number(row.capacity) || 100,
+            status: (row.status as string) || 'active'
+        }));
+
+        // Report preparing progress
+        onProgress({
+            current: Math.floor(total * 0.1),
+            total,
+            successCount: 0,
+            errorCount: 0,
+            startTime,
+            currentItem: 'กำลังส่งข้อมูลไปยังเซิร์ฟเวอร์...'
+        });
+
+        try {
+            const res = await fetch('/api/admin/shelters/bulk', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ shelters })
             });
 
-            try {
-                const shelterData = {
-                    name: row.name as string,
-                    location: {
-                        province: 'ศรีสะเกษ',
-                        district: row.district as string,
-                        subdistrict: row.subdistrict as string,
-                        address: (row.address as string) || ''
-                    },
-                    capacity: Number(row.capacity) || 100,
-                    status: (row.status as string) || 'active'
-                };
-
-                const res = await fetch('/api/admin/shelters', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(shelterData)
-                });
-
-                if (res.ok) {
-                    successCount++;
-                } else {
-                    errorCount++;
-                }
-            } catch (error) {
-                console.error('Error importing shelter:', error);
-                errorCount++;
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || 'เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
             }
 
-            // Report progress after each item
+            const result = await res.json();
+            const { successCount, errorCount } = result;
+
+            // Report final progress
             onProgress({
-                current: i + 1,
+                current: total,
                 total,
                 successCount,
                 errorCount,
                 startTime,
-                currentItem: row.name as string || `รายการ ${i + 1}`
+                currentItem: 'เสร็จสิ้น'
             });
-        }
 
-        // Final toast notification
-        if (successCount > 0) {
-            toast.success(`นำเข้าสำเร็จ ${successCount} รายการ${errorCount > 0 ? `, ล้มเหลว ${errorCount} รายการ` : ''}`);
-            fetchShelters();
-        } else {
-            toast.error('ไม่สามารถนำเข้าข้อมูลได้');
-        }
+            // Final toast notification
+            if (successCount > 0) {
+                toast.success(`นำเข้าสำเร็จ ${successCount} รายการ${errorCount > 0 ? `, ล้มเหลว ${errorCount} รายการ` : ''}`);
+                fetchShelters();
+            } else {
+                toast.error('ไม่สามารถนำเข้าข้อมูลได้');
+            }
 
-        return { successCount, errorCount };
+            return { successCount, errorCount };
+        } catch (error) {
+            console.error('Error importing shelters:', error);
+            toast.error(error instanceof Error ? error.message : 'ไม่สามารถนำเข้าข้อมูลได้');
+            return { successCount: 0, errorCount: total };
+        }
     };
 
     // Legacy import without progress (for small datasets)
