@@ -29,8 +29,8 @@ const ShelterSchema = new Schema<IShelter>({
   location: {
     province: { type: String, required: true },
     district: { type: String, required: true },
-    subdistrict: { type: String, required: true },
-    address: { type: String, required: true },
+    subdistrict: { type: String, default: '' },
+    address: { type: String, default: '' },
     coordinates: {
       lat: Number,
       lng: Number
@@ -40,8 +40,8 @@ const ShelterSchema = new Schema<IShelter>({
   currentOccupancy: { type: Number, default: 0, min: 0 },
   status: { type: String, enum: ['active', 'inactive', 'full'], default: 'active' },
   contactPerson: {
-    name: { type: String, required: true },
-    phone: { type: String, required: true }
+    name: { type: String, default: '' },
+    phone: { type: String, default: '' }
   },
   createdAt: { type: Date, default: Date.now }
 });
