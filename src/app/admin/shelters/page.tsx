@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import SearchableSelect from '@/components/SearchableSelect';
 import FileUploadModal, { UploadedData, ImportProgress } from '@/components/FileUploadModal/FileUploadModal';
-import { Building2, MapPin, Users, Edit, Plus, X, FileText, User, Upload } from 'lucide-react';
+import {
+    Building2, MapPin, Users, Edit, Plus, X, User, Upload,
+    ChevronDown, ChevronLeft, ChevronRight, Package, Search
+} from 'lucide-react';
 import styles from './shelters.module.css';
 import { getDistricts, getSubDistricts } from '@/lib/sisaket-data';
 
@@ -304,12 +307,43 @@ export default function SheltersPage() {
     const districts = ['ทั้งหมด', ...new Set(shelters.map(s => s.location.district))];
 
     // Filter shelters
-    const filteredShelters = shelters.filter(shelter => {
-        const matchDistrict = selectedDistrict === 'ทั้งหมด' || shelter.location.district === selectedDistrict;
-        const matchSearch = shelter.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            shelter.location.district.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchDistrict && matchSearch;
-    });
+    const filteredShelters = useMemo(() => {
+        return shelters.filter(shelter => {
+            const matchDistrict = selectedDistrict === 'ทั้งหมด' || shelter.location.district === selectedDistrict;
+            const matchSearch = shelter.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                shelter.location.district.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                shelter.code?.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchDistrict && matchSearch;
+        });
+    }, [shelters, selectedDistrict, searchTerm]);
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+
+    const totalPages = Math.ceil(filteredShelters.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedShelters = filteredShelters.slice(startIndex, endIndex);
+
+    // Reset page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedDistrict, itemsPerPage]);
+
+    const toggleExpand = (id: string) => {
+        setExpandedId(expandedId === id ? null : id);
+    };
+
+    const getStatusLabel = (status: string) => {
+        switch (status) {
+            case 'active': return 'เปิดใช้งาน';
+            case 'full': return 'เต็ม';
+            case 'inactive': return 'ปิดใช้งาน';
+            default: return status;
+        }
+    };
 
     if (loading) {
         return (
@@ -327,18 +361,65 @@ export default function SheltersPage() {
             title="รายงานศูนย์พักพิง"
             subtitle="จัดการข้อมูลศูนย์พักพิงในระบบ"
         >
+            {/* Summary Stats */}
+            <div className={styles.summary}>
+                <div className={styles.summaryCard}>
+                    <Building2 size={28} />
+                    <div>
+                        <div className={styles.summaryLabel}>ศูนย์พักพิงทั้งหมด</div>
+                        <div className={styles.summaryValue}>{shelters.length}</div>
+                    </div>
+                </div>
+                <div className={styles.summaryCard}>
+                    <Users size={28} style={{ color: '#10b981' }} />
+                    <div>
+                        <div className={styles.summaryLabel}>เปิดใช้งาน</div>
+                        <div className={styles.summaryValue} style={{ color: '#10b981' }}>
+                            {shelters.filter(s => s.status === 'active').length}
+                        </div>
+                    </div>
+                </div>
+                <div className={styles.summaryCard}>
+                    <Package size={28} style={{ color: '#f59e0b' }} />
+                    <div>
+                        <div className={styles.summaryLabel}>เต็ม</div>
+                        <div className={styles.summaryValue} style={{ color: '#f59e0b' }}>
+                            {shelters.filter(s => s.status === 'full').length}
+                        </div>
+                    </div>
+                </div>
+                <div className={styles.summaryCard}>
+                    <MapPin size={28} style={{ color: '#3b82f6' }} />
+                    <div>
+                        <div className={styles.summaryLabel}>อำเภอ</div>
+                        <div className={styles.summaryValue}>{districts.length - 1}</div>
+                    </div>
+                </div>
+            </div>
+
             {/* Filter Section */}
             <div className={styles.filterSection}>
                 <div className={styles.filterHeader}>
-                    <Building2 size={24} />
-                    <h3>เลือกเขตอำเภอ</h3>
+                    <Building2 size={22} />
+                    <h3>ค้นหาศูนย์พักพิง</h3>
                 </div>
 
                 <div className={styles.filterControls}>
+                    {/* Search */}
+                    <div className={styles.filterGroup}>
+                        <label><Search size={16} /> ค้นหา</label>
+                        <input
+                            type="text"
+                            className="dash-input"
+                            placeholder="ชื่อศูนย์พักพิง, รหัส..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
                     {/* District Dropdown */}
                     <div className={styles.filterGroup}>
-                        <MapPin size={18} />
-                        <label>เขตอำเภอ</label>
+                        <label><MapPin size={16} /> อำเภอ</label>
                         <select
                             className="dash-input"
                             value={selectedDistrict}
@@ -349,179 +430,273 @@ export default function SheltersPage() {
                             ))}
                         </select>
                     </div>
-
-                    {/* Search Box */}
-                    <div className={styles.filterGroup}>
-                        <Users size={18} />
-                        <label>ค้นหาชื่อศูนย์พักพิง</label>
-                        <input
-                            type="text"
-                            className="dash-input"
-                            placeholder="ป้อนชื่อศูนย์พักพิง..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
-
-                {/* Statistics */}
-                <div className={styles.filterStats}>
-                    <div className={styles.statItem}>
-                        <Building2 size={16} />
-                        <span>เขตอำเภอ: <strong>{districts.length - 1}</strong> เขต</span>
-                    </div>
-                    <div className={styles.statItem}>
-                        <Users size={16} />
-                        <span>ศูนย์พักพิงทั้งหมด: <strong>{filteredShelters.length}</strong> แห่ง</span>
-                    </div>
                 </div>
             </div>
 
             {/* Results Header */}
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1.5rem',
-                marginTop: '2rem',
-                flexWrap: 'wrap',
-                gap: '1rem'
-            }}>
-                <h2 className={styles.resultsTitle}>
-                    ศูนย์พักพิงใน {selectedDistrict} <span className="dash-badge dash-badge-info">
-                        {filteredShelters.filter(s => s.status === 'active').length}/{filteredShelters.length} แห่ง
-                    </span>
-                </h2>
-                <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div className={styles.tableHeader}>
+                <div className={styles.resultsInfo}>
+                    แสดง {filteredShelters.length > 0 ? startIndex + 1 : 0}-{Math.min(endIndex, filteredShelters.length)} จาก {filteredShelters.length} รายการ
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div className={styles.perPageSelector}>
+                        <span>แสดง:</span>
+                        {[5, 10, 25, 50].map(num => (
+                            <button
+                                key={num}
+                                className={`${styles.perPageBtn} ${itemsPerPage === num ? styles.active : ''}`}
+                                onClick={() => setItemsPerPage(num)}
+                            >
+                                {num}
+                            </button>
+                        ))}
+                    </div>
+
                     <button
                         className="dash-btn dash-btn-secondary"
                         onClick={() => setShowUploadModal(true)}
                     >
-                        <Upload size={20} />
-                        นำเข้าข้อมูล
+                        <Upload size={18} />
+                        นำเข้า
                     </button>
                     <button
                         className="dash-btn dash-btn-primary"
                         onClick={() => handleOpenModal()}
                     >
-                        <Plus size={20} />
-                        เพิ่มศูนย์พักพิง
+                        <Plus size={18} />
+                        เพิ่มใหม่
                     </button>
                 </div>
             </div>
 
-            {filteredShelters.length > 0 ? (
-                <div className={styles.sheltersGrid}>
-                    {filteredShelters.map((shelter) => {
-                        const occupancyPercent = getOccupancyPercentage(shelter);
+            {/* List View */}
+            {paginatedShelters.length > 0 ? (
+                <>
+                    <div className={styles.listContainer}>
+                        {paginatedShelters.map((shelter) => {
+                            const isExpanded = expandedId === shelter._id;
+                            const occupancyPercent = getOccupancyPercentage(shelter);
 
-                        return (
-                            <div key={shelter._id} className={styles.shelterCard}>
-                                {/* Status Badge */}
-                                <div className={styles.statusBadge}>
-                                    <span className={`dash-badge ${shelter.status === 'active' ? 'dash-badge-success' :
-                                        shelter.status === 'full' ? 'dash-badge-warning' :
-                                            'dash-badge-danger'
-                                        }`}>
-                                        {shelter.status === 'active' ? 'เปิดใช้งาน' :
-                                            shelter.status === 'full' ? 'เต็ม' : 'ปิดใช้งาน'}
-                                    </span>
-                                </div>
-
-                                {/* Location */}
-                                <div className={styles.locationInfo}>
-                                    <MapPin size={18} />
-                                    <div>
-                                        <div className={styles.shelterName}>{shelter.name}</div>
-                                        <div className={styles.shelterDistrict}>
-                                            {shelter.location.district}, {shelter.location.province}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Capacity */}
-                                <div className={styles.capacitySection}>
-                                    <div className={styles.capacityHeader}>
-                                        <Users size={16} />
-                                        <span>รายการสินค้าในศูนย์</span>
-                                        <span className={styles.capacityCount}>
-                                            {shelter.currentOccupancy} รายการ
-                                        </span>
-                                    </div>
-                                    <div className={styles.progressBar}>
-                                        <div
-                                            className={styles.progressFill}
-                                            style={{
-                                                width: `${occupancyPercent}%`,
-                                                backgroundColor: occupancyPercent >= 90 ? '#ef4444' :
-                                                    occupancyPercent >= 70 ? '#f59e0b' :
-                                                        '#10b981'
-                                            }}
-                                        ></div>
-                                    </div>
+                            return (
+                                <div
+                                    key={shelter._id}
+                                    className={`${styles.listItem} ${isExpanded ? styles.expanded : ''}`}
+                                >
+                                    {/* List Item Header */}
                                     <div
-                                        className={styles.occupancyText}
-                                        style={{
-                                            color: occupancyPercent <= 30 ? '#ef4444' :
-                                                occupancyPercent <= 69 ? '#f59e0b' :
-                                                    '#10b981',
-                                            fontWeight: 600
-                                        }}
+                                        className={styles.listItemHeader}
+                                        onClick={() => toggleExpand(shelter._id)}
                                     >
-                                        {occupancyPercent}% ของความจุ ({shelter.capacity} รายการ)
+                                        <div className={`${styles.statusIndicator} ${styles[shelter.status]}`} />
+
+                                        <div className={styles.shelterInfo}>
+                                            <div className={styles.shelterName}>
+                                                {shelter.name}
+                                                <span style={{
+                                                    marginLeft: '0.5rem',
+                                                    fontSize: '0.75rem',
+                                                    color: 'var(--dash-text-muted)',
+                                                    fontWeight: 400
+                                                }}>
+                                                    {shelter.code}
+                                                </span>
+                                            </div>
+                                            <div className={styles.shelterLocation}>
+                                                <MapPin size={12} />
+                                                {shelter.location.district}, {shelter.location.province}
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.shelterMeta}>
+                                            <div className={styles.metaItem}>
+                                                <Package size={16} />
+                                                <span>สินค้า: <strong>{shelter.currentOccupancy}</strong></span>
+                                            </div>
+                                            <div className={styles.metaItem}>
+                                                <Users size={16} />
+                                                <span>ความจุ: <strong>{shelter.capacity}</strong></span>
+                                            </div>
+                                            <div className={styles.metaItem}>
+                                                <User size={16} />
+                                                <span>
+                                                    {shelter.assignedStaff?.[0]?.name ||
+                                                        <span style={{ color: '#f59e0b' }}>ไม่มีผู้ดูแล</span>
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className={styles.listItemActions}>
+                                            <button
+                                                className={`${styles.actionBtn} ${styles.actionBtnPrimary}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenModal(shelter);
+                                                }}
+                                            >
+                                                <Edit size={14} />
+                                                แก้ไข
+                                            </button>
+                                        </div>
+
+                                        <button
+                                            className={`${styles.expandBtn} ${isExpanded ? styles.expanded : ''}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                toggleExpand(shelter._id);
+                                            }}
+                                        >
+                                            <ChevronDown size={18} />
+                                        </button>
                                     </div>
-                                </div>
 
-                                {/* Assigned Staff */}
-                                <div className={styles.contactInfo}>
-                                    <User size={16} />
-                                    <span>
-                                        {shelter.assignedStaff && shelter.assignedStaff.length > 0 ? (
-                                            <span style={{ color: '#10b981', fontWeight: 600 }}>
-                                                👤 {shelter.assignedStaff[0].name}
-                                            </span>
-                                        ) : (
-                                            <span style={{ color: '#f59e0b' }}>ยังไม่มีผู้ดูแล</span>
-                                        )}
-                                    </span>
-                                </div>
+                                    {/* Expanded Content */}
+                                    {isExpanded && (
+                                        <div className={styles.expandedContent}>
+                                            <div className={styles.expandedGrid}>
+                                                <div className={styles.expandedItem}>
+                                                    <div className={styles.expandedLabel}>รหัสศูนย์</div>
+                                                    <div className={styles.expandedValue}>{shelter.code}</div>
+                                                </div>
+                                                <div className={styles.expandedItem}>
+                                                    <div className={styles.expandedLabel}>สถานะ</div>
+                                                    <div className={styles.expandedValue}>
+                                                        <span className={`dash-badge ${shelter.status === 'active' ? 'dash-badge-success' :
+                                                                shelter.status === 'full' ? 'dash-badge-warning' :
+                                                                    'dash-badge-danger'
+                                                            }`}>
+                                                            {getStatusLabel(shelter.status)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className={styles.expandedItem}>
+                                                    <div className={styles.expandedLabel}>ตำบล</div>
+                                                    <div className={styles.expandedValue}>{shelter.location.subdistrict || '-'}</div>
+                                                </div>
+                                                <div className={styles.expandedItem}>
+                                                    <div className={styles.expandedLabel}>ที่อยู่</div>
+                                                    <div className={styles.expandedValue}>{shelter.location.address || '-'}</div>
+                                                </div>
+                                                <div className={styles.expandedItem}>
+                                                    <div className={styles.expandedLabel}>ผู้ดูแล</div>
+                                                    <div className={styles.expandedValue}>
+                                                        {shelter.assignedStaff?.[0] ? (
+                                                            <span style={{ color: '#10b981' }}>
+                                                                👤 {shelter.assignedStaff[0].name}
+                                                            </span>
+                                                        ) : (
+                                                            <span style={{ color: '#f59e0b' }}>ยังไม่มีผู้ดูแล</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
 
-                                {/* Actions */}
-                                <div className={styles.cardActions}>
-                                    <button
-                                        className={styles.actionBtnPrimary}
-                                        onClick={() => handleOpenModal(shelter)}
-                                    >
-                                        <Edit size={16} />
-                                        แก้ไข
-                                    </button>
-                                    <button
-                                        className={styles.actionBtnSecondary}
-                                    >
-                                        <FileText size={16} />
-                                        ดูรายงาน
-                                    </button>
+                                            {/* Progress Bar */}
+                                            <div className={styles.progressSection}>
+                                                <div className={styles.progressHeader}>
+                                                    <span className={styles.progressLabel}>สินค้าในคลัง</span>
+                                                    <span className={styles.progressValue}>
+                                                        {shelter.currentOccupancy} / {shelter.capacity} ({occupancyPercent}%)
+                                                    </span>
+                                                </div>
+                                                <div className={styles.progressBar}>
+                                                    <div
+                                                        className={styles.progressFill}
+                                                        style={{
+                                                            width: `${occupancyPercent}%`,
+                                                            backgroundColor: occupancyPercent >= 90 ? '#ef4444' :
+                                                                occupancyPercent >= 70 ? '#f59e0b' : '#10b981'
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Mobile Actions */}
+                                            <div style={{
+                                                display: 'flex',
+                                                gap: '0.75rem',
+                                                marginTop: '1rem',
+                                                justifyContent: 'flex-end'
+                                            }}>
+                                                <button
+                                                    className="dash-btn dash-btn-primary"
+                                                    onClick={() => handleOpenModal(shelter)}
+                                                >
+                                                    <Edit size={16} />
+                                                    แก้ไขข้อมูล
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className={styles.pagination}>
+                            <button
+                                className={styles.pageBtn}
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                            >
+                                <ChevronLeft size={18} />
+                                ก่อนหน้า
+                            </button>
+
+                            <div className={styles.pageNumbers}>
+                                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                    .filter(page => {
+                                        return page === 1 ||
+                                            page === totalPages ||
+                                            Math.abs(page - currentPage) <= 1;
+                                    })
+                                    .map((page, index, array) => {
+                                        const prevPage = array[index - 1];
+                                        const showEllipsis = prevPage && page - prevPage > 1;
+
+                                        return (
+                                            <div key={page} style={{ display: 'flex', gap: '0.5rem' }}>
+                                                {showEllipsis && <span className={styles.ellipsis}>...</span>}
+                                                <button
+                                                    className={`${styles.pageNumBtn} ${currentPage === page ? styles.active : ''}`}
+                                                    onClick={() => setCurrentPage(page)}
+                                                >
+                                                    {page}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
                             </div>
-                        );
-                    })}
-                </div>
+
+                            <button
+                                className={styles.pageBtn}
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                            >
+                                ถัดไป
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    )}
+                </>
             ) : (
-                <div style={{
-                    textAlign: 'center',
-                    padding: '3rem',
-                    color: '#94a3b8'
-                }}>
-                    <Building2 size={64} style={{ opacity: 0.5, marginBottom: '1rem' }} />
-                    <p>ยังไม่มีศูนย์พักพิงในระบบ</p>
-                    <button
-                        className="dash-btn dash-btn-primary"
-                        onClick={() => handleOpenModal()}
-                        style={{ marginTop: '1rem' }}
-                    >
-                        <Plus size={20} />
-                        เพิ่มศูนย์พักพิงแรก
-                    </button>
+                <div className={styles.emptyState}>
+                    <Building2 size={64} />
+                    <h3>{searchTerm || selectedDistrict !== 'ทั้งหมด' ? 'ไม่พบศูนย์พักพิง' : 'ยังไม่มีศูนย์พักพิงในระบบ'}</h3>
+                    <p>{searchTerm || selectedDistrict !== 'ทั้งหมด' ? 'ลองปรับเปลี่ยนตัวกรองหรือคำค้นหา' : 'คลิกปุ่ม "เพิ่มใหม่" เพื่อเริ่มต้น'}</p>
+                    {!searchTerm && selectedDistrict === 'ทั้งหมด' && (
+                        <button
+                            className="dash-btn dash-btn-primary"
+                            onClick={() => handleOpenModal()}
+                            style={{ marginTop: '1rem' }}
+                        >
+                            <Plus size={20} />
+                            เพิ่มศูนย์พักพิงแรก
+                        </button>
+                    )}
                 </div>
             )}
 
