@@ -7,13 +7,13 @@ export const shelterSchema = z.object({
     location: z.object({
         province: z.string().min(2),
         district: z.string().min(2),
-        subdistrict: z.string().min(2).nullable().optional().transform(val => val || ''),
-        address: z.string().optional()
+        subdistrict: z.string().optional().nullable().transform(val => val || ''),
+        address: z.string().optional().transform(val => val || '')
     }),
     capacity: z.number().int().nonnegative('จำนวนรองรับต้องไม่ติดลบ'),
     contactPerson: z.object({
-        name: z.string().min(3),
-        phone: z.string().regex(/^[0-9-]+$/, 'เบอร์โทรศัพท์ไม่ถูกต้อง').min(9).max(12)
+        name: z.string().optional().transform(val => val || ''),
+        phone: z.string().optional().transform(val => val || '')
     }).optional(),
     status: z.enum(['active', 'inactive', 'full', 'closed']).optional()
 });
