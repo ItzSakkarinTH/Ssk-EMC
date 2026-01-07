@@ -11,10 +11,27 @@ export interface UploadedData {
     fileType: 'excel' | 'json';
 }
 
+// Progress tracking interface for import operations
+export interface ImportProgress {
+    current: number;
+    total: number;
+    successCount: number;
+    errorCount: number;
+    startTime: number;
+    currentItem?: string;
+}
+
+// Callback type for progressive import with progress reporting
+export type ProgressiveImportCallback = (
+    data: UploadedData,
+    onProgress: (progress: ImportProgress) => void
+) => Promise<{ successCount: number; errorCount: number }>;
+
 interface FileUploadModalProps {
     isOpen: boolean;
     onClose: () => void;
     onImport: (data: UploadedData) => Promise<void>;
+    onProgressiveImport?: ProgressiveImportCallback;
     type: 'shelters' | 'items';
     title?: string;
 }
@@ -37,6 +54,7 @@ export default function FileUploadModal({
     isOpen,
     onClose,
     onImport,
+    onProgressiveImport,
     type,
     title
 }: FileUploadModalProps) {
@@ -46,6 +64,7 @@ export default function FileUploadModal({
     const [parsedData, setParsedData] = useState<Record<string, unknown>[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [importing, setImporting] = useState(false);
+    const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const exampleData = type === 'shelters' ? shelterExampleData : itemExampleData;
@@ -145,12 +164,24 @@ export default function FileUploadModal({
         if (parsedData.length === 0 || !uploadedFile) return;
 
         setImporting(true);
+        setImportProgress(null);
+
         try {
-            await onImport({
+            const uploadedData: UploadedData = {
                 data: parsedData,
                 fileName: uploadedFile.name,
                 fileType: uploadedFile.name.endsWith('.json') ? 'json' : 'excel'
-            });
+            };
+
+            // Use progressive import if available (for large datasets)
+            if (onProgressiveImport && parsedData.length > 10) {
+                await onProgressiveImport(uploadedData, (progress) => {
+                    setImportProgress(progress);
+                });
+            } else {
+                await onImport(uploadedData);
+            }
+
             handleReset();
             onClose();
         } catch (err) {
@@ -158,6 +189,7 @@ export default function FileUploadModal({
             setError('เกิดข้อผิดพลาดในการนำเข้าข้อมูล');
         } finally {
             setImporting(false);
+            setImportProgress(null);
         }
     };
 
@@ -323,6 +355,165 @@ export default function FileUploadModal({
                                     {parsedData.length > 5 && (
                                         <div className={styles.moreData}>
                                             ... และอีก {parsedData.length - 5} รายการ
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Import Progress UI */}
+                            {importing && importProgress && (
+                                <div className={styles.importProgress}>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                            marginBottom: '0.75rem'
+                                        }}>
+                                            <span style={{
+                                                fontWeight: 600,
+                                                color: 'var(--dash-text-primary)',
+                                                fontSize: '1rem'
+                                            }}>
+                                                📤 กำลังนำเข้าข้อมูล...
+                                            </span>
+                                            <span style={{
+                                                color: 'var(--dash-primary)',
+                                                fontWeight: 600,
+                                                fontSize: '1.125rem'
+                                            }}>
+                                                {Math.round((importProgress.current / importProgress.total) * 100)}%
+                                            </span>
+                                        </div>
+
+                                        <div className={styles.progressBar}>
+                                            <div
+                                                className={styles.progressFill}
+                                                style={{
+                                                    width: `${(importProgress.current / importProgress.total) * 100}%`,
+                                                    transition: 'width 0.2s ease'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(2, 1fr)',
+                                        gap: '1rem',
+                                        fontSize: '0.875rem'
+                                    }}>
+                                        <div style={{
+                                            padding: '0.75rem',
+                                            background: 'var(--dash-bg)',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--dash-border)'
+                                        }}>
+                                            <div style={{ color: 'var(--dash-text-muted)', marginBottom: '0.25rem' }}>
+                                                ความคืบหน้า
+                                            </div>
+                                            <div style={{ fontWeight: 600, color: 'var(--dash-text-primary)' }}>
+                                                {importProgress.current.toLocaleString()} / {importProgress.total.toLocaleString()} รายการ
+                                            </div>
+                                        </div>
+
+                                        <div style={{
+                                            padding: '0.75rem',
+                                            background: 'var(--dash-bg)',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--dash-border)'
+                                        }}>
+                                            <div style={{ color: 'var(--dash-text-muted)', marginBottom: '0.25rem' }}>
+                                                ความเร็ว
+                                            </div>
+                                            <div style={{ fontWeight: 600, color: 'var(--dash-text-primary)' }}>
+                                                {(() => {
+                                                    const elapsed = (Date.now() - importProgress.startTime) / 1000;
+                                                    const speed = elapsed > 0 ? importProgress.current / elapsed : 0;
+                                                    return `${speed.toFixed(1)} รายการ/วินาที`;
+                                                })()}
+                                            </div>
+                                        </div>
+
+                                        <div style={{
+                                            padding: '0.75rem',
+                                            background: 'rgba(16, 185, 129, 0.1)',
+                                            borderRadius: '8px',
+                                            border: '1px solid rgba(16, 185, 129, 0.2)'
+                                        }}>
+                                            <div style={{ color: '#10b981', marginBottom: '0.25rem' }}>
+                                                ✓ สำเร็จ
+                                            </div>
+                                            <div style={{ fontWeight: 600, color: '#10b981' }}>
+                                                {importProgress.successCount.toLocaleString()} รายการ
+                                            </div>
+                                        </div>
+
+                                        <div style={{
+                                            padding: '0.75rem',
+                                            background: importProgress.errorCount > 0 ? 'rgba(239, 68, 68, 0.1)' : 'var(--dash-bg)',
+                                            borderRadius: '8px',
+                                            border: `1px solid ${importProgress.errorCount > 0 ? 'rgba(239, 68, 68, 0.2)' : 'var(--dash-border)'}`
+                                        }}>
+                                            <div style={{
+                                                color: importProgress.errorCount > 0 ? '#ef4444' : 'var(--dash-text-muted)',
+                                                marginBottom: '0.25rem'
+                                            }}>
+                                                ✗ ล้มเหลว
+                                            </div>
+                                            <div style={{
+                                                fontWeight: 600,
+                                                color: importProgress.errorCount > 0 ? '#ef4444' : 'var(--dash-text-primary)'
+                                            }}>
+                                                {importProgress.errorCount.toLocaleString()} รายการ
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Estimated time remaining */}
+                                    <div style={{
+                                        marginTop: '1rem',
+                                        padding: '0.75rem',
+                                        background: 'rgba(99, 102, 241, 0.05)',
+                                        borderRadius: '8px',
+                                        textAlign: 'center'
+                                    }}>
+                                        <span style={{ color: 'var(--dash-text-muted)', fontSize: '0.875rem' }}>
+                                            ⏱️ เวลาที่เหลือโดยประมาณ: {' '}
+                                            <strong style={{ color: 'var(--dash-text-primary)' }}>
+                                                {(() => {
+                                                    const elapsed = (Date.now() - importProgress.startTime) / 1000;
+                                                    const speed = elapsed > 0 ? importProgress.current / elapsed : 0;
+                                                    const remaining = speed > 0 ? (importProgress.total - importProgress.current) / speed : 0;
+
+                                                    if (remaining < 60) {
+                                                        return `${Math.ceil(remaining)} วินาที`;
+                                                    } else if (remaining < 3600) {
+                                                        const mins = Math.floor(remaining / 60);
+                                                        const secs = Math.ceil(remaining % 60);
+                                                        return `${mins} นาที ${secs} วินาที`;
+                                                    } else {
+                                                        const hours = Math.floor(remaining / 3600);
+                                                        const mins = Math.ceil((remaining % 3600) / 60);
+                                                        return `${hours} ชั่วโมง ${mins} นาที`;
+                                                    }
+                                                })()}
+                                            </strong>
+                                        </span>
+                                    </div>
+
+                                    {/* Current item being processed */}
+                                    {importProgress.currentItem && (
+                                        <div style={{
+                                            marginTop: '0.75rem',
+                                            fontSize: '0.8125rem',
+                                            color: 'var(--dash-text-muted)',
+                                            textAlign: 'center',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}>
+                                            กำลังนำเข้า: <span style={{ color: 'var(--dash-text-secondary)' }}>{importProgress.currentItem}</span>
                                         </div>
                                     )}
                                 </div>

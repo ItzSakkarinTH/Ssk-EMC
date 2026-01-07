@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/contexts/ToastContext';
 import DashboardLayout from '@/components/DashboardLayout/DashboardLayout';
 import SearchableSelect from '@/components/SearchableSelect';
-import FileUploadModal, { UploadedData } from '@/components/FileUploadModal/FileUploadModal';
+import FileUploadModal, { UploadedData, ImportProgress } from '@/components/FileUploadModal/FileUploadModal';
 import { Building2, MapPin, Users, Edit, Plus, X, FileText, User, Upload } from 'lucide-react';
 import styles from './shelters.module.css';
 import { getDistricts, getSubDistricts } from '@/lib/sisaket-data';
@@ -209,12 +209,30 @@ export default function SheltersPage() {
         return Math.round((shelter.currentOccupancy / shelter.capacity) * 100);
     };
 
-    const handleImportShelters = async (uploadedData: UploadedData) => {
+    // Progressive import function with progress tracking
+    const handleProgressiveImportShelters = async (
+        uploadedData: UploadedData,
+        onProgress: (progress: ImportProgress) => void
+    ): Promise<{ successCount: number; errorCount: number }> => {
         const token = localStorage.getItem('accessToken');
         let successCount = 0;
         let errorCount = 0;
+        const total = uploadedData.data.length;
+        const startTime = Date.now();
 
-        for (const row of uploadedData.data) {
+        for (let i = 0; i < uploadedData.data.length; i++) {
+            const row = uploadedData.data[i];
+
+            // Report progress before each item
+            onProgress({
+                current: i,
+                total,
+                successCount,
+                errorCount,
+                startTime,
+                currentItem: row.name as string || `รายการ ${i + 1}`
+            });
+
             try {
                 const shelterData = {
                     name: row.name as string,
@@ -246,14 +264,32 @@ export default function SheltersPage() {
                 console.error('Error importing shelter:', error);
                 errorCount++;
             }
+
+            // Report progress after each item
+            onProgress({
+                current: i + 1,
+                total,
+                successCount,
+                errorCount,
+                startTime,
+                currentItem: row.name as string || `รายการ ${i + 1}`
+            });
         }
 
+        // Final toast notification
         if (successCount > 0) {
             toast.success(`นำเข้าสำเร็จ ${successCount} รายการ${errorCount > 0 ? `, ล้มเหลว ${errorCount} รายการ` : ''}`);
             fetchShelters();
         } else {
             toast.error('ไม่สามารถนำเข้าข้อมูลได้');
         }
+
+        return { successCount, errorCount };
+    };
+
+    // Legacy import without progress (for small datasets)
+    const handleImportShelters = async (uploadedData: UploadedData) => {
+        await handleProgressiveImportShelters(uploadedData, () => { });
     };
 
     // Get unique districts
@@ -648,6 +684,7 @@ export default function SheltersPage() {
                 isOpen={showUploadModal}
                 onClose={() => setShowUploadModal(false)}
                 onImport={handleImportShelters}
+                onProgressiveImport={handleProgressiveImportShelters}
                 type="shelters"
                 title="นำเข้าข้อมูลศูนย์พักพิง"
             />
